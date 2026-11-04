@@ -244,7 +244,7 @@ I controller non contengono regole di gioco: traducono eventi in chiamate all'en
 ## 4. Regole di sviluppo (valgono anche per Claude Code)
 1. Rispettare questo documento; se serve cambiarlo, proporre la modifica prima di scrivere codice.
 2. Codice e nomi in inglese; Javadoc in inglese; Wiki, README e messaggi di commit in italiano.
-3. Validazione nei costruttori, fail fast, messaggi chiari. Nessun `null` restituito: usare `Optional`.
+3. Validazione nei costruttori, fail fast, messaggi chiari: `Objects.requireNonNull` (con messaggio) per i riferimenti nulli, `IllegalArgumentException` per i valori non validi; i controlli ricorrenti stanno in `model.Preconditions`. Nessun `null` restituito: usare `Optional`.
 4. Collezioni esposte come copie immutabili (`List.copyOf`, `Collections.unmodifiableMap`).
 5. Niente Singleton, niente stato statico mutabile, niente Lombok (il codice deve mostrare che equals, hashCode, getter e costruttori sono stati scritti e capiti).
 6. Metodi piccoli; catene di stream lunghe spezzate in metodi privati con nome.
