@@ -34,7 +34,7 @@ Il profilo determina le statistiche iniziali. Tre profili, definiti in un file d
 - **Livello ed esperienza**: superare un esame dà esperienza; salire di livello aumenta Conoscenza ed Energia massima. È la progressione RPG.
 
 ### 2.3 Lo scontro (esame)
-- L'esame ha una **resistenza** (punti esame). Ogni risposta corretta la riduce; quando arriva a zero l'esame è superato.
+- L'esame ha una **resistenza** (punti esame). Ogni risposta corretta la riduce; quando arriva a zero l'esame è superato. La resistenza non è un dato di `Exam`: è una regola di bilanciamento e la calcola l'engine da CFU e difficoltà.
 - Ogni risposta sbagliata (o tempo scaduto) toglie Energia in base alla difficoltà dell'esame.
 - A fine esame il **voto** (18-30, 31 = 30 e lode) viene calcolato dalla prestazione (percentuale di risposte corrette, eventuali penalità).
 - Azioni del turno: **Rispondi**, **Usa oggetto**, **Usa abilità**, **Ritirati** (l'esame resta da sostenere, nessun voto).
@@ -188,7 +188,7 @@ public interface BattleListener {
 | Ereditarietà, classi astratte | `AbstractQuestion` (campi comuni di tutte le domande), `AbstractChoiceQuestion` |
 | Interfacce, polimorfismo | Question, ExamStrategy, Item, Ability, GradeCalculator |
 | SRP | Transcript registra e calcola; la formattazione dei voti sta in Grade; la stampa sta nella UI; le regole di laurea in Game |
-| OCP | nuovo tipo di esame, domanda, oggetto, abilità = nuova classe, nessuna modifica all'engine |
+| OCP | nuovo tipo di esame, domanda, oggetto, abilità = nuova classe, nessuna modifica all'engine; nell'engine nessuno `switch`/`if` su `ExamType`: l'associazione tipo → strategia è una `EnumMap<ExamType, ExamStrategy>` costruita in `app` e passata all'engine |
 | LSP | contratti espliciti in Javadoc; metodi di validazione condivisi (es. `Grade.of(int)` unico punto di creazione) |
 | ISP | ChoiceQuestion separata da Question; listener piccoli e separati |
 | DIP | ExamBattle dipende da ExamStrategy, GradeCalculator, QuestionTimer; Game dipende da SaveGameRepository; tutto collegato in `app` |

@@ -35,6 +35,16 @@ Package base: `it.unicam.cs.mpgc.rpg127295`.
 10. A ogni sessione aggiornare `docs/ai-log.md` (data, cosa è stato chiesto, cosa è
     stato prodotto). La parte "verificato da me" la compila Andrea.
 
+## Convenzione dei commit
+Prefisso minuscolo seguito da testo in italiano:
+- `build:` configurazione Gradle e dipendenze
+- `test:` test (in TDD: commit dei test che falliscono, prima dell'implementazione)
+- `feat:` nuova funzionalità o implementazione che fa passare i test
+- `refactor:` modifica della struttura senza cambiare il comportamento
+- `docs:` documentazione (design, README, Wiki, registro AI)
+
+Esempio: `feat: Grade con validazione 18-31 e lode`
+
 ## Architettura (sintesi, dettagli in `docs/design.md` sezione 3)
 - `model` – entità e stato del gioco; non importa `engine`, `persistence` né `ui`.
 - `engine` – regole e flusso della partita; dipende solo da `model` e da interfacce
