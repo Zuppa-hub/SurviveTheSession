@@ -108,16 +108,16 @@ engine
   timer        QuestionTimer, TimerListener, ScheduledQuestionTimer
   game         Game (partita: studente + sessione + progressione), RewardPolicy
 persistence
-  content      QuestionRepository, ExamCatalog, ProfileCatalog, Xml... (lettura XML)
+  content      QuestionRepository, ExamCatalog, ProfileCatalog, ItemCatalog, Xml... (lettura XML)
   save         SaveGameRepository, JsonSaveGameRepository, SaveData (DTO), SaveMapper
 ui             controller JavaFX, ViewNavigator, adattatori dei listener
 ```
 Risorse:
 ```
 src/main/resources/
-  content/exams.xml, content/profiles.xml
+  content/exams.xml, content/profiles.xml, content/items.xml
   content/questions/<materia>.xml
-  content/schema/questions.xsd, exams.xsd, profiles.xsd
+  content/schema/questions.xsd, exams.xsd, profiles.xsd, items.xsd
   ui/*.fxml, ui/styles.css
 ```
 
