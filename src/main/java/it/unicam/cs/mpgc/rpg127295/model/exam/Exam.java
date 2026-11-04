@@ -1,5 +1,8 @@
 package it.unicam.cs.mpgc.rpg127295.model.exam;
 
+import static it.unicam.cs.mpgc.rpg127295.model.Preconditions.requireNonBlank;
+import static it.unicam.cs.mpgc.rpg127295.model.Preconditions.requirePositive;
+
 import it.unicam.cs.mpgc.rpg127295.model.question.Difficulty;
 import it.unicam.cs.mpgc.rpg127295.model.question.Subject;
 import java.util.Objects;
@@ -29,16 +32,10 @@ public final class Exam {
      * @throws NullPointerException     if subject, type or difficulty is null
      */
     public Exam(String code, Subject subject, ExamType type, int credits, Difficulty difficulty) {
-        if (code == null || code.isBlank()) {
-            throw new IllegalArgumentException("Exam code must not be blank");
-        }
-        if (credits <= 0) {
-            throw new IllegalArgumentException("Exam credits must be positive: " + credits);
-        }
-        this.code = code;
+        this.code = requireNonBlank(code, "Exam code");
         this.subject = Objects.requireNonNull(subject, "Exam subject must not be null");
         this.type = Objects.requireNonNull(type, "Exam type must not be null");
-        this.credits = credits;
+        this.credits = requirePositive(credits, "Exam credits");
         this.difficulty = Objects.requireNonNull(difficulty, "Exam difficulty must not be null");
     }
 
