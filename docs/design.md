@@ -97,26 +97,27 @@ model
   exam         Exam, ExamType, ExamSession, Grade
   question     Question, ChoiceQuestion, MultipleChoiceQuestion, TrueFalseQuestion,
                CodeOutputQuestion, FillInQuestion, Difficulty, Subject
-  item         Item (interfaccia), Coffee, Notes, Summary, EnergyDrink, Inventory
+  item         Item (solo dati: id, nome, descrizione), Inventory
   transcript   Transcript (libretto), TranscriptEntry
 engine
   battle       ExamBattle, BattleState, BattleOutcome, BattleListener
   strategy     ExamStrategy, WrittenExamStrategy, OralExamStrategy, ProjectExamStrategy
   grading      GradeCalculator, PerformanceGradeCalculator, Performance
+  item         ItemEffect, CoffeeEffect, NotesEffect, SummaryEffect, EnergyDrinkEffect
   ability      Ability, QuickReview, StrokeOfGenius
   timer        QuestionTimer, TimerListener, ScheduledQuestionTimer
   game         Game (partita: studente + sessione + progressione), RewardPolicy
 persistence
-  content      QuestionRepository, ExamCatalog, ProfileCatalog, Xml... (lettura XML)
+  content      QuestionRepository, ExamCatalog, ProfileCatalog, ItemCatalog, Xml... (lettura XML)
   save         SaveGameRepository, JsonSaveGameRepository, SaveData (DTO), SaveMapper
 ui             controller JavaFX, ViewNavigator, adattatori dei listener
 ```
 Risorse:
 ```
 src/main/resources/
-  content/exams.xml, content/profiles.xml
+  content/exams.xml, content/profiles.xml, content/items.xml
   content/questions/<materia>.xml
-  content/schema/questions.xsd, exams.xsd, profiles.xsd
+  content/schema/questions.xsd, exams.xsd, profiles.xsd, items.xsd
   ui/*.fxml, ui/styles.css
 ```
 
@@ -158,11 +159,17 @@ public interface GradeCalculator {
     Optional<Grade> calculate(Performance performance);
 }
 
-/** Oggetto utilizzabile durante un esame. */
-public interface Item {
-    String id();
-    String name();
-    String description();
+/** model.item: un oggetto dell'inventario, solo dati (il model non dipende dall'engine, §3.1).
+ *  Identità = id. */
+public final class Item {
+    public String id();
+    public String name();
+    public String description();
+}
+
+/** engine.item: il comportamento di un oggetto durante un esame.
+ *  L'associazione Item → ItemEffect è una Map costruita in app e passata all'engine. */
+public interface ItemEffect {
     boolean canBeUsedIn(BattleState state);
     void applyTo(ExamBattle battle);
 }
@@ -189,17 +196,17 @@ public interface BattleListener {
 |---|---|
 | Incapsulamento, validazione nei costruttori | Stats, Grade, Exam, Student (fail fast, `IllegalArgumentException`) |
 | Ereditarietà, classi astratte | `AbstractQuestion` (campi comuni di tutte le domande), `AbstractChoiceQuestion` |
-| Interfacce, polimorfismo | Question, ExamStrategy, Item, Ability, GradeCalculator |
-| SRP | Transcript registra e calcola; la formattazione dei voti sta in Grade; la stampa sta nella UI; le regole di laurea in Game |
-| OCP | nuovo tipo di esame, domanda, oggetto, abilità = nuova classe, nessuna modifica all'engine; nell'engine nessuno `switch`/`if` su `ExamType`: l'associazione tipo → strategia è una `EnumMap<ExamType, ExamStrategy>` costruita in `app` e passata all'engine |
+| Interfacce, polimorfismo | Question, ExamStrategy, ItemEffect, Ability, GradeCalculator |
+| SRP | Transcript registra gli esami superati (senza doppioni) e calcola media ponderata sui CFU e CFU totali, e nient'altro: **non** contiene la regola di laurea né il voto di laurea (è la violazione di SRP vista a lezione con `puoLaurearsi()` in `Libretto`), che stanno in Game (#8); la formattazione dei voti sta in Grade; la stampa sta nella UI; dati e comportamento degli oggetti sono separati (Item nel model, ItemEffect nell'engine) |
+| OCP | nuovo tipo di esame, domanda, oggetto, abilità = nuova classe, nessuna modifica all'engine; nell'engine nessuno `switch`/`if` su `ExamType`: l'associazione tipo → strategia è una `EnumMap<ExamType, ExamStrategy>` costruita in `app` e passata all'engine; allo stesso modo un nuovo oggetto = nuovo `ItemEffect` + una voce nella `Map<Item, ItemEffect>` costruita in `app` |
 | LSP | contratti espliciti in Javadoc; metodi di validazione condivisi (es. `Grade.of(int)` unico punto di creazione) |
 | ISP | ChoiceQuestion separata da Question; listener piccoli e separati |
-| DIP | ExamBattle dipende da ExamStrategy, GradeCalculator, QuestionTimer; Game dipende da SaveGameRepository; tutto collegato in `app` |
+| DIP | ExamBattle dipende da ExamStrategy, GradeCalculator, QuestionTimer, ItemEffect; Game dipende da SaveGameRepository; tutto collegato in `app` |
 | Clean Code | nomi significativi, metodi piccoli, niente codice commentato, DRY, niente liste parallele (data clumping) |
 | Package | struttura per responsabilità (3.2) |
 | List | domande della sessione, ordine degli esami |
 | HashSet + equals/hashCode | esami superati; domande già poste nello scontro (per non ripeterle); identità per `id` |
-| HashMap | libretto `Map<Exam, Grade>`; inventario `Map<Item, Integer>` (quantità) |
+| HashMap | libretto `Map<Exam, Grade>`; inventario `Map<Item, Integer>` (quantità); effetti `Map<Item, ItemEffect>` in `app` |
 | Stream API | media ponderata, CFU totali, filtri domande per difficoltà, statistiche; catene lunghe spezzate in metodi con nome |
 | Modelli di esecuzione | GUI event-driven; timer della domanda su thread separato (ScheduledExecutorService) con passaggio al thread JavaFX via `Platform.runLater`; stato condiviso protetto |
 | Gradle | build, run, test, dipendenze, plugin JavaFX |
