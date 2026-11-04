@@ -120,7 +120,7 @@ Risorse:
 src/main/resources/
   content/exams.xml, content/profiles.xml, content/items.xml
   content/questions/<materia>.xml
-  content/schema/questions.xsd, exams.xsd, profiles.xsd, items.xsd
+  content/schema/common.xsd (tipi condivisi, xs:include), questions.xsd, exams.xsd, profiles.xsd, items.xsd
   ui/*.fxml, ui/styles.css
 ```
 
@@ -240,7 +240,7 @@ public interface BattleListener {
 - Nei test si usa un `ManualQuestionTimer` che avanza solo quando il test lo chiede.
 
 ### 3.7 Persistenza
-- **Contenuti (sola lettura)**: XML in `resources/content`, validati con XSD all'avvio. Un errore nei contenuti blocca l'avvio con messaggio chiaro (fail fast).
+- **Contenuti (sola lettura)**: XML in `resources/content`, validati con XSD all'avvio. Un errore nei contenuti blocca l'avvio con messaggio chiaro (fail fast). I file si leggono con `getResourceAsStream`, gli schemi dal loro URL (`getResource`) così gli `xs:include` si risolvono anche dentro il JAR. Ogni errore diventa una `ContentException` (file, riga, colonna o id). Le domande si costruiscono con una `Map<String, QuestionParser>` (nome dell'elemento → parser) costruita in `app`: nessuno `switch` sul tipo di domanda. XPath serve per leggere i campi relativi a un elemento; i filtri sulle domande si fanno con gli Stream nell'engine.
 - **Salvataggi**: JSON con Gson in `~/.sopravvivi-alla-sessione/saves/<slot>.json`. Si salvano DTO semplici (`SaveData`: id profilo, statistiche, livello, esperienza, inventario come id → quantità, libretto come codice esame → voto, esami rimanenti), non gli oggetti del dominio: il `SaveMapper` (in `engine.repository`, perché usa solo model e interfacce dei cataloghi) ricostruisce il dominio usando i cataloghi. `SaveData` fa parte del contratto di `SaveGameRepository`, quindi sta con l'interfaccia in `engine.repository` e contiene solo tipi del JDK. Così il formato di salvataggio non dipende dalle classi interne e `persistence` contiene solo la scrittura JSON.
 - Salvataggio automatico dopo ogni esame concluso; caricamento dal menu.
 - Estensione possibile (documentata nella Wiki): `JpaSaveGameRepository` con H2, senza toccare engine e UI.
