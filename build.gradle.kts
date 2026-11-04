@@ -39,4 +39,7 @@ tasks.named<JavaExec>("run") {
 
 tasks.test {
     useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
 }
