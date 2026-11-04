@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Session order. For now only Programmazione; the other subjects arrive with issue #12. -->
+<exams>
+    <subject id="PROG">
+        <name>Programmazione</name>
+    </subject>
+    <exam code="PROG1" subject="PROG" type="WRITTEN" credits="12" difficulty="MEDIUM"/>
+</exams>
