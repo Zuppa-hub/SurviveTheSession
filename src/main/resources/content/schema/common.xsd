@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Types shared by all content schemas, included with xs:include. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <!-- Identifier of an element: letters, digits, '-' and '_'. -->
+    <xs:simpleType name="identifier">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-Za-z0-9_\-]+"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Text shown to the player: spaces collapsed, at least one visible character. -->
+    <xs:simpleType name="nonBlankText">
+        <xs:restriction base="xs:string">
+            <xs:whiteSpace value="collapse"/>
+            <xs:pattern value=".*\S.*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Source code: whitespace and line breaks preserved, at least one visible character. -->
+    <xs:simpleType name="codeText">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[\s\S]*\S[\s\S]*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="difficulty">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="EASY"/>
+            <xs:enumeration value="MEDIUM"/>
+            <xs:enumeration value="HARD"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Bounded so that every value fits in a Java int. -->
+    <xs:simpleType name="positiveValue">
+        <xs:restriction base="xs:positiveInteger">
+            <xs:maxInclusive value="1000"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="nonNegativeValue">
+        <xs:restriction base="xs:nonNegativeInteger">
+            <xs:maxInclusive value="1000"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

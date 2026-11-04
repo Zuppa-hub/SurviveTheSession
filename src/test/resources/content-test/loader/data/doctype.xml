@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE note [<!ENTITY greeting "Ciao">]>
+<note id="n1">
+    <text>&greeting;</text>
+</note>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<questions subject="BD">
+    <trueFalse id="BD-01" difficulty="MEDIUM" answer="true">
+        <prompt>Una chiave primaria non può contenere valori nulli.</prompt>
+        <hint>Deve identificare ogni riga</hint>
+    </trueFalse>
+</questions>

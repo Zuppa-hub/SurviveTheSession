@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<questions subject="PROG">
+    <trueFalse id="SHARED-01" difficulty="EASY" answer="true">
+        <prompt>Domanda</prompt>
+    </trueFalse>
+</questions>

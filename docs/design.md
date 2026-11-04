@@ -85,6 +85,7 @@ Cinque materie reali del corso di Informatica, ognuna con un file XML di domande
 ### 3.1 Principi architetturali
 - **Il dominio non dipende da niente**: `model` non importa `engine`, `persistence` né `ui`.
 - **L'engine dipende solo da model e da interfacce** (mai da JavaFX, mai da Gson, mai da file).
+- **Le interfacce stanno dalla parte di chi le usa (DIP)**: repository e cataloghi sono definiti nell'engine (`engine.repository`); `persistence` contiene solo le implementazioni e dipende da `engine` e `model`, mai il contrario.
 - **La UI chiama l'engine, mai il contrario**: l'engine notifica la UI tramite listener (Observer) definiti nell'engine.
 - **Composition root**: tutte le implementazioni concrete vengono create e collegate in un solo punto (`app`). Nessun Singleton. Dipendenze passate nel costruttore.
 - **Nessuna dipendenza da casualità o tempo reale nel dominio**: `RandomGenerator` e il timer vengono iniettati, così i test sono deterministici.
@@ -107,9 +108,11 @@ engine
   ability      Ability, QuickReview, StrokeOfGenius
   timer        QuestionTimer, TimerListener, ScheduledQuestionTimer
   game         Game (partita: studente + sessione + progressione), RewardPolicy
+  repository   QuestionRepository, ExamCatalog, ProfileCatalog, ItemCatalog, SaveGameRepository,
+               SaveData (DTO del contratto di salvataggio), SaveMapper
 persistence
-  content      QuestionRepository, ExamCatalog, ProfileCatalog, ItemCatalog, Xml... (lettura XML)
-  save         SaveGameRepository, JsonSaveGameRepository, SaveData (DTO), SaveMapper
+  content      implementazioni XML dei cataloghi e del repository delle domande (DOM, XSD, XPath)
+  save         JsonSaveGameRepository (Gson)
 ui             controller JavaFX, ViewNavigator, adattatori dei listener
 ```
 Risorse:
@@ -117,7 +120,7 @@ Risorse:
 src/main/resources/
   content/exams.xml, content/profiles.xml, content/items.xml
   content/questions/<materia>.xml
-  content/schema/questions.xsd, exams.xsd, profiles.xsd, items.xsd
+  content/schema/common.xsd (tipi condivisi, xs:include), questions.xsd, exams.xsd, profiles.xsd, items.xsd
   ui/*.fxml, ui/styles.css
 ```
 
@@ -174,7 +177,11 @@ public interface ItemEffect {
     void applyTo(ExamBattle battle);
 }
 
+// engine.repository: interfacce definite dall'engine (che le usa) e implementate in persistence (DIP)
 public interface QuestionRepository { List<Question> findBySubject(Subject subject); }
+public interface ExamCatalog    { List<Exam> all(); Optional<Exam> findByCode(String code); }
+public interface ProfileCatalog { List<StudentProfile> all(); Optional<StudentProfile> findById(String id); }
+public interface ItemCatalog    { List<Item> all(); Optional<Item> findById(String id); }
 public interface SaveGameRepository {
     void save(String slot, SaveData data);
     Optional<SaveData> load(String slot);
@@ -201,7 +208,7 @@ public interface BattleListener {
 | OCP | nuovo tipo di esame, domanda, oggetto, abilità = nuova classe, nessuna modifica all'engine; nell'engine nessuno `switch`/`if` su `ExamType`: l'associazione tipo → strategia è una `EnumMap<ExamType, ExamStrategy>` costruita in `app` e passata all'engine; allo stesso modo un nuovo oggetto = nuovo `ItemEffect` + una voce nella `Map<Item, ItemEffect>` costruita in `app` |
 | LSP | contratti espliciti in Javadoc; metodi di validazione condivisi (es. `Grade.of(int)` unico punto di creazione) |
 | ISP | ChoiceQuestion separata da Question; listener piccoli e separati |
-| DIP | ExamBattle dipende da ExamStrategy, GradeCalculator, QuestionTimer, ItemEffect; Game dipende da SaveGameRepository; tutto collegato in `app` |
+| DIP | ExamBattle dipende da ExamStrategy, GradeCalculator, QuestionTimer, ItemEffect; Game dipende da SaveGameRepository; le interfacce di repository e cataloghi stanno in `engine.repository` (dalla parte di chi le usa) e `persistence` le implementa: la dipendenza va da `persistence` verso `engine`; tutto collegato in `app` |
 | Clean Code | nomi significativi, metodi piccoli, niente codice commentato, DRY, niente liste parallele (data clumping) |
 | Package | struttura per responsabilità (3.2) |
 | List | domande della sessione, ordine degli esami |
@@ -233,8 +240,8 @@ public interface BattleListener {
 - Nei test si usa un `ManualQuestionTimer` che avanza solo quando il test lo chiede.
 
 ### 3.7 Persistenza
-- **Contenuti (sola lettura)**: XML in `resources/content`, validati con XSD all'avvio. Un errore nei contenuti blocca l'avvio con messaggio chiaro (fail fast).
-- **Salvataggi**: JSON con Gson in `~/.sopravvivi-alla-sessione/saves/<slot>.json`. Si salvano DTO semplici (`SaveData`: id profilo, statistiche, livello, esperienza, inventario come id → quantità, libretto come codice esame → voto, esami rimanenti), non gli oggetti del dominio: il `SaveMapper` ricostruisce il dominio usando i cataloghi. Così il formato di salvataggio non dipende dalle classi interne.
+- **Contenuti (sola lettura)**: XML in `resources/content`, validati con XSD all'avvio. Un errore nei contenuti blocca l'avvio con messaggio chiaro (fail fast). I file si leggono con `getResourceAsStream`, gli schemi dal loro URL (`getResource`) così gli `xs:include` si risolvono anche dentro il JAR. Ogni errore diventa una `ContentException` (file, riga, colonna o id). Le domande si costruiscono con una `Map<String, QuestionParser>` (nome dell'elemento → parser) costruita in `app`: nessuno `switch` sul tipo di domanda. XPath serve per leggere i campi relativi a un elemento; i filtri sulle domande si fanno con gli Stream nell'engine.
+- **Salvataggi**: JSON con Gson in `~/.sopravvivi-alla-sessione/saves/<slot>.json`. Si salvano DTO semplici (`SaveData`: id profilo, statistiche, livello, esperienza, inventario come id → quantità, libretto come codice esame → voto, esami rimanenti), non gli oggetti del dominio: il `SaveMapper` (in `engine.repository`, perché usa solo model e interfacce dei cataloghi) ricostruisce il dominio usando i cataloghi. `SaveData` fa parte del contratto di `SaveGameRepository`, quindi sta con l'interfaccia in `engine.repository` e contiene solo tipi del JDK. Così il formato di salvataggio non dipende dalle classi interne e `persistence` contiene solo la scrittura JSON.
 - Salvataggio automatico dopo ogni esame concluso; caricamento dal menu.
 - Estensione possibile (documentata nella Wiki): `JpaSaveGameRepository` con H2, senza toccare engine e UI.
 
