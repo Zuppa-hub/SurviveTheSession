@@ -12,31 +12,30 @@ public final class XmlItemCatalog implements ItemCatalog {
     private static final String FILE = "items.xml";
     private static final String SCHEMA = "items.xsd";
 
-    private final List<Item> items;
+    private final CatalogIndex<Item> index;
 
-    private XmlItemCatalog(List<Item> items) {
-        this.items = List.copyOf(items);
+    private XmlItemCatalog(CatalogIndex<Item> index) {
+        this.index = index;
     }
 
     /** @throws ContentException if the file is missing or invalid */
     public static XmlItemCatalog load(XmlDocumentLoader loader) {
         XmlReader reader = new XmlReader();
         Element root = loader.load(FILE, SCHEMA).getDocumentElement();
-        return new XmlItemCatalog(reader.elements(root, "item").stream()
+        List<Item> items = reader.elements(root, "item").stream()
                 .map(element -> toItem(element, reader))
-                .toList());
+                .toList();
+        return new XmlItemCatalog(CatalogIndex.of(items, Item::id, FILE));
     }
 
     @Override
     public List<Item> all() {
-        return items;
+        return index.all();
     }
 
     @Override
     public Optional<Item> findById(String id) {
-        return items.stream()
-                .filter(item -> item.id().equals(id))
-                .findFirst();
+        return index.find(id);
     }
 
     private static Item toItem(Element element, XmlReader reader) {
