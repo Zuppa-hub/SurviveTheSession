@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<questions subject="PROG">
+    <multipleChoice id="PROG-01" difficulty="EASY">
+        <prompt>Domanda</prompt>
+        <correct>Set</correct>
+        <wrong>List</wrong>
+        <wrong>Queue</wrong>
+    </multipleChoice>
+</questions>
