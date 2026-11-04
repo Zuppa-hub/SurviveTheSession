@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Programmazione: 6 scelta multipla, 4 vero/falso, 4 output del codice, 4 completamento. -->
+<questions subject="PROG">
+
+    <multipleChoice id="PROG-01" difficulty="EASY">
+        <prompt>Quale di questi è un tipo primitivo in Java?</prompt>
+        <hint>I tipi primitivi si scrivono in minuscolo.</hint>
+        <correct>int</correct>
+        <wrong>String</wrong>
+        <wrong>Integer</wrong>
+        <wrong>Object</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="PROG-02" difficulty="EASY">
+        <prompt>Qual è l'indice del primo elemento di un array in Java?</prompt>
+        <correct>0</correct>
+        <wrong>1</wrong>
+        <wrong>-1</wrong>
+        <wrong>Dipende dalla lunghezza dell'array</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="PROG-03" difficulty="MEDIUM">
+        <prompt>Quale parola chiave impedisce a una sottoclasse di ridefinire un metodo?</prompt>
+        <hint>La stessa parola chiave rende una variabile non riassegnabile.</hint>
+        <correct>final</correct>
+        <wrong>abstract</wrong>
+        <wrong>protected</wrong>
+        <wrong>transient</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="PROG-04" difficulty="MEDIUM">
+        <prompt>Cosa succede leggendo l'elemento di indice 5 di un array di lunghezza 5?</prompt>
+        <correct>Viene lanciata ArrayIndexOutOfBoundsException</correct>
+        <wrong>Si ottiene null</wrong>
+        <wrong>Si ottiene 0</wrong>
+        <wrong>Il codice non compila</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="PROG-05" difficulty="MEDIUM">
+        <prompt>Come si verifica correttamente che due stringhe a e b abbiano lo stesso contenuto?</prompt>
+        <hint>L'operatore == confronta i riferimenti, non il contenuto.</hint>
+        <correct>a.equals(b)</correct>
+        <wrong>a == b</wrong>
+        <wrong>a = b</wrong>
+        <wrong>a.compareTo(b) == 1</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="PROG-06" difficulty="HARD">
+        <prompt>Che valore ha un campo di istanza di tipo int che non viene inizializzato esplicitamente?</prompt>
+        <hint>Vale per i campi, non per le variabili locali.</hint>
+        <correct>0</correct>
+        <wrong>null</wrong>
+        <wrong>Un valore casuale</wrong>
+        <wrong>Il codice non compila</wrong>
+    </multipleChoice>
+
+    <trueFalse id="PROG-07" difficulty="EASY" answer="false">
+        <prompt>In Java una classe può estendere direttamente due classi.</prompt>
+        <hint>Pensa a cosa si può fare invece con le interfacce.</hint>
+    </trueFalse>
+
+    <trueFalse id="PROG-08" difficulty="EASY" answer="true">
+        <prompt>In Java gli oggetti String sono immutabili.</prompt>
+    </trueFalse>
+
+    <trueFalse id="PROG-09" difficulty="MEDIUM" answer="false">
+        <prompt>Una variabile locale di tipo int dichiarata e non inizializzata vale 0.</prompt>
+        <hint>Prova a usarla: il compilatore ha qualcosa da dire.</hint>
+    </trueFalse>
+
+    <trueFalse id="PROG-10" difficulty="MEDIUM" answer="true">
+        <prompt>Un costruttore non dichiara un tipo di ritorno, neanche void.</prompt>
+    </trueFalse>
+
+    <codeOutput id="PROG-11" difficulty="EASY">
+        <prompt>Cosa stampa questo codice?</prompt>
+        <hint>Entrambi gli operandi sono interi.</hint>
+        <code><![CDATA[
+            int a = 7;
+            int b = 2;
+            System.out.println(a / b);
+        ]]></code>
+        <correct>3</correct>
+        <wrong>3.5</wrong>
+        <wrong>4</wrong>
+        <wrong>3.0</wrong>
+    </codeOutput>
+
+    <codeOutput id="PROG-12" difficulty="MEDIUM">
+        <prompt>Cosa stampa questo codice?</prompt>
+        <hint>Il risultato di toUpperCase() non viene assegnato a nessuna variabile.</hint>
+        <code><![CDATA[
+            String s = "ciao";
+            s.toUpperCase();
+            System.out.println(s);
+        ]]></code>
+        <correct>ciao</correct>
+        <wrong>CIAO</wrong>
+        <wrong>Ciao</wrong>
+        <wrong>null</wrong>
+    </codeOutput>
+
+    <codeOutput id="PROG-13" difficulty="MEDIUM">
+        <prompt>Cosa stampa questo codice?</prompt>
+        <code><![CDATA[
+            int sum = 0;
+            for (int i = 0; i < 5; i++) {
+                if (i % 2 == 0) {
+                    continue;
+                }
+                sum += i;
+            }
+            System.out.println(sum);
+        ]]></code>
+        <correct>4</correct>
+        <wrong>6</wrong>
+        <wrong>10</wrong>
+        <wrong>5</wrong>
+    </codeOutput>
+
+    <codeOutput id="PROG-14" difficulty="HARD">
+        <prompt>Cosa stampa questo codice?</prompt>
+        <hint>a e b fanno riferimento allo stesso array.</hint>
+        <code><![CDATA[
+            int[] a = {1, 2, 3};
+            int[] b = a;
+            b[0] = 10;
+            System.out.println(a[0] + a.length);
+        ]]></code>
+        <correct>13</correct>
+        <wrong>4</wrong>
+        <wrong>103</wrong>
+        <wrong>11</wrong>
+    </codeOutput>
+
+    <fillIn id="PROG-15" difficulty="EASY">
+        <prompt>Quale parola chiave si usa in Java per creare un nuovo oggetto?</prompt>
+        <answer>new</answer>
+    </fillIn>
+
+    <fillIn id="PROG-16" difficulty="MEDIUM">
+        <prompt>Come si chiama il metodo da cui parte l'esecuzione di un programma Java?</prompt>
+        <answer>main</answer>
+        <answer>main()</answer>
+    </fillIn>
+
+    <fillIn id="PROG-17" difficulty="MEDIUM">
+        <prompt>Quale parola chiave, dentro un metodo di istanza, si riferisce all'oggetto corrente?</prompt>
+        <answer>this</answer>
+    </fillIn>
+
+    <fillIn id="PROG-18" difficulty="HARD">
+        <prompt>Come si chiama la possibilità di definire nella stessa classe più metodi con lo stesso nome e parametri diversi?</prompt>
+        <hint>Non è l'overriding.</hint>
+        <answer>overloading</answer>
+        <answer>sovraccarico</answer>
+        <answer>sovraccaricamento</answer>
+    </fillIn>
+</questions>
