@@ -9,9 +9,9 @@ import it.unicam.cs.mpgc.rpg127295.engine.repository.ItemCatalog;
 import it.unicam.cs.mpgc.rpg127295.model.item.Item;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.junit.jupiter.api.Test;
 
 class XmlItemCatalogTest {
 
