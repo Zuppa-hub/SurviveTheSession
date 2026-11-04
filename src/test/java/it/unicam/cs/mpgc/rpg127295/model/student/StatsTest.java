@@ -1,5 +1,6 @@
 package it.unicam.cs.mpgc.rpg127295.model.student;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -8,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class StatsTest {
 
@@ -16,39 +19,20 @@ class StatsTest {
     @Nested
     class Validation {
 
-        @Test
-        void rejectsNegativeKnowledge() {
-            assertThrows(IllegalArgumentException.class, () -> new Stats(-1, 10, 10, 4, 4));
-        }
-
-        @Test
-        void rejectsNegativeEnergy() {
-            assertThrows(IllegalArgumentException.class, () -> new Stats(5, -1, 10, 4, 4));
-        }
-
-        @Test
-        void rejectsNonPositiveMaxEnergy() {
-            assertThrows(IllegalArgumentException.class, () -> new Stats(5, 0, 0, 4, 4));
-        }
-
-        @Test
-        void rejectsEnergyAboveMax() {
-            assertThrows(IllegalArgumentException.class, () -> new Stats(5, 11, 10, 4, 4));
-        }
-
-        @Test
-        void rejectsNegativeConcentration() {
-            assertThrows(IllegalArgumentException.class, () -> new Stats(5, 10, 10, -1, 4));
-        }
-
-        @Test
-        void rejectsNegativeMaxConcentration() {
-            assertThrows(IllegalArgumentException.class, () -> new Stats(5, 10, 10, 0, -1));
-        }
-
-        @Test
-        void rejectsConcentrationAboveMax() {
-            assertThrows(IllegalArgumentException.class, () -> new Stats(5, 10, 10, 5, 4));
+        @ParameterizedTest(name = "{5}")
+        @CsvSource({
+            "-1, 10, 10,  4,  4, negative knowledge",
+            " 5, -1, 10,  4,  4, negative energy",
+            " 5,  0,  0,  4,  4, zero maxEnergy",
+            " 5, 11, 10,  4,  4, energy above max",
+            " 5, 10, 10, -1,  4, negative concentration",
+            " 5, 10, 10,  0, -1, negative maxConcentration",
+            " 5, 10, 10,  5,  4, concentration above max"
+        })
+        void rejectsInvalidValues(int knowledge, int energy, int maxEnergy,
+                                  int concentration, int maxConcentration, String reason) {
+            assertThrows(IllegalArgumentException.class,
+                    () -> new Stats(knowledge, energy, maxEnergy, concentration, maxConcentration));
         }
 
         @Test
@@ -61,14 +45,15 @@ class StatsTest {
 
         @Test
         void rejectsNegativeAmounts() {
-            assertThrows(IllegalArgumentException.class, () -> FULL.loseEnergy(-1));
-            assertThrows(IllegalArgumentException.class, () -> FULL.restoreEnergy(-1));
-            assertThrows(IllegalArgumentException.class, () -> FULL.spendConcentration(-1));
-            assertThrows(IllegalArgumentException.class, () -> FULL.recoverConcentration(-1));
-            assertThrows(IllegalArgumentException.class, () -> FULL.canSpend(-1));
-            assertThrows(IllegalArgumentException.class, () -> FULL.improve(-1, 0, 0));
-            assertThrows(IllegalArgumentException.class, () -> FULL.improve(0, -1, 0));
-            assertThrows(IllegalArgumentException.class, () -> FULL.improve(0, 0, -1));
+            assertAll(
+                    () -> assertThrows(IllegalArgumentException.class, () -> FULL.loseEnergy(-1)),
+                    () -> assertThrows(IllegalArgumentException.class, () -> FULL.restoreEnergy(-1)),
+                    () -> assertThrows(IllegalArgumentException.class, () -> FULL.spendConcentration(-1)),
+                    () -> assertThrows(IllegalArgumentException.class, () -> FULL.recoverConcentration(-1)),
+                    () -> assertThrows(IllegalArgumentException.class, () -> FULL.canSpend(-1)),
+                    () -> assertThrows(IllegalArgumentException.class, () -> FULL.improve(-1, 0, 0)),
+                    () -> assertThrows(IllegalArgumentException.class, () -> FULL.improve(0, -1, 0)),
+                    () -> assertThrows(IllegalArgumentException.class, () -> FULL.improve(0, 0, -1)));
         }
     }
 
@@ -97,7 +82,7 @@ class StatsTest {
         }
 
         @Test
-        void restoreEnergyStopsAtMax() {
+        void restoreEnergyIncreasesEnergyUpToMax() {
             Stats tired = FULL.loseEnergy(6);
 
             assertEquals(7, tired.restoreEnergy(3).energy());
