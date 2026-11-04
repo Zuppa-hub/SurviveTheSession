@@ -54,4 +54,4 @@ le etichette per area; lavorare sulla issue #1 nel branch `feature/build-setup`
 - Pull request #15 su `develop` (`Closes #1`).
 
 **Modificato / verificato da me:**
-- [ ] _da completare_
+- Verificato ma non modificato il commit e pronto per il merge della PR #15. 
