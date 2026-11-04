@@ -21,10 +21,10 @@ public final class XmlExamCatalog implements ExamCatalog {
     private static final String FILE = "exams.xml";
     private static final String SCHEMA = "exams.xsd";
 
-    private final List<Exam> exams;
+    private final CatalogIndex<Exam> index;
 
-    private XmlExamCatalog(List<Exam> exams) {
-        this.exams = List.copyOf(exams);
+    private XmlExamCatalog(CatalogIndex<Exam> index) {
+        this.index = index;
     }
 
     /** @throws ContentException if the file is missing or invalid */
@@ -32,21 +32,20 @@ public final class XmlExamCatalog implements ExamCatalog {
         XmlReader reader = new XmlReader();
         Element root = loader.load(FILE, SCHEMA).getDocumentElement();
         Map<String, Subject> subjects = subjectsById(root, reader);
-        return new XmlExamCatalog(reader.elements(root, "exam").stream()
+        List<Exam> exams = reader.elements(root, "exam").stream()
                 .map(element -> toExam(element, subjects))
-                .toList());
+                .toList();
+        return new XmlExamCatalog(CatalogIndex.of(exams, Exam::code, FILE));
     }
 
     @Override
     public List<Exam> all() {
-        return exams;
+        return index.all();
     }
 
     @Override
     public Optional<Exam> findByCode(String code) {
-        return exams.stream()
-                .filter(exam -> exam.code().equals(code))
-                .findFirst();
+        return index.find(code);
     }
 
     private static Map<String, Subject> subjectsById(Element root, XmlReader reader) {
