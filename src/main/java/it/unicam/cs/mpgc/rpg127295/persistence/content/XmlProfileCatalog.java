@@ -17,31 +17,30 @@ public final class XmlProfileCatalog implements ProfileCatalog {
     private static final String FILE = "profiles.xml";
     private static final String SCHEMA = "profiles.xsd";
 
-    private final List<StudentProfile> profiles;
+    private final CatalogIndex<StudentProfile> index;
 
-    private XmlProfileCatalog(List<StudentProfile> profiles) {
-        this.profiles = List.copyOf(profiles);
+    private XmlProfileCatalog(CatalogIndex<StudentProfile> index) {
+        this.index = index;
     }
 
     /** @throws ContentException if the file is missing or invalid */
     public static XmlProfileCatalog load(XmlDocumentLoader loader) {
         XmlReader reader = new XmlReader();
         Element root = loader.load(FILE, SCHEMA).getDocumentElement();
-        return new XmlProfileCatalog(reader.elements(root, "profile").stream()
+        List<StudentProfile> profiles = reader.elements(root, "profile").stream()
                 .map(element -> toProfile(element, reader))
-                .toList());
+                .toList();
+        return new XmlProfileCatalog(CatalogIndex.of(profiles, StudentProfile::id, FILE));
     }
 
     @Override
     public List<StudentProfile> all() {
-        return profiles;
+        return index.all();
     }
 
     @Override
     public Optional<StudentProfile> findById(String id) {
-        return profiles.stream()
-                .filter(profile -> profile.id().equals(id))
-                .findFirst();
+        return index.find(id);
     }
 
     private static StudentProfile toProfile(Element element, XmlReader reader) {
