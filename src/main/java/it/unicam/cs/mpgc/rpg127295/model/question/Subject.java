@@ -1,5 +1,7 @@
 package it.unicam.cs.mpgc.rpg127295.model.question;
 
+import static it.unicam.cs.mpgc.rpg127295.model.Preconditions.requireNonBlank;
+
 /**
  * A subject of the degree course, such as "Programmazione".
  * <p>
@@ -13,11 +15,7 @@ public record Subject(String id, String name) {
 
     /** @throws IllegalArgumentException if id or name is null or blank */
     public Subject {
-        if (id == null || id.isBlank()) {
-            throw new IllegalArgumentException("Subject id must not be blank");
-        }
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Subject name must not be blank");
-        }
+        requireNonBlank(id, "Subject id");
+        requireNonBlank(name, "Subject name");
     }
 }

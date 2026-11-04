@@ -1,5 +1,8 @@
 package it.unicam.cs.mpgc.rpg127295.model.student;
 
+import static it.unicam.cs.mpgc.rpg127295.model.Preconditions.requireNonNegative;
+import static it.unicam.cs.mpgc.rpg127295.model.Preconditions.requirePositive;
+
 /**
  * The statistics of a student.
  * <p>
@@ -20,9 +23,7 @@ public record Stats(int knowledge, int energy, int maxEnergy, int concentration,
         requireNonNegative(energy, "energy");
         requireNonNegative(concentration, "concentration");
         requireNonNegative(maxConcentration, "maxConcentration");
-        if (maxEnergy <= 0) {
-            throw new IllegalArgumentException("maxEnergy must be positive: " + maxEnergy);
-        }
+        requirePositive(maxEnergy, "maxEnergy");
         requireAtMost(energy, maxEnergy, "energy");
         requireAtMost(concentration, maxConcentration, "concentration");
     }
@@ -99,12 +100,6 @@ public record Stats(int knowledge, int energy, int maxEnergy, int concentration,
 
     private Stats withConcentration(int newConcentration) {
         return new Stats(knowledge, energy, maxEnergy, newConcentration, maxConcentration);
-    }
-
-    private static void requireNonNegative(int value, String name) {
-        if (value < 0) {
-            throw new IllegalArgumentException(name + " must not be negative: " + value);
-        }
     }
 
     private static void requireAtMost(int value, int max, String name) {

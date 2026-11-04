@@ -124,7 +124,8 @@ src/main/resources/
 Ogni interfaccia ha Javadoc che rende esplicite le **aspettative del tipo** (LSP, lezione 10).
 
 ```java
-/** Una domanda d'esame. Implementazioni immutabili. */
+/** Una domanda d'esame. Implementazioni immutabili.
+ *  Contratto: due domande sono uguali se e solo se hanno lo stesso id. */
 public interface Question {
     String id();                  // univoco nel contenuto, identità della domanda
     Subject subject();
@@ -135,7 +136,9 @@ public interface Question {
     boolean isCorrect(String answer);
 }
 
-/** Domanda con opzioni tra cui scegliere (ISP: solo queste supportano il 50/50). */
+/** Domanda con opzioni tra cui scegliere (ISP: solo queste hanno opzioni).
+ *  Il 50/50 (Appunti) si applica solo se wrongOptions().size() >= 3, così dopo aver
+ *  eliminato due opzioni sbagliate ne resta almeno una: il Vero/Falso è escluso. */
 public interface ChoiceQuestion extends Question {
     List<String> options();       // lista immutabile, almeno 2 opzioni
     List<String> wrongOptions();  // sottoinsieme di options()
