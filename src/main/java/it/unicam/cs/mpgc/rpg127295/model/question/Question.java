@@ -10,7 +10,9 @@ import java.util.Optional;
  *   <li>implementations are immutable;</li>
  *   <li>two questions are equal if and only if they have the same {@link #id()}, whatever
  *       their concrete type, and {@code hashCode} is consistent with this rule;</li>
- *   <li>{@link #isCorrect(String)} never throws for wrong, blank or null answers.</li>
+ *   <li>{@link #isCorrect(String)} never throws for wrong, blank or null answers;</li>
+ *   <li>{@link #accept(QuestionVisitor)} calls exactly one method of the visitor, passing
+ *       the question itself.</li>
  * </ul>
  */
 public interface Question {
@@ -33,4 +35,11 @@ public interface Question {
      * @return true if the answer is correct; false otherwise, never an exception
      */
     boolean isCorrect(String answer);
+
+    /**
+     * Runs the operation of the visitor that matches the category of this question.
+     *
+     * @return the result of the visitor
+     */
+    <R> R accept(QuestionVisitor<R> visitor);
 }

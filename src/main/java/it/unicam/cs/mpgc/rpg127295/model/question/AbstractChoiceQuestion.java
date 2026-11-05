@@ -66,6 +66,11 @@ public abstract class AbstractChoiceQuestion extends AbstractQuestion implements
         return correctOption.equals(answer);
     }
 
+    @Override
+    public final <R> R accept(QuestionVisitor<R> visitor) {
+        return visitor.visitChoice(this);
+    }
+
     private static List<String> validOptions(List<String> options) {
         List<String> copy = List.copyOf(Objects.requireNonNull(options, "Options must not be null"));
         if (copy.size() < MIN_OPTIONS) {
