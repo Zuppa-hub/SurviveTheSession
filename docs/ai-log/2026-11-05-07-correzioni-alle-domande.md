@@ -16,4 +16,4 @@ risoluzione del conflitto della PR #21.
 
 **Modificato / verificato da me:**
 - [x] revisione delle 18 domande di Programmazione
-- [ ] _da completare_
+ 
