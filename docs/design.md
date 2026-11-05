@@ -158,9 +158,14 @@ public interface ExamStrategy {
 /** Calcola il voto da una prestazione.
  *  Contratto: restituisce sempre un Grade valido (18-30 o lode) per una prestazione sufficiente;
  *  per una prestazione insufficiente restituisce Optional.empty(). Mai voti fuori range. */
+@FunctionalInterface
 public interface GradeCalculator {
     Optional<Grade> calculate(Performance performance);
 }
+// Contratto completo nella Javadoc di GradeCalculator, verificato da GradeCalculatorContractTest:
+// nessuna risposta corretta -> insufficiente; prestazione perfetta -> sufficiente;
+// una risposta corretta in più non peggiora mai il voto; un indizio in più non lo migliora mai.
+// Performance = risposte corrette, risposte sbagliate (tempi scaduti compresi), indizi usati.
 
 /** model.item: un oggetto dell'inventario, solo dati (il model non dipende dall'engine, §3.1).
  *  Identità = id. */
@@ -279,7 +284,9 @@ I controller non contengono regole di gioco: traducono eventi in chiamate all'en
 | 4 | Model: Item, Inventory, Transcript, Student, StudentProfile con test | `feature/model-student` |
 | 5 | Persistence: XML + XSD + XPath per profili, esami e domande; prima materia | `feature/xml-content` |
 | 6 | Engine: GradeCalculator e Performance con test | `feature/grading` |
-| 7 | Engine: ExamBattle e strategie, abilità, timer (con timer finto nei test) | `feature/battle` |
+| 7 (7a) | Engine: ExamBattle e strategie d'esame (con timer finto nei test) | `feature/battle` |
+| 22 (7b) | Engine: effetti degli oggetti (ItemEffect) e abilità | `feature/item-effects` |
+| 23 (7c) | Engine: timer concorrente (ScheduledQuestionTimer) | `feature/question-timer` |
 | 8 | Engine: Game, progressione, ricompense | `feature/game` |
 | 9 | Persistence: salvataggi JSON con Gson, SaveMapper, test | `feature/save-json` |
 | 10 | UI: menu, nuova partita, sessione | `feature/ui-session` |
