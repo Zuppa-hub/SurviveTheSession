@@ -67,4 +67,4 @@ le decisioni sono mie: ogni proposta viene discussa e approvata prima di scriver
 e ogni pull request viene letta e verificata da me prima del merge.
 
 Il dettaglio è nella pagina "Uso dell'AI" della Wiki e, sessione per sessione, in
-[`docs/ai-log.md`](docs/ai-log.md).
+[`docs/ai-log/`](docs/ai-log/README.md).
