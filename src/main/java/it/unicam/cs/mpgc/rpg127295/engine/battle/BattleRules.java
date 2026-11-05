@@ -24,4 +24,13 @@ public interface BattleRules {
 
     /** @return the concentration recovered with a correct answer */
     int concentrationPerCorrectAnswer();
+
+    /** @return the seconds added by the extra time effect (Coffee) */
+    int extraSeconds();
+
+    /** @return the energy restored by the energy effect (Energy drink), up to the maximum */
+    int energyRestored();
+
+    /** @return the factor applied to the damage of a boosted correct answer (Stroke of genius) */
+    int boostedDamageMultiplier();
 }
