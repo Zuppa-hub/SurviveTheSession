@@ -16,9 +16,12 @@ import java.util.Optional;
  * @param performance     the answers given so far
  * @param currentQuestion the question waiting for an answer, if any
  * @param lastAnswer      the result of the last answer, if any
+ * @param timed           whether the current question has a timer; false without a question
+ * @param nextCorrectAnswerDoubled whether the next correct answer does boosted damage
  */
 public record BattleState(int resistance, int maxResistance, Stats stats, Performance performance,
-                          Optional<PresentedQuestion> currentQuestion, Optional<AnswerResult> lastAnswer) {
+                          Optional<PresentedQuestion> currentQuestion, Optional<AnswerResult> lastAnswer,
+                          boolean timed, boolean nextCorrectAnswerDoubled) {
 
     public BattleState {
         requirePositive(maxResistance, "Max resistance");
@@ -30,6 +33,9 @@ public record BattleState(int resistance, int maxResistance, Stats stats, Perfor
         Objects.requireNonNull(performance, "Performance must not be null");
         Objects.requireNonNull(currentQuestion, "Current question must not be null");
         Objects.requireNonNull(lastAnswer, "Last answer must not be null");
+        if (timed && currentQuestion.isEmpty()) {
+            throw new IllegalArgumentException("Only a question waiting for an answer can be timed");
+        }
     }
 
     public boolean isExamDefeated() {

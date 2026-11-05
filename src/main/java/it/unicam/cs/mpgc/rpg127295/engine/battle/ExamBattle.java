@@ -42,6 +42,8 @@ public final class ExamBattle {
     private Optional<PresentedQuestion> currentQuestion = Optional.empty();
     private Optional<AnswerResult> lastAnswer = Optional.empty();
     private Optional<BattleOutcome> outcome = Optional.empty();
+    private boolean timed;
+    private boolean nextCorrectAnswerDoubled;
     private boolean begun;
 
     ExamBattle(Student student, Exam exam, ExamStrategy strategy, QuestionPool pool, BattleServices services) {
@@ -98,7 +100,8 @@ public final class ExamBattle {
     }
 
     public BattleState state() {
-        return new BattleState(resistance, maxResistance, student.stats(), performance, currentQuestion, lastAnswer);
+        return new BattleState(resistance, maxResistance, student.stats(), performance, currentQuestion, lastAnswer,
+                timed, nextCorrectAnswerDoubled);
     }
 
     /** @return the outcome, or empty while the battle is in progress */
@@ -123,6 +126,7 @@ public final class ExamBattle {
             punishMistake();
         }
         currentQuestion = Optional.empty();
+        timed = false;
         lastAnswer = Optional.of(new AnswerResult(question, correct));
         BattleState state = state();
         listeners.forEach(listener -> listener.onAnswerEvaluated(correct, state));
@@ -160,6 +164,7 @@ public final class ExamBattle {
         PresentedQuestion presented = PresentedQuestion.of(question, services.random());
         currentQuestion = Optional.of(presented);
         OptionalInt seconds = strategy.secondsPerQuestion();
+        timed = seconds.isPresent();
         listeners.forEach(listener -> listener.onQuestionPresented(presented, seconds));
         seconds.ifPresent(time -> services.timer().start(time, clock));
     }
@@ -173,6 +178,7 @@ public final class ExamBattle {
     private void end(BattleOutcome result) {
         services.timer().stop();
         currentQuestion = Optional.empty();
+        timed = false;
         outcome = Optional.of(result);
         listeners.forEach(listener -> listener.onBattleEnded(result));
     }
