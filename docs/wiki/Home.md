@@ -37,7 +37,7 @@ scritta o aggiornata quando si chiude la issue corrispondente.
 | [Principi SOLID](Principi-SOLID) | tutti e cinque, con esempi dal codice | prevista |
 | [Clean Code](Clean-Code) | nomi, metodi piccoli, niente duplicazione | prevista |
 | [Strutture dati, equals e Stream](Strutture-dati-equals-e-Stream) | List, HashSet, HashMap, identità, Stream API | prevista |
-| [Modelli di esecuzione](Modelli-di-esecuzione) | GUI event-driven, timer su thread separato, race condition evitata | prevista |
+| [Modelli di esecuzione](Modelli-di-esecuzione) | GUI event-driven, timer su thread separato, race condition evitata | **bozza (timer)** |
 | [Persistenza](Persistenza) | contenuti XML con XSD e XPath, salvataggi JSON | prevista |
 | [Interfaccia grafica](Interfaccia-grafica) | JavaFX, FXML, CSS, controller sottili | prevista |
 | [Testing](Testing) | JUnit, test di contratto, test deterministici | prevista |

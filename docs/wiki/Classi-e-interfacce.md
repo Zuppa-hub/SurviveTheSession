@@ -23,7 +23,7 @@ vuoto, numero positivo o non negativo) stanno in un solo punto, `model.Precondit
 | `engine.battle` | `ExamBattle`, `ExamBattleFactory`, `BattleServices`, `ExamStrategy`, `BattleEffect`, `BattleControls`, `BattleEffects`, `Ability`, `BattleState`, `BattleOutcome`, `BattleResult`, `BattleListener`, `QuestionPool`, `PresentedQuestion`, `AnswerResult`, `BattleRules`, `StandardBattleRules` |
 | `engine.strategy` | `WrittenExamStrategy`, `OralExamStrategy`, `ProjectExamStrategy` |
 | `engine.effect` | `ExtraTimeEffect`, `FiftyFiftyEffect`, `HintEffect`, `EnergyRestoreEffect`, `DoubleDamageEffect` |
-| `engine.timer` | `QuestionTimer`, `TimerListener` |
+| `engine.timer` | `QuestionTimer`, `TimerListener`, `ScheduledQuestionTimer` |
 
 ## Esami e voti
 
@@ -363,9 +363,10 @@ conti siano facili da leggere.
 ### Il timer: solo un'interfaccia
 Lo scontro conosce solo `QuestionTimer` (`start`, `addSeconds`, `stop`) e `TimerListener`.
 Nei test un `ManualQuestionTimer` fa passare il tempo solo quando il test chiama
-`advance(secondi)`: nessun test aspetta secondi veri. Il timer reale, su un thread separato,
-arriva con la #23. Per ora `ExamBattle` dichiara di non essere thread-safe: tutte le
-chiamate, notifiche del timer comprese, devono arrivare dallo stesso thread.
+`advance(secondi)`: nessun test aspetta secondi veri. Il timer reale,
+`ScheduledQuestionTimer`, gira su un thread separato e consegna le notifiche sul thread
+dell'interfaccia: `ExamBattle` resta non thread-safe per scelta. I dettagli (lock, scadenze
+vecchie, test senza tempo reale) sono nella pagina [Modelli di esecuzione](Modelli-di-esecuzione).
 
 ### Collaboratori raggruppati
 Regole, calcolatore del voto, timer, generatore casuale ed effetti sono gli stessi per tutti
