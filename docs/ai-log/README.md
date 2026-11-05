@@ -21,3 +21,4 @@ giorno: in ordine alfabetico sono già in ordine cronologico.
 | 2026-11-05 | [Registro AI diviso in un file per sessione](2026-11-05-08-registro-diviso-per-sessione.md) |
 | 2026-11-05 | [Scontro e strategie d'esame (issue #7, 7a)](2026-11-05-09-scontro-e-strategie.md) |
 | 2026-11-05 | [Effetti di oggetti e abilità (issue #22, 7b)](2026-11-05-10-effetti-oggetti-e-abilita.md) |
+| 2026-11-05 | [Timer concorrente (issue #23, 7c)](2026-11-05-11-timer-concorrente.md) |
