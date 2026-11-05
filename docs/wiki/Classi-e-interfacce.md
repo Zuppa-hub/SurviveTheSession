@@ -1,7 +1,8 @@
 # Classi e interfacce
 
-> Bozza: copre il **model** (issue #2, #3, #4). Le sezioni su engine, persistence e UI si
-> aggiungono quando si chiudono le issue corrispondenti.
+> Bozza: copre il **model** (issue #2, #3, #4) e il calcolo del voto nell'engine (issue #6).
+> Le altre sezioni su engine, persistence e UI si aggiungono quando si chiudono le issue
+> corrispondenti.
 
 Il model contiene le entità e lo stato del gioco e **non dipende da nessun altro
 package**: niente engine, niente persistenza, niente UI. Ogni classe valida i propri dati
@@ -18,6 +19,7 @@ vuoto, numero positivo o non negativo) stanno in un solo punto, `model.Precondit
 | `model.student` | `Student`, `StudentProfile`, `Stats`, `Level` |
 | `model.item` | `Item`, `Inventory` |
 | `model.transcript` | `Transcript`, `TranscriptEntry` |
+| `engine.grading` | `Performance`, `GradeCalculator`, `PerformanceGradeCalculator` |
 
 ## Esami e voti
 
@@ -163,3 +165,69 @@ quando cambiano le regole di laurea.
 
 Un voto insufficiente non si può registrare, ma non serve un controllo: `Grade` non può
 esistere sotto il 18, quindi lo stato non valido è impedito dal tipo stesso.
+
+## Calcolo del voto (`engine.grading`)
+
+Il voto è una regola di gioco, quindi sta nell'engine e non in `Grade`: `Grade` sa solo
+quali valori sono validi, non come si ottengono.
+
+### `Performance`
+Record con le risposte corrette, quelle sbagliate (compresi i tempi scaduti) e gli
+indizi usati, tutti non negativi. Offre `answered()` (risposte date) e `isFlawless()`:
+almeno una risposta, nessun errore, nessun indizio. Zero risposte non è una prestazione
+perfetta.
+
+### Il contratto di `GradeCalculator`
+`GradeCalculator` è un'interfaccia funzionale con un solo metodo,
+`Optional<Grade> calculate(Performance)`. La Javadoc dichiara le regole valide per
+**ogni** implementazione:
+
+- una prestazione sufficiente dà un `Grade`, una insufficiente `Optional.empty()`; mai
+  `null`, mai eccezioni. Un voto fuori dall'intervallo è impossibile per costruzione,
+  perché `Grade` non può esistere fuori da 18-31;
+- nessuna risposta corretta → insufficiente;
+- prestazione perfetta (nessun errore, nessun indizio) → sufficiente;
+- con le stesse risposte date e gli stessi indizi, una risposta corretta in più non
+  peggiora mai il risultato;
+- con le stesse risposte corrette e sbagliate, un indizio in più non migliora mai il
+  risultato.
+
+Nelle ultime due regole una bocciatura conta meno di qualunque voto.
+
+Il contratto **non** fissa la soglia, la formula o la penalità degli indizi. Sono scelte
+di bilanciamento, e un contratto che le imponesse coinciderebbe con un'unica
+implementazione: l'interfaccia non servirebbe più. Fissa invece le proprietà che ogni
+valutazione sensata deve avere. È lo stesso ragionamento del `ValutatoreMinimale` della
+lezione 10: anche una politica molto diversa, come "18 a chiunque superi la soglia",
+rispetta il contratto e può sostituire l'implementazione principale senza che chi la usa
+se ne accorga (LSP).
+
+### `PerformanceGradeCalculator`
+- **Soglia** al 60% di risposte corrette.
+- **Scala lineare**: dal 60% al 100% il voto sale da 18 a 30, arrotondando per difetto.
+- **Indizi**: −1 punto ciascuno, senza scendere sotto il 18. Un indizio quindi non
+  trasforma mai un esame superato in una bocciatura.
+- **Lode** solo se `isFlawless()`.
+
+Il calcolo usa **solo interi**. La soglia si controlla senza divisioni
+(`corrette × 5 ≥ date × 3`) e il voto base è:
+
+```
+18 + 12 · (5c − 3a) / (2a)        c = risposte corrette, a = risposte date
+```
+
+La divisione intera arrotonda già per difetto. Con i `double`, una quota esattamente
+sulla soglia (3 su 5) potrebbe risultare 0,5999… per un errore di rappresentazione e dare
+una bocciatura ingiusta. Alcuni esempi: 3/5 → 18, 2/3 → 20, 8/10 → 24, 8/10 con due
+indizi → 22, 6/6 senza indizi → 30 e lode, 6/6 con un indizio → 29.
+
+### Test di contratto
+Come per le domande, `GradeCalculatorContractTest` è una classe di test astratta con le
+regole del contratto, verificate su una griglia di 484 prestazioni (0-10 corrette × 0-10
+sbagliate × 0-3 indizi). `PerformanceGradeCalculatorTest` la estende e aggiunge i casi
+specifici della formula (soglia esatta, arrotondamento, lode, penalità, minimo di 18).
+Ogni futura implementazione di `GradeCalculator` dovrà estendere lo stesso test.
+
+Ho verificato che il test di contratto sappia trovare un errore: trasformando per prova la
+penalità degli indizi in un bonus, la regola "un indizio in più non migliora mai il voto"
+fallisce.
