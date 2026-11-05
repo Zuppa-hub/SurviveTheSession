@@ -38,6 +38,11 @@ public record Performance(int correctAnswers, int wrongAnswers, int hintsUsed) {
         return new Performance(correctAnswers, wrongAnswers + 1, hintsUsed);
     }
 
+    /** @return a new performance with one more hint used */
+    public Performance withHint() {
+        return new Performance(correctAnswers, wrongAnswers, hintsUsed + 1);
+    }
+
     /** @return the number of answers given, correct or wrong */
     public int answered() {
         return correctAnswers + wrongAnswers;
