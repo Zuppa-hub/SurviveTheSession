@@ -197,6 +197,8 @@ duplicazione, proponendo prima la soluzione.
 ---
 
 ## 2026-11-05 (settima parte) — Correzioni dopo la revisione delle domande
+## 2026-11-05 (sesta parte) — Calcolo del voto (issue #6) e divisione della #7
+## 2026-11-05 (quinta parte) — README e Wiki
 
 **Strumento:** Claude Code (Claude Opus 5.5)
 
@@ -214,4 +216,32 @@ risoluzione del conflitto della PR #21.
 
 **Modificato / verificato da me:**
 - [x] revisione delle 18 domande di Programmazione
+Proporre `Performance` e `PerformanceGradeCalculator` e aspettare l'ok; rendere esplicito
+il contratto di `GradeCalculator` in Javadoc e verificarlo con un test di contratto
+astratto; dividere la #7 in tre issue (scontro e strategie, oggetti e abilità, timer).
+
+**Prodotto dall'AI:**
+- Issue #7 aggiornata (7a) e create #22 (7b) e #23 (7c); tabella di §5 del design aggiornata.
+- `Performance` (risposte corrette, sbagliate, indizi usati; `answered()`, `isFlawless()`).
+- `GradeCalculator` (`@FunctionalInterface`) con il contratto in Javadoc: voto valido o
+  `Optional.empty()`, mai null, nessuna corretta → insufficiente, perfetta → sufficiente,
+  monotonia su risposte corrette e su indizi (regola aggiunta su richiesta).
+- `PerformanceGradeCalculator`: soglia 60%, da 18 a 30 in modo lineare arrotondando per
+  difetto, −1 per indizio senza scendere sotto 18, lode solo se perfetta; solo interi.
+- `GradeCalculatorContractTest` astratto su una griglia di 484 prestazioni, esteso da
+  `PerformanceGradeCalculatorTest`. Verificato che fallisca rendendo la penalità un bonus.
+  351 test verdi.
+Riscrivere il README dal template del corso senza segnaposto; creare `docs/wiki/` con
+`Home.md` (descrizione e indice delle pagine di design §6) e una bozza di
+`Classi-e-interfacce.md` per il model; aggiungere a `CLAUDE.md` la regola di aggiornare la
+Wiki a ogni issue chiusa.
+
+**Prodotto dall'AI:**
+- `README.md`: descrizione, prerequisiti, comandi `build`/`run`/`test`, struttura dei
+  package, sezione breve sull'uso dell'AI.
+- `docs/wiki/Home.md` con avvio rapido e indice (stato di ogni pagina);
+  `docs/wiki/Classi-e-interfacce.md` con le scelte del model motivate.
+- Regola sulla Wiki in `CLAUDE.md`.
+
+**Modificato / verificato da me:**
 - [ ] _da completare_
