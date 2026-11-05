@@ -7,6 +7,7 @@ import static it.unicam.cs.mpgc.rpg127295.model.question.Difficulty.MEDIUM;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import it.unicam.cs.mpgc.rpg127295.engine.FakeRandom;
+import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamStrategy;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.QuestionPool;
 import it.unicam.cs.mpgc.rpg127295.model.question.Difficulty;
 import it.unicam.cs.mpgc.rpg127295.model.question.Question;

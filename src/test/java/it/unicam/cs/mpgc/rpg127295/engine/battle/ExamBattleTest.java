@@ -20,7 +20,7 @@ import it.unicam.cs.mpgc.rpg127295.engine.FakeRandom;
 import it.unicam.cs.mpgc.rpg127295.engine.TestQuestions;
 import it.unicam.cs.mpgc.rpg127295.engine.grading.GradeCalculator;
 import it.unicam.cs.mpgc.rpg127295.engine.grading.Performance;
-import it.unicam.cs.mpgc.rpg127295.engine.strategy.ExamStrategy;
+import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamStrategy;
 import it.unicam.cs.mpgc.rpg127295.engine.strategy.OralExamStrategy;
 import it.unicam.cs.mpgc.rpg127295.engine.strategy.ProjectExamStrategy;
 import it.unicam.cs.mpgc.rpg127295.engine.strategy.WrittenExamStrategy;

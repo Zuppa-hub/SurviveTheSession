@@ -1,6 +1,7 @@
 package it.unicam.cs.mpgc.rpg127295.engine.strategy;
 
 import it.unicam.cs.mpgc.rpg127295.engine.battle.BattleState;
+import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamStrategy;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.QuestionPool;
 import it.unicam.cs.mpgc.rpg127295.model.question.Question;
 import java.util.Optional;

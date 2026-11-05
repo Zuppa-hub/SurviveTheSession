@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import it.unicam.cs.mpgc.rpg127295.engine.FakeRandom;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.AnswerResult;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.BattleState;
+import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamStrategy;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.QuestionPool;
 import it.unicam.cs.mpgc.rpg127295.engine.grading.Performance;
 import it.unicam.cs.mpgc.rpg127295.model.question.Difficulty;

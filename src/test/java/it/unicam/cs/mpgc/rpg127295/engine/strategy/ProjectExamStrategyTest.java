@@ -3,6 +3,7 @@ package it.unicam.cs.mpgc.rpg127295.engine.strategy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import it.unicam.cs.mpgc.rpg127295.engine.FakeRandom;
+import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamStrategy;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.QuestionPool;
 import java.util.Optional;
 import java.util.OptionalInt;

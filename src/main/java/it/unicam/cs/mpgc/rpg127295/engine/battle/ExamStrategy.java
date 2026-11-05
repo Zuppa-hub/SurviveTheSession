@@ -1,7 +1,5 @@
-package it.unicam.cs.mpgc.rpg127295.engine.strategy;
+package it.unicam.cs.mpgc.rpg127295.engine.battle;
 
-import it.unicam.cs.mpgc.rpg127295.engine.battle.BattleState;
-import it.unicam.cs.mpgc.rpg127295.engine.battle.QuestionPool;
 import it.unicam.cs.mpgc.rpg127295.model.question.Question;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -10,6 +8,9 @@ import java.util.OptionalInt;
  * The behaviour of a type of exam (Strategy). A new type of exam is a new implementation plus
  * an entry in the {@code EnumMap<ExamType, ExamStrategy>} built by the application: the
  * engine never checks the type of an exam (OCP).
+ * <p>
+ * Defined here, next to {@link ExamBattle} that uses it; the implementations are in
+ * {@code engine.strategy}, which depends on this package and not the other way round (DIP).
  * <p>
  * Contract of the type, valid for every implementation:
  * <ul>

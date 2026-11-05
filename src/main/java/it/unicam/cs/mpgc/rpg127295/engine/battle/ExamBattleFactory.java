@@ -2,7 +2,7 @@ package it.unicam.cs.mpgc.rpg127295.engine.battle;
 
 import it.unicam.cs.mpgc.rpg127295.engine.grading.GradeCalculator;
 import it.unicam.cs.mpgc.rpg127295.engine.repository.QuestionRepository;
-import it.unicam.cs.mpgc.rpg127295.engine.strategy.ExamStrategy;
+import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamStrategy;
 import it.unicam.cs.mpgc.rpg127295.engine.timer.QuestionTimer;
 import it.unicam.cs.mpgc.rpg127295.model.exam.Exam;
 import it.unicam.cs.mpgc.rpg127295.model.exam.ExamType;
