@@ -103,8 +103,8 @@ model
   item         Item (solo dati: id, nome, descrizione), Inventory
   transcript   Transcript (libretto), TranscriptEntry
 engine
-  battle       ExamBattle, ExamBattleFactory, BattleState, BattleOutcome, BattleResult,
-               BattleListener, QuestionPool, PresentedQuestion, AnswerResult,
+  battle       ExamBattle, ExamBattleFactory, BattleServices, BattleState, BattleOutcome,
+               BattleResult, BattleListener, QuestionPool, PresentedQuestion, AnswerResult,
                BattleRules, StandardBattleRules
   strategy     ExamStrategy, WrittenExamStrategy, OralExamStrategy, ProjectExamStrategy
   grading      GradeCalculator, PerformanceGradeCalculator, Performance

@@ -33,7 +33,7 @@ scritta o aggiornata quando si chiude la issue corrispondente.
 |---|---|---|
 | [Funzionalità](Funzionalita) | cosa si può fare nel gioco | prevista |
 | [Architettura e responsabilità](Architettura-e-responsabilita) | package, dipendenze, composition root | prevista |
-| [Classi e interfacce](Classi-e-interfacce) | le classi principali e le scelte motivate | **bozza (model, calcolo del voto)** |
+| [Classi e interfacce](Classi-e-interfacce) | le classi principali e le scelte motivate | **bozza (model, voto, scontro)** |
 | [Principi SOLID](Principi-SOLID) | tutti e cinque, con esempi dal codice | prevista |
 | [Clean Code](Clean-Code) | nomi, metodi piccoli, niente duplicazione | prevista |
 | [Strutture dati, equals e Stream](Strutture-dati-equals-e-Stream) | List, HashSet, HashMap, identità, Stream API | prevista |
