@@ -34,9 +34,11 @@ Il profilo determina le statistiche iniziali. Tre profili, definiti in un file d
 - **Livello ed esperienza**: superare un esame dà esperienza; salire di livello aumenta Conoscenza ed Energia massima. È la progressione RPG.
 
 ### 2.3 Lo scontro (esame)
-- L'esame ha una **resistenza** (punti esame). Ogni risposta corretta la riduce; quando arriva a zero l'esame è superato. La resistenza non è un dato di `Exam`: è una regola di bilanciamento e la calcola l'engine da CFU e difficoltà.
+- L'esame ha una **resistenza** (punti esame). Ogni risposta corretta la riduce di un danno che cresce con la Conoscenza. La resistenza non è un dato di `Exam`: è una regola di bilanciamento e la calcola l'engine da CFU e difficoltà.
 - Ogni risposta sbagliata (o tempo scaduto) toglie Energia in base alla difficoltà dell'esame.
-- A fine esame il **voto** (18-30, 31 = 30 e lode) viene calcolato dalla prestazione (percentuale di risposte corrette, eventuali penalità).
+- Nello stesso esame una domanda non viene mai riproposta.
+- La prova termina quando la resistenza arriva a zero **oppure** quando le domande finiscono. In entrambi i casi decide il **voto** (18-30, 31 = 30 e lode), calcolato dalla prestazione (percentuale di risposte corrette, eventuali penalità): con un voto l'esame è superato, senza voto è una bocciatura.
+- Energia a zero: bocciatura, senza calcolare il voto.
 - Azioni del turno: **Rispondi**, **Usa oggetto**, **Usa abilità**, **Ritirati** (l'esame resta da sostenere, nessun voto).
 - Bocciatura o ritiro: l'esame resta nella sessione e si può ritentare; prima di ritentare lo studente recupera Energia.
 
@@ -45,7 +47,7 @@ Il profilo determina le statistiche iniziali. Tre profili, definiti in un file d
 |---|---|
 | Scritto | domande a tempo (timer per domanda); tempo scaduto = risposta sbagliata |
 | Orale | nessun timer; dopo un errore il "professore incalza": la domanda successiva è di difficoltà maggiore |
-| Progetto | solo domande di analisi del codice ("cosa stampa?"), nessun timer, danno doppio sugli errori |
+| Progetto | domande di ogni tipo, nessun timer, danno doppio sugli errori (non filtra per tipo di domanda: servirebbe un controllo sul tipo concreto nell'engine) |
 
 ### 2.5 Tipi di domanda
 | Tipo | Risposta |
@@ -85,7 +87,7 @@ Cinque materie reali del corso di Informatica, ognuna con un file XML di domande
 ### 3.1 Principi architetturali
 - **Il dominio non dipende da niente**: `model` non importa `engine`, `persistence` né `ui`.
 - **L'engine dipende solo da model e da interfacce** (mai da JavaFX, mai da Gson, mai da file).
-- **Le interfacce stanno dalla parte di chi le usa (DIP)**: repository e cataloghi sono definiti nell'engine (`engine.repository`); `persistence` contiene solo le implementazioni e dipende da `engine` e `model`, mai il contrario.
+- **Le interfacce stanno dalla parte di chi le usa (DIP)**: repository e cataloghi sono definiti nell'engine (`engine.repository`); `persistence` contiene solo le implementazioni e dipende da `engine` e `model`, mai il contrario. Vale anche dentro l'engine: `ExamStrategy` sta in `engine.battle` con `ExamBattle`, e `engine.strategy` contiene solo le implementazioni. Nessun ciclo fra package.
 - **La UI chiama l'engine, mai il contrario**: l'engine notifica la UI tramite listener (Observer) definiti nell'engine.
 - **Composition root**: tutte le implementazioni concrete vengono create e collegate in un solo punto (`app`). Nessun Singleton. Dipendenze passate nel costruttore.
 - **Nessuna dipendenza da casualità o tempo reale nel dominio**: `RandomGenerator` e il timer vengono iniettati, così i test sono deterministici.
@@ -97,12 +99,15 @@ model
   student      Student, Stats, StudentProfile, Level
   exam         Exam, ExamType, ExamSession, Grade
   question     Question, ChoiceQuestion, MultipleChoiceQuestion, TrueFalseQuestion,
-               CodeOutputQuestion, FillInQuestion, Difficulty, Subject
+               CodeOutputQuestion, FillInQuestion, QuestionVisitor, Difficulty, Subject
   item         Item (solo dati: id, nome, descrizione), Inventory
   transcript   Transcript (libretto), TranscriptEntry
 engine
-  battle       ExamBattle, BattleState, BattleOutcome, BattleListener
-  strategy     ExamStrategy, WrittenExamStrategy, OralExamStrategy, ProjectExamStrategy
+  battle       ExamBattle, ExamBattleFactory, BattleServices, BattleState, BattleOutcome,
+               BattleResult, BattleListener, QuestionPool, PresentedQuestion, AnswerResult,
+               BattleRules, StandardBattleRules, ExamStrategy (interfaccia, con chi la usa)
+  strategy     WrittenExamStrategy, OralExamStrategy, ProjectExamStrategy (solo implementazioni:
+               strategy dipende da battle, mai il contrario)
   grading      GradeCalculator, PerformanceGradeCalculator, Performance
   item         ItemEffect, CoffeeEffect, NotesEffect, SummaryEffect, EnergyDrinkEffect
   ability      Ability, QuickReview, StrokeOfGenius
@@ -138,6 +143,16 @@ public interface Question {
     Optional<String> hint();
     /** true se la risposta è corretta; non lancia eccezioni per risposte sbagliate o vuote. */
     boolean isCorrect(String answer);
+    /** Visitor: chiama esattamente un metodo del visitor, passando sé stessa. */
+    <R> R accept(QuestionVisitor<R> visitor);
+}
+
+/** Una categoria di domanda = un metodo. Evita instanceof nell'engine (opzioni da mescolare),
+ *  nella UI (pulsanti o campo di testo) e nell'effetto Appunti.
+ *  Un nuovo tipo in una categoria esistente non cambia il visitor; una categoria nuova sì. */
+public interface QuestionVisitor<R> {
+    R visitChoice(ChoiceQuestion question);
+    R visitFillIn(FillInQuestion question);
 }
 
 /** Domanda con opzioni tra cui scegliere (ISP: solo queste hanno opzioni).
@@ -148,11 +163,24 @@ public interface ChoiceQuestion extends Question {
     List<String> wrongOptions();  // sottoinsieme di options()
 }
 
-/** Comportamento di un tipo d'esame (OCP: nuovo tipo = nuova classe). */
+/** Comportamento di un tipo d'esame (OCP: nuovo tipo = nuova classe).
+ *  Le strategie arrivano all'engine in una EnumMap<ExamType, ExamStrategy> costruita in app. */
 public interface ExamStrategy {
-    Question nextQuestion(BattleState state, QuestionPool pool);
+    Optional<Question> nextQuestion(BattleState state, QuestionPool pool); // vuoto solo se il pool è vuoto
     OptionalInt secondsPerQuestion();   // vuoto = nessun timer
-    int energyLossOnMistake(Exam exam);
+    int mistakeMultiplier();            // >= 1; moltiplica la perdita di Energia di BattleRules
+}
+// Scritto: domanda qualsiasi, 30 s, x1. Orale: dopo un errore difficoltà harder() della domanda
+// sbagliata (se finite, la più vicina), nessun timer, x1. Progetto: domanda qualsiasi, nessun timer, x2.
+// QuestionPool: domande della materia per uno scontro; HashSet delle domande già poste,
+// drawAny() e drawClosestTo(Difficulty) con il RandomGenerator iniettato.
+
+/** Regole numeriche dello scontro, in un solo punto (valori provvisori, bilanciamento in #12). */
+public interface BattleRules {
+    int resistanceOf(Exam exam);            // CFU x fattore della difficoltà
+    int damageOf(Stats stats);              // danno base + bonus della Conoscenza
+    int baseEnergyLoss(Difficulty difficulty);
+    int concentrationPerCorrectAnswer();
 }
 
 /** Calcola il voto da una prestazione.
@@ -196,7 +224,7 @@ public interface SaveGameRepository {
 
 /** Notifiche dall'engine alla UI (Observer, modello event-driven). */
 public interface BattleListener {
-    void onQuestionPresented(Question question, OptionalInt seconds);
+    void onQuestionPresented(PresentedQuestion question, OptionalInt seconds); // opzioni già mescolate
     void onAnswerEvaluated(boolean correct, BattleState state);
     void onTimeTick(int secondsLeft);
     void onBattleEnded(BattleOutcome outcome);
@@ -208,7 +236,7 @@ public interface BattleListener {
 |---|---|
 | Incapsulamento, validazione nei costruttori | Stats, Grade, Exam, Student (fail fast, `IllegalArgumentException`) |
 | Ereditarietà, classi astratte | `AbstractQuestion` (campi comuni di tutte le domande), `AbstractChoiceQuestion` |
-| Interfacce, polimorfismo | Question, ExamStrategy, ItemEffect, Ability, GradeCalculator |
+| Interfacce, polimorfismo | Question, ExamStrategy, ItemEffect, Ability, GradeCalculator, BattleRules; Visitor (`QuestionVisitor`) al posto di `instanceof` sul tipo di domanda |
 | SRP | Transcript registra gli esami superati (senza doppioni) e calcola media ponderata sui CFU e CFU totali, e nient'altro: **non** contiene la regola di laurea né il voto di laurea (è la violazione di SRP vista a lezione con `puoLaurearsi()` in `Libretto`), che stanno in Game (#8); la formattazione dei voti sta in Grade; la stampa sta nella UI; dati e comportamento degli oggetti sono separati (Item nel model, ItemEffect nell'engine) |
 | OCP | nuovo tipo di esame, domanda, oggetto, abilità = nuova classe, nessuna modifica all'engine; nell'engine nessuno `switch`/`if` su `ExamType`: l'associazione tipo → strategia è una `EnumMap<ExamType, ExamStrategy>` costruita in `app` e passata all'engine; allo stesso modo un nuovo oggetto = nuovo `ItemEffect` + una voce nella `Map<Item, ItemEffect>` costruita in `app` |
 | LSP | contratti espliciti in Javadoc; metodi di validazione condivisi (es. `Grade.of(int)` unico punto di creazione) |
@@ -217,7 +245,7 @@ public interface BattleListener {
 | Clean Code | nomi significativi, metodi piccoli, niente codice commentato, DRY, niente liste parallele (data clumping) |
 | Package | struttura per responsabilità (3.2) |
 | List | domande della sessione, ordine degli esami |
-| HashSet + equals/hashCode | esami superati; domande già poste nello scontro (per non ripeterle); identità per `id` |
+| HashSet + equals/hashCode | esami superati; domande già poste nello scontro (`QuestionPool`, per non ripeterle); identità per `id` |
 | HashMap | libretto `Map<Exam, Grade>`; inventario `Map<Item, Integer>` (quantità); effetti `Map<Item, ItemEffect>` in `app` |
 | Stream API | media ponderata, CFU totali, filtri domande per difficoltà, statistiche; catene lunghe spezzate in metodi con nome |
 | Modelli di esecuzione | GUI event-driven; timer della domanda su thread separato (ScheduledExecutorService) con passaggio al thread JavaFX via `Platform.runLater`; stato condiviso protetto |

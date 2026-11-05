@@ -44,4 +44,19 @@ class PerformanceTest {
     void aPerformanceWithoutAnswersIsNotFlawless() {
         assertFalse(new Performance(0, 0, 0).isFlawless());
     }
+
+    @Test
+    void noneHasNoAnswersAndNoHints() {
+        assertEquals(new Performance(0, 0, 0), Performance.none());
+    }
+
+    @Test
+    void addingAnAnswerReturnsANewPerformance() {
+        Performance performance = new Performance(5, 2, 1);
+
+        assertAll(
+                () -> assertEquals(new Performance(6, 2, 1), performance.withCorrectAnswer()),
+                () -> assertEquals(new Performance(5, 3, 1), performance.withWrongAnswer()),
+                () -> assertEquals(new Performance(5, 2, 1), performance));
+    }
 }

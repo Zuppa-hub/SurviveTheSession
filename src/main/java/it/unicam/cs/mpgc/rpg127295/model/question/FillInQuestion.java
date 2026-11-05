@@ -37,6 +37,11 @@ public final class FillInQuestion extends AbstractQuestion {
         return answer != null && acceptedAnswers.contains(normalize(answer));
     }
 
+    @Override
+    public <R> R accept(QuestionVisitor<R> visitor) {
+        return visitor.visitFillIn(this);
+    }
+
     private static Set<String> normalizedAnswers(Set<String> answers) {
         Objects.requireNonNull(answers, "Accepted answers must not be null");
         if (answers.isEmpty()) {

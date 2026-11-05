@@ -60,6 +60,11 @@ abstract class ChoiceQuestionContractTest extends QuestionContractTest {
     }
 
     @Test
+    void isVisitedAsAChoiceQuestion() {
+        assertEquals(CategoryVisitor.CHOICE, question().accept(new CategoryVisitor()));
+    }
+
+    @Test
     void optionsCannotBeModified() {
         ChoiceQuestion question = question();
 
