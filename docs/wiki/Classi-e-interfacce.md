@@ -20,8 +20,8 @@ vuoto, numero positivo o non negativo) stanno in un solo punto, `model.Precondit
 | `model.item` | `Item`, `Inventory` |
 | `model.transcript` | `Transcript`, `TranscriptEntry` |
 | `engine.grading` | `Performance`, `GradeCalculator`, `PerformanceGradeCalculator` |
-| `engine.battle` | `ExamBattle`, `ExamBattleFactory`, `BattleState`, `BattleOutcome`, `BattleResult`, `BattleListener`, `QuestionPool`, `PresentedQuestion`, `AnswerResult`, `BattleRules`, `StandardBattleRules` |
-| `engine.strategy` | `ExamStrategy`, `WrittenExamStrategy`, `OralExamStrategy`, `ProjectExamStrategy` |
+| `engine.battle` | `ExamBattle`, `ExamBattleFactory`, `ExamStrategy`, `BattleState`, `BattleOutcome`, `BattleResult`, `BattleListener`, `QuestionPool`, `PresentedQuestion`, `AnswerResult`, `BattleRules`, `StandardBattleRules` |
+| `engine.strategy` | `WrittenExamStrategy`, `OralExamStrategy`, `ProjectExamStrategy` |
 | `engine.timer` | `QuestionTimer`, `TimerListener` |
 
 ## Esami e voti
@@ -310,6 +310,15 @@ classe più una voce nella mappa (OCP).
 
 Il Progetto non filtra le domande per tipo: per farlo l'engine dovrebbe controllare il tipo
 concreto della domanda. Si distingue invece per l'assenza di timer e il danno doppio.
+
+**Dove sta l'interfaccia.** `ExamStrategy` sta in `engine.battle`, accanto a
+`ExamBattle` che la usa; `engine.strategy` contiene solo le tre implementazioni. All'inizio
+l'interfaccia era in `engine.strategy`, insieme alle implementazioni. Però `ExamBattle`
+dipendeva da `ExamStrategy` e `ExamStrategy` da `BattleState` e `QuestionPool`, quindi i
+due package dipendevano l'uno dall'altro: un ciclo, per cui nessuno dei due si poteva capire
+o modificare da solo. Spostare l'interfaccia applica la stessa regola del DIP usata per i
+repository (l'interfaccia sta con chi la usa). Ora la dipendenza va in una sola direzione:
+`engine.strategy` → `engine.battle`.
 
 Come per domande e voti, `ExamStrategyContractTest` verifica il contratto su ogni
 strategia: nessuna domanda ripetuta, risultato vuoto solo a domande finite, secondi positivi,

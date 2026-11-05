@@ -87,7 +87,7 @@ Cinque materie reali del corso di Informatica, ognuna con un file XML di domande
 ### 3.1 Principi architetturali
 - **Il dominio non dipende da niente**: `model` non importa `engine`, `persistence` né `ui`.
 - **L'engine dipende solo da model e da interfacce** (mai da JavaFX, mai da Gson, mai da file).
-- **Le interfacce stanno dalla parte di chi le usa (DIP)**: repository e cataloghi sono definiti nell'engine (`engine.repository`); `persistence` contiene solo le implementazioni e dipende da `engine` e `model`, mai il contrario.
+- **Le interfacce stanno dalla parte di chi le usa (DIP)**: repository e cataloghi sono definiti nell'engine (`engine.repository`); `persistence` contiene solo le implementazioni e dipende da `engine` e `model`, mai il contrario. Vale anche dentro l'engine: `ExamStrategy` sta in `engine.battle` con `ExamBattle`, e `engine.strategy` contiene solo le implementazioni. Nessun ciclo fra package.
 - **La UI chiama l'engine, mai il contrario**: l'engine notifica la UI tramite listener (Observer) definiti nell'engine.
 - **Composition root**: tutte le implementazioni concrete vengono create e collegate in un solo punto (`app`). Nessun Singleton. Dipendenze passate nel costruttore.
 - **Nessuna dipendenza da casualità o tempo reale nel dominio**: `RandomGenerator` e il timer vengono iniettati, così i test sono deterministici.
@@ -105,8 +105,9 @@ model
 engine
   battle       ExamBattle, ExamBattleFactory, BattleServices, BattleState, BattleOutcome,
                BattleResult, BattleListener, QuestionPool, PresentedQuestion, AnswerResult,
-               BattleRules, StandardBattleRules
-  strategy     ExamStrategy, WrittenExamStrategy, OralExamStrategy, ProjectExamStrategy
+               BattleRules, StandardBattleRules, ExamStrategy (interfaccia, con chi la usa)
+  strategy     WrittenExamStrategy, OralExamStrategy, ProjectExamStrategy (solo implementazioni:
+               strategy dipende da battle, mai il contrario)
   grading      GradeCalculator, PerformanceGradeCalculator, Performance
   item         ItemEffect, CoffeeEffect, NotesEffect, SummaryEffect, EnergyDrinkEffect
   ability      Ability, QuickReview, StrokeOfGenius
