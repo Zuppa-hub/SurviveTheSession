@@ -15,5 +15,8 @@ public interface BattleListener {
 
     void onTimeTick(int secondsLeft);
 
+    /** Called after an item or an ability: the state shows what changed. */
+    void onEffectApplied(BattleState state);
+
     void onBattleEnded(BattleOutcome outcome);
 }
