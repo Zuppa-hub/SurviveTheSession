@@ -4,7 +4,7 @@
 
     <multipleChoice id="PROG-01" difficulty="EASY">
         <prompt>Quale di questi è un tipo primitivo in Java?</prompt>
-        <hint>I tipi primitivi si scrivono in minuscolo.</hint>
+        <hint>Non è una classe: non ha metodi e non può valere null.</hint>
         <correct>int</correct>
         <wrong>String</wrong>
         <wrong>Integer</wrong>
@@ -138,7 +138,7 @@
         <answer>new</answer>
     </fillIn>
 
-    <fillIn id="PROG-16" difficulty="MEDIUM">
+    <fillIn id="PROG-16" difficulty="EASY">
         <prompt>Come si chiama il metodo da cui parte l'esecuzione di un programma Java?</prompt>
         <answer>main</answer>
         <answer>main()</answer>
@@ -153,6 +153,7 @@
         <prompt>Come si chiama la possibilità di definire nella stessa classe più metodi con lo stesso nome e parametri diversi?</prompt>
         <hint>Non è l'overriding.</hint>
         <answer>overloading</answer>
+        <answer>overload</answer>
         <answer>sovraccarico</answer>
         <answer>sovraccaricamento</answer>
     </fillIn>
