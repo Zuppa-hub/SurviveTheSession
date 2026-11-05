@@ -34,8 +34,10 @@ Package base: `it.unicam.cs.mpgc.rpg127295`.
    file reali o casualità.
 9. Un branch `feature/<nome>` per ogni issue; commit piccoli e descrittivi; pull request
    su `develop` con descrizione; merge dopo che Andrea ha letto il codice.
-10. A ogni sessione aggiornare `docs/ai-log.md` (data, cosa è stato chiesto, cosa è
-    stato prodotto). La parte "verificato da me" la compila Andrea.
+10. A ogni sessione aggiungere un file in `docs/ai-log/`, chiamato
+    `AAAA-MM-GG-NN-titolo.md` (`NN` = numero della sessione nel giorno), con data, cosa è
+    stato chiesto e cosa è stato prodotto, e aggiungerlo all'indice
+    `docs/ai-log/README.md`. La parte "verificato da me" la compila Andrea.
 
 ## Convenzione dei commit
 Prefisso minuscolo seguito da testo in italiano:

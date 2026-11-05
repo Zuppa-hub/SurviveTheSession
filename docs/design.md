@@ -273,7 +273,7 @@ I controller non contengono regole di gioco: traducono eventi in chiamate all'en
 7. Niente codice commentato, niente commenti ovvi.
 8. Ogni classe di model ed engine ha test JUnit. I test non dipendono da tempo reale, file reali o casualità.
 9. Un branch `feature/<nome>` per ogni issue; commit piccoli e descrittivi; pull request su `develop` con descrizione; merge dopo che Andrea ha letto il codice.
-10. A ogni sessione aggiornare `docs/ai-log.md` (cosa è stato chiesto, cosa è stato prodotto). La colonna "verificato da me" la compila Andrea.
+10. A ogni sessione aggiungere un file in `docs/ai-log/` chiamato `AAAA-MM-GG-NN-titolo.md` (`NN` = numero della sessione nel giorno: i nomi si ordinano da soli per data) con cosa è stato chiesto e cosa è stato prodotto, e una riga nell'indice `docs/ai-log/README.md`. Un file per sessione evita i conflitti tra pull request aperte insieme. La parte "verificato da me" la compila Andrea.
 
 ## 5. Piano di lavoro (issue)
 | # | Issue | Branch |
