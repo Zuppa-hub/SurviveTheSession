@@ -48,7 +48,7 @@ abstract class ExamStrategyContractTest {
 
     private static BattleState state(Optional<AnswerResult> lastAnswer) {
         return new BattleState(10, 10, Stats.initial(5, 10, 4), new Performance(0, 0, 0),
-                Optional.empty(), lastAnswer);
+                Optional.empty(), lastAnswer, false, false);
     }
 
     static Stream<BattleState> states() {

@@ -1,7 +1,7 @@
 # Classi e interfacce
 
-> Bozza: copre il **model** (issue #2, #3, #4), il calcolo del voto (issue #6) e lo scontro
-> con le strategie d'esame (issue #7) nell'engine. Le altre sezioni su engine, persistence e
+> Bozza: copre il **model** (issue #2, #3, #4), il calcolo del voto (issue #6), lo scontro
+> con le strategie d'esame (issue #7) e gli effetti di oggetti e abilità (issue #22) nell'engine. Le altre sezioni su engine, persistence e
 > UI si aggiungono con le issue corrispondenti.
 
 Il model contiene le entità e lo stato del gioco e **non dipende da nessun altro
@@ -20,8 +20,9 @@ vuoto, numero positivo o non negativo) stanno in un solo punto, `model.Precondit
 | `model.item` | `Item`, `Inventory` |
 | `model.transcript` | `Transcript`, `TranscriptEntry` |
 | `engine.grading` | `Performance`, `GradeCalculator`, `PerformanceGradeCalculator` |
-| `engine.battle` | `ExamBattle`, `ExamBattleFactory`, `ExamStrategy`, `BattleState`, `BattleOutcome`, `BattleResult`, `BattleListener`, `QuestionPool`, `PresentedQuestion`, `AnswerResult`, `BattleRules`, `StandardBattleRules` |
+| `engine.battle` | `ExamBattle`, `ExamBattleFactory`, `BattleServices`, `ExamStrategy`, `BattleEffect`, `BattleControls`, `BattleEffects`, `Ability`, `BattleState`, `BattleOutcome`, `BattleResult`, `BattleListener`, `QuestionPool`, `PresentedQuestion`, `AnswerResult`, `BattleRules`, `StandardBattleRules` |
 | `engine.strategy` | `WrittenExamStrategy`, `OralExamStrategy`, `ProjectExamStrategy` |
+| `engine.effect` | `ExtraTimeEffect`, `FiftyFiftyEffect`, `HintEffect`, `EnergyRestoreEffect`, `DoubleDamageEffect` |
 | `engine.timer` | `QuestionTimer`, `TimerListener` |
 
 ## Esami e voti
@@ -367,11 +368,87 @@ arriva con la #23. Per ora `ExamBattle` dichiara di non essere thread-safe: tutt
 chiamate, notifiche del timer comprese, devono arrivare dallo stesso thread.
 
 ### Collaboratori raggruppati
-Regole, calcolatore del voto, timer e generatore casuale sono gli stessi per tutti gli
-scontri. La factory li tiene in un record package-private, `BattleServices` (parameter
-object, come `QuestionDetails`). Così il costruttore di `ExamBattle` ha cinque parametri e
-non otto.
+Regole, calcolatore del voto, timer, generatore casuale ed effetti sono gli stessi per tutti
+gli scontri. Viaggiano insieme in un record, `BattleServices` (parameter object, come
+`QuestionDetails`): l'applicazione lo costruisce e lo passa a `ExamBattleFactory`, che lo
+passa a ogni scontro. Così la factory ha tre parametri e il costruttore di `ExamBattle`
+cinque, anche dopo l'arrivo di oggetti e abilità.
 
 ### Verifica dei test
 Ho verificato che i test sappiano trovare un errore: togliendo per prova `harder()`
 dall'orale falliscono tre test, due della strategia e uno dello scontro.
+
+## Oggetti e abilità (`BattleEffect`)
+
+### Un solo tipo di effetto
+Il Riassunto (un oggetto) e il Ripasso lampo (un'abilità) fanno la stessa cosa: mostrano
+l'indizio. Per non scrivere due volte lo stesso effetto c'è un'unica interfaccia,
+`BattleEffect`, con `canBeUsedIn(stato)` e `applyTo(controlli)`.
+- **Oggetti**: l'applicazione associa ogni oggetto al suo effetto con una mappa
+  id → effetto (`app.GameEffects`). Un oggetto di `items.xml` senza effetto blocca l'avvio
+  (fail fast), e un test lo verifica sul contenuto distribuito.
+- **Abilità**: sono dati, non classi. Il record `Ability` ha nome, costo in Concentrazione ed
+  effetto. Una nuova abilità con un effetto esistente è una riga, non una nuova classe.
+
+| Effetto | Usato da | Usabile se | Fa |
+|---|---|---|---|
+| `ExtraTimeEffect` | Caffè | la domanda corrente ha il timer | +15 secondi |
+| `FiftyFiftyEffect` | Appunti | sono visibili almeno 3 opzioni sbagliate | toglie 2 opzioni sbagliate |
+| `HintEffect` | Riassunto, Ripasso lampo | la domanda ha un indizio non ancora mostrato | mostra l'indizio |
+| `EnergyRestoreEffect` | Energy drink | l'Energia non è al massimo | +4 Energia, senza superare il massimo |
+| `DoubleDamageEffect` | Colpo di genio | non è già attivo | la prossima risposta corretta fa danno doppio |
+
+Le implementazioni stanno in `engine.effect`; l'interfaccia sta in `engine.battle`, con
+`ExamBattle` che la usa: la stessa regola (e la stessa direzione delle dipendenze) di
+`ExamStrategy`. I numeri (15 secondi, 4 punti, ×2) stanno in `BattleRules`, non negli effetti.
+
+### `BattleControls`: incapsulamento
+Per agire, un effetto deve poter modificare lo scontro: aggiungere tempo, togliere opzioni,
+mostrare l'indizio. Se ricevesse direttamente `ExamBattle`, quei metodi dovrebbero essere
+pubblici, e chiunque (anche la UI) potrebbe chiamarli senza nessun controllo: dare tempo
+extra senza consumare un Caffè, mostrare l'indizio senza contarlo nel voto.
+
+È il principio della lezione 07 sull'incapsulamento: **non vietiamo la modifica, la
+controlliamo**. Lo scontro si può modificare, ma solo attraverso un'interfaccia ristretta,
+`BattleControls`, con esattamente le cinque operazioni che servono agli effetti. La implementa
+una classe interna privata di `ExamBattle`, che la passa a un effetto solo dopo averne
+verificato l'uso. Da fuori restano visibili solo `useItem` e `useAbility`.
+
+### Usare un oggetto o un'abilità
+`useItem(oggetto)` e `useAbility(abilità)` fanno tutte le verifiche prima di cambiare
+qualcosa:
+1. c'è una domanda che attende risposta;
+2. l'oggetto ha un effetto o l'abilità esiste in questo scontro (altrimenti
+   `IllegalArgumentException`);
+3. l'oggetto è posseduto o la Concentrazione basta;
+4. l'effetto è applicabile adesso.
+
+Se una verifica fallisce non si consuma nulla. Altrimenti si paga (un'unità dell'oggetto o
+la Concentrazione), si applica l'effetto e i listener ricevono `onEffectApplied` con il
+nuovo stato: è l'unica notifica nuova, perché lo stato contiene già tutto quello che la UI
+deve ridisegnare.
+
+La UI deve sapere se abilitare un pulsante, quindi ci sono anche `canUse(oggetto)` e
+`canUse(abilità)`. Per non scrivere due volte le stesse verifiche (DRY), i quattro metodi
+passano tutti da **un unico metodo privato**, `refusalOf`, che restituisce il motivo del
+rifiuto oppure niente. `canUse` controlla solo che non ci sia un motivo; `use` lo lancia come
+eccezione. Oggetto e abilità diventano entrambi un `Attempt` (nome, effetto, se è pagabile,
+come pagarlo), così il percorso è uno solo.
+
+### Regole che valgono per domanda e per scontro
+- **50/50 una volta per domanda.** La regola guarda le opzioni sbagliate *visibili* nella
+  `PresentedQuestion`, non quelle della domanda. Dopo un uso ne resta una sola, quindi i
+  secondi Appunti non sono applicabili e non vengono consumati. Il Vero/Falso ha una sola
+  opzione sbagliata e il completamento nessuna (grazie al Visitor la sua lista di opzioni è
+  vuota): sono esclusi senza controllare il tipo.
+- **Un indizio conta una volta.** La visibilità dell'indizio sta nella `PresentedQuestion`:
+  dopo il Riassunto, il Ripasso lampo non è più applicabile (e viceversa), quindi
+  `Performance.withHint()` viene chiamato una sola volta. Con la domanda successiva la
+  presentazione è nuova e l'indizio torna nascosto.
+- **Colpo di genio.** Lo stato è un campo di `ExamBattle`, visibile in `BattleState`. Si
+  azzera alla prima risposta corretta, che fa danno doppio; un errore non lo annulla; non si
+  accumula e finisce con lo scontro.
+
+### Verifica dei test
+Togliendo per prova l'azzeramento del Colpo di genio dopo la risposta corretta, il test
+dedicato fallisce.

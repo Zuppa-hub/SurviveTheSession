@@ -20,3 +20,4 @@ giorno: in ordine alfabetico sono già in ordine cronologico.
 | 2026-11-05 | [Correzioni dopo la revisione delle domande](2026-11-05-07-correzioni-alle-domande.md) |
 | 2026-11-05 | [Registro AI diviso in un file per sessione](2026-11-05-08-registro-diviso-per-sessione.md) |
 | 2026-11-05 | [Scontro e strategie d'esame (issue #7, 7a)](2026-11-05-09-scontro-e-strategie.md) |
+| 2026-11-05 | [Effetti di oggetti e abilità (issue #22, 7b)](2026-11-05-10-effetti-oggetti-e-abilita.md) |

@@ -1,9 +1,7 @@
 package it.unicam.cs.mpgc.rpg127295.engine.battle;
 
-import it.unicam.cs.mpgc.rpg127295.engine.grading.GradeCalculator;
 import it.unicam.cs.mpgc.rpg127295.engine.repository.QuestionRepository;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamStrategy;
-import it.unicam.cs.mpgc.rpg127295.engine.timer.QuestionTimer;
 import it.unicam.cs.mpgc.rpg127295.model.exam.Exam;
 import it.unicam.cs.mpgc.rpg127295.model.exam.ExamType;
 import it.unicam.cs.mpgc.rpg127295.model.student.Student;
@@ -12,7 +10,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.random.RandomGenerator;
 
 /**
  * Creates the battle of an exam with the strategy of its type. The association between types
@@ -27,15 +24,16 @@ public final class ExamBattleFactory {
 
     /**
      * @param strategies a strategy for every {@link ExamType}; the map is copied
+     * @param questions  where the questions of each subject come from
+     * @param services   the collaborators shared by every battle
      * @throws NullPointerException     if an argument is null
      * @throws IllegalArgumentException if a type of exam has no strategy
      */
     public ExamBattleFactory(Map<ExamType, ExamStrategy> strategies, QuestionRepository questions,
-                             BattleRules rules, GradeCalculator calculator, QuestionTimer timer,
-                             RandomGenerator random) {
+                             BattleServices services) {
         this.strategies = completeCopyOf(strategies);
         this.questions = Objects.requireNonNull(questions, "Question repository must not be null");
-        this.services = new BattleServices(rules, calculator, timer, random);
+        this.services = Objects.requireNonNull(services, "Battle services must not be null");
     }
 
     /** @return a new battle, not begun yet, with the questions of the subject of the exam */

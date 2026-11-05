@@ -57,6 +57,7 @@ class PerformanceTest {
         assertAll(
                 () -> assertEquals(new Performance(6, 2, 1), performance.withCorrectAnswer()),
                 () -> assertEquals(new Performance(5, 3, 1), performance.withWrongAnswer()),
+                () -> assertEquals(new Performance(5, 2, 2), performance.withHint()),
                 () -> assertEquals(new Performance(5, 2, 1), performance));
     }
 }

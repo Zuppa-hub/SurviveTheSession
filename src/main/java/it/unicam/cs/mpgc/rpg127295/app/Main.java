@@ -16,6 +16,7 @@ public final class Main {
         try {
             GameContent content = GameContent.load(
                     new XmlDocumentLoader(GameContent.CONTENT_ROOT, GameContent.SCHEMA_ROOT));
+            GameEffects.of(content.items());
             System.out.println("RPG avviato: " + content.exams().all().size() + " esami caricati");
         } catch (ContentException error) {
             System.err.println("Impossibile avviare il gioco, contenuti non validi:");

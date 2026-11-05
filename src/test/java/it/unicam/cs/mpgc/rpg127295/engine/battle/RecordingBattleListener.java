@@ -12,6 +12,7 @@ final class RecordingBattleListener implements BattleListener {
     final List<Boolean> evaluations = new ArrayList<>();
     final List<Integer> ticks = new ArrayList<>();
     final List<BattleOutcome> outcomes = new ArrayList<>();
+    final List<BattleState> effects = new ArrayList<>();
 
     @Override
     public void onQuestionPresented(PresentedQuestion question, OptionalInt secondsToAnswer) {
@@ -32,5 +33,10 @@ final class RecordingBattleListener implements BattleListener {
     @Override
     public void onBattleEnded(BattleOutcome outcome) {
         outcomes.add(outcome);
+    }
+
+    @Override
+    public void onEffectApplied(BattleState state) {
+        effects.add(state);
     }
 }

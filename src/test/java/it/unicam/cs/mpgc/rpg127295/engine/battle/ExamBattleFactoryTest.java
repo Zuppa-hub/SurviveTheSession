@@ -35,8 +35,12 @@ class ExamBattleFactoryTest {
             new StudentProfile("nerd", "Secchione", "Studia sempre", Stats.initial(5, 6, 4)));
 
     private ExamBattleFactory factory(Map<ExamType, ExamStrategy> strategies, QuestionRepository questions) {
-        return new ExamBattleFactory(strategies, questions, FixedBattleRules.standard(), CALCULATOR, timer,
-                FakeRandom.first());
+        return new ExamBattleFactory(strategies, questions, services());
+    }
+
+    private BattleServices services() {
+        return new BattleServices(FixedBattleRules.standard(), CALCULATOR, timer, FakeRandom.first(),
+                BattleEffects.none());
     }
 
     @Test
@@ -85,24 +89,33 @@ class ExamBattleFactoryTest {
     void rejectsNullArguments() {
         ExamBattleFactory factory = factory(ExamBattleTest.strategies(), QUESTIONS);
         Map<ExamType, ExamStrategy> strategies = ExamBattleTest.strategies();
-        FixedBattleRules rules = FixedBattleRules.standard();
-        FakeRandom random = FakeRandom.first();
+        BattleServices services = services();
 
         assertAll(
-                () -> assertThrows(NullPointerException.class,
-                        () -> new ExamBattleFactory(null, QUESTIONS, rules, CALCULATOR, timer, random)),
-                () -> assertThrows(NullPointerException.class,
-                        () -> new ExamBattleFactory(strategies, null, rules, CALCULATOR, timer, random)),
-                () -> assertThrows(NullPointerException.class,
-                        () -> new ExamBattleFactory(strategies, QUESTIONS, null, CALCULATOR, timer, random)),
-                () -> assertThrows(NullPointerException.class,
-                        () -> new ExamBattleFactory(strategies, QUESTIONS, rules, null, timer, random)),
-                () -> assertThrows(NullPointerException.class,
-                        () -> new ExamBattleFactory(strategies, QUESTIONS, rules, CALCULATOR, null, random)),
-                () -> assertThrows(NullPointerException.class,
-                        () -> new ExamBattleFactory(strategies, QUESTIONS, rules, CALCULATOR, timer, null)),
+                () -> assertThrows(NullPointerException.class, () -> new ExamBattleFactory(null, QUESTIONS, services)),
+                () -> assertThrows(NullPointerException.class, () -> new ExamBattleFactory(strategies, null, services)),
+                () -> assertThrows(NullPointerException.class, () -> new ExamBattleFactory(strategies, QUESTIONS, null)),
                 () -> assertThrows(NullPointerException.class,
                         () -> factory.create(null, ExamBattleTest.exam(ExamType.ORAL))),
                 () -> assertThrows(NullPointerException.class, () -> factory.create(student, null)));
+    }
+
+    @Test
+    void servicesRejectNullArguments() {
+        FixedBattleRules rules = FixedBattleRules.standard();
+        FakeRandom random = FakeRandom.first();
+        BattleEffects effects = BattleEffects.none();
+
+        assertAll(
+                () -> assertThrows(NullPointerException.class,
+                        () -> new BattleServices(null, CALCULATOR, timer, random, effects)),
+                () -> assertThrows(NullPointerException.class,
+                        () -> new BattleServices(rules, null, timer, random, effects)),
+                () -> assertThrows(NullPointerException.class,
+                        () -> new BattleServices(rules, CALCULATOR, null, random, effects)),
+                () -> assertThrows(NullPointerException.class,
+                        () -> new BattleServices(rules, CALCULATOR, timer, null, effects)),
+                () -> assertThrows(NullPointerException.class,
+                        () -> new BattleServices(rules, CALCULATOR, timer, random, null)));
     }
 }

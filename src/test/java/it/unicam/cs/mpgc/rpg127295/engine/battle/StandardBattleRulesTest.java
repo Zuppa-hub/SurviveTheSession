@@ -57,6 +57,14 @@ class StandardBattleRulesTest {
     }
 
     @Test
+    void theEffectsHaveTheirValues() {
+        assertAll(
+                () -> assertEquals(15, rules.extraSeconds()),
+                () -> assertEquals(4, rules.energyRestored()),
+                () -> assertEquals(2, rules.boostedDamageMultiplier()));
+    }
+
+    @Test
     void rejectsNullArguments() {
         assertAll(
                 () -> assertThrows(NullPointerException.class, () -> rules.resistanceOf(null)),

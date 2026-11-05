@@ -4,6 +4,7 @@ import it.unicam.cs.mpgc.rpg127295.engine.grading.Performance;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamStrategy;
 import it.unicam.cs.mpgc.rpg127295.engine.timer.TimerListener;
 import it.unicam.cs.mpgc.rpg127295.model.exam.Exam;
+import it.unicam.cs.mpgc.rpg127295.model.item.Item;
 import it.unicam.cs.mpgc.rpg127295.model.question.Question;
 import it.unicam.cs.mpgc.rpg127295.model.student.Student;
 import java.util.ArrayList;
@@ -22,6 +23,8 @@ import java.util.OptionalInt;
  *       passed and failed.</li>
  *   <li>With no energy left the exam is failed, without a grade; {@link #retire()} ends it
  *       without a grade too.</li>
+ *   <li>While a question waits for an answer, items and abilities apply their
+ *       {@link BattleEffect}, which changes the battle only through {@link BattleControls}.</li>
  * </ul>
  * Not thread-safe: every call, timer notifications included, must come from the same thread.
  * No {@code equals}: a battle has no stable identity.
@@ -35,6 +38,7 @@ public final class ExamBattle {
     private final BattleServices services;
     private final List<BattleListener> listeners = new ArrayList<>();
     private final TimerListener clock = new Clock();
+    private final BattleControls controls = new Controls();
     private final int maxResistance;
 
     private int resistance;
@@ -42,6 +46,8 @@ public final class ExamBattle {
     private Optional<PresentedQuestion> currentQuestion = Optional.empty();
     private Optional<AnswerResult> lastAnswer = Optional.empty();
     private Optional<BattleOutcome> outcome = Optional.empty();
+    private boolean timed;
+    private boolean nextCorrectAnswerDoubled;
     private boolean begun;
 
     ExamBattle(Student student, Exam exam, ExamStrategy strategy, QuestionPool pool, BattleServices services) {
@@ -97,8 +103,46 @@ public final class ExamBattle {
         end(BattleOutcome.retired(performance));
     }
 
+    /** @return the abilities the student can use in this battle */
+    public List<Ability> abilities() {
+        return services.effects().abilities();
+    }
+
+    /** @return true if {@link #useItem(Item)} would succeed now */
+    public boolean canUse(Item item) {
+        return refusalOf(attemptToUse(item)).isEmpty();
+    }
+
+    /** @return true if {@link #useAbility(Ability)} would succeed now */
+    public boolean canUse(Ability ability) {
+        return refusalOf(attemptToUse(ability)).isEmpty();
+    }
+
+    /**
+     * Uses one unit of an owned item and applies its effect.
+     *
+     * @throws IllegalArgumentException if the item has no effect
+     * @throws IllegalStateException    if no question is waiting for an answer, the item is not
+     *                                  owned or its effect cannot be used now
+     */
+    public void useItem(Item item) {
+        use(attemptToUse(item));
+    }
+
+    /**
+     * Spends the concentration of an ability and applies its effect.
+     *
+     * @throws IllegalArgumentException if the ability is not available in this battle
+     * @throws IllegalStateException    if no question is waiting for an answer, concentration is
+     *                                  not enough or the effect cannot be used now
+     */
+    public void useAbility(Ability ability) {
+        use(attemptToUse(ability));
+    }
+
     public BattleState state() {
-        return new BattleState(resistance, maxResistance, student.stats(), performance, currentQuestion, lastAnswer);
+        return new BattleState(resistance, maxResistance, student.stats(), performance,
+                currentQuestion, lastAnswer, timed, nextCorrectAnswerDoubled);
     }
 
     /** @return the outcome, or empty while the battle is in progress */
@@ -108,6 +152,52 @@ public final class ExamBattle {
 
     public boolean isOver() {
         return outcome.isPresent();
+    }
+
+    private Attempt attemptToUse(Item item) {
+        Objects.requireNonNull(item, "Item must not be null");
+        return new Attempt(item.name(), services.effects().effectOf(item),
+                student.inventory().contains(item), "is not owned",
+                () -> student.inventory().remove(item));
+    }
+
+    private Attempt attemptToUse(Ability ability) {
+        Objects.requireNonNull(ability, "Ability must not be null");
+        Optional<BattleEffect> effect = Optional.of(ability.effect())
+                .filter(available -> services.effects().hasAbility(ability));
+        int cost = ability.concentrationCost();
+        return new Attempt(ability.name(), effect, student.stats().canSpend(cost), "needs more concentration",
+                () -> student.updateStats(stats -> stats.spendConcentration(cost)));
+    }
+
+    /**
+     * The single check behind {@code canUse} and {@code use}: the reason why the attempt is
+     * refused, or empty if it can be used.
+     */
+    private Optional<RuntimeException> refusalOf(Attempt attempt) {
+        if (currentQuestion.isEmpty()) {
+            return Optional.of(new IllegalStateException("No question is waiting for an answer"));
+        }
+        if (attempt.effect().isEmpty()) {
+            return Optional.of(new IllegalArgumentException(attempt.name() + " has no effect in this battle"));
+        }
+        if (!attempt.affordable()) {
+            return Optional.of(new IllegalStateException(attempt.name() + " " + attempt.notAffordableReason()));
+        }
+        if (!attempt.effect().get().canBeUsedIn(state())) {
+            return Optional.of(new IllegalStateException(attempt.name() + " cannot be used now"));
+        }
+        return Optional.empty();
+    }
+
+    private void use(Attempt attempt) {
+        refusalOf(attempt).ifPresent(refusal -> {
+            throw refusal;
+        });
+        attempt.payment().run();
+        attempt.effect().orElseThrow().applyTo(controls);
+        BattleState state = state();
+        listeners.forEach(listener -> listener.onEffectApplied(state));
     }
 
     private Question requireCurrentQuestion() {
@@ -123,6 +213,7 @@ public final class ExamBattle {
             punishMistake();
         }
         currentQuestion = Optional.empty();
+        timed = false;
         lastAnswer = Optional.of(new AnswerResult(question, correct));
         BattleState state = state();
         listeners.forEach(listener -> listener.onAnswerEvaluated(correct, state));
@@ -130,10 +221,16 @@ public final class ExamBattle {
     }
 
     private void rewardCorrectAnswer() {
-        resistance = Math.max(0, resistance - services.rules().damageOf(student.stats()));
+        resistance = Math.max(0, resistance - damage());
+        nextCorrectAnswerDoubled = false;
         int concentration = services.rules().concentrationPerCorrectAnswer();
         student.updateStats(stats -> stats.recoverConcentration(concentration));
         performance = performance.withCorrectAnswer();
+    }
+
+    private int damage() {
+        int damage = services.rules().damageOf(student.stats());
+        return nextCorrectAnswerDoubled ? damage * services.rules().boostedDamageMultiplier() : damage;
     }
 
     private void punishMistake() {
@@ -160,6 +257,7 @@ public final class ExamBattle {
         PresentedQuestion presented = PresentedQuestion.of(question, services.random());
         currentQuestion = Optional.of(presented);
         OptionalInt seconds = strategy.secondsPerQuestion();
+        timed = seconds.isPresent();
         listeners.forEach(listener -> listener.onQuestionPresented(presented, seconds));
         seconds.ifPresent(time -> services.timer().start(time, clock));
     }
@@ -173,6 +271,7 @@ public final class ExamBattle {
     private void end(BattleOutcome result) {
         services.timer().stop();
         currentQuestion = Optional.empty();
+        timed = false;
         outcome = Optional.of(result);
         listeners.forEach(listener -> listener.onBattleEnded(result));
     }
@@ -190,5 +289,55 @@ public final class ExamBattle {
             currentQuestion.map(PresentedQuestion::question)
                     .ifPresent(question -> evaluate(question, false));
         }
+    }
+
+    /**
+     * What an effect may change, and nothing else (encapsulation: the change is not forbidden,
+     * it is controlled). Passed only to effects whose use has been checked.
+     */
+    private final class Controls implements BattleControls {
+
+        private static final int WRONG_OPTIONS_REMOVED = 2;
+
+        @Override
+        public void addExtraTime() {
+            services.timer().addSeconds(services.rules().extraSeconds());
+        }
+
+        @Override
+        public void removeTwoWrongOptions() {
+            currentQuestion = currentQuestion.map(
+                    question -> question.withoutWrongOptions(WRONG_OPTIONS_REMOVED, services.random()));
+        }
+
+        @Override
+        public void showHint() {
+            currentQuestion = currentQuestion.map(PresentedQuestion::withHintShown);
+            performance = performance.withHint();
+        }
+
+        @Override
+        public void restoreEnergy() {
+            int energy = services.rules().energyRestored();
+            student.updateStats(stats -> stats.restoreEnergy(energy));
+        }
+
+        @Override
+        public void doubleNextCorrectAnswer() {
+            nextCorrectAnswerDoubled = true;
+        }
+    }
+
+    /**
+     * An attempt to use an item or an ability, so that both go through the same checks.
+     *
+     * @param name                shown in the error messages
+     * @param effect              the effect, empty if not available in this battle
+     * @param affordable          whether the item is owned or the concentration is enough
+     * @param notAffordableReason the message when it is not affordable
+     * @param payment             consumes the item or spends the concentration
+     */
+    private record Attempt(String name, Optional<BattleEffect> effect, boolean affordable,
+                           String notAffordableReason, Runnable payment) {
     }
 }

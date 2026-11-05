@@ -13,7 +13,8 @@ import java.util.Objects;
  *   <li>resistance = credits x 2, 3 or 4 for an easy, medium or hard exam;</li>
  *   <li>damage of a correct answer = 4 + knowledge / 2;</li>
  *   <li>energy lost for a mistake = 1, 2 or 3 for an easy, medium or hard exam;</li>
- *   <li>a correct answer recovers 1 concentration point.</li>
+ *   <li>a correct answer recovers 1 concentration point;</li>
+ *   <li>effects: 15 extra seconds, 4 energy points restored, boosted damage doubled.</li>
  * </ul>
  * The values per difficulty are in {@link EnumMap}s instead of a {@code switch}.
  */
@@ -22,6 +23,9 @@ public final class StandardBattleRules implements BattleRules {
     private static final int BASE_DAMAGE = 4;
     private static final int KNOWLEDGE_DIVISOR = 2;
     private static final int CONCENTRATION_PER_CORRECT_ANSWER = 1;
+    private static final int EXTRA_SECONDS = 15;
+    private static final int ENERGY_RESTORED = 4;
+    private static final int BOOSTED_DAMAGE_MULTIPLIER = 2;
 
     private final Map<Difficulty, Integer> resistancePerCredit = new EnumMap<>(Map.of(
             Difficulty.EASY, 2,
@@ -54,5 +58,20 @@ public final class StandardBattleRules implements BattleRules {
     @Override
     public int concentrationPerCorrectAnswer() {
         return CONCENTRATION_PER_CORRECT_ANSWER;
+    }
+
+    @Override
+    public int extraSeconds() {
+        return EXTRA_SECONDS;
+    }
+
+    @Override
+    public int energyRestored() {
+        return ENERGY_RESTORED;
+    }
+
+    @Override
+    public int boostedDamageMultiplier() {
+        return BOOSTED_DAMAGE_MULTIPLIER;
     }
 }

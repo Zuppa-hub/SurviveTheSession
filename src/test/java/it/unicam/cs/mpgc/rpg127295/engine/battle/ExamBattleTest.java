@@ -62,8 +62,9 @@ class ExamBattleTest {
     }
 
     private ExamBattle battle(ExamType type, GradeCalculator calculator) {
-        ExamBattleFactory factory = new ExamBattleFactory(strategies(), subject -> questions,
-                FixedBattleRules.standard(), calculator, timer, FakeRandom.first());
+        BattleServices services = new BattleServices(FixedBattleRules.standard(), calculator, timer,
+                FakeRandom.first(), BattleEffects.none());
+        ExamBattleFactory factory = new ExamBattleFactory(strategies(), subject -> questions, services);
         ExamBattle battle = factory.create(student, exam(type));
         battle.addListener(listener);
         return battle;
