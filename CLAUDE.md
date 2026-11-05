@@ -42,6 +42,7 @@ Prefisso minuscolo seguito da testo in italiano:
 - `build:` configurazione Gradle e dipendenze
 - `test:` test (in TDD: commit dei test che falliscono, prima dell'implementazione)
 - `feat:` nuova funzionalità o implementazione che fa passare i test
+- `fix:` correzione di un errore, anche nei contenuti (domande, profili, esami)
 - `refactor:` modifica della struttura senza cambiare il comportamento
 - `docs:` documentazione (design, README, Wiki, registro AI)
 
