@@ -60,15 +60,17 @@ Il profilo determina le statistiche iniziali. Tre profili, definiti in un file d
 ### 2.6 Oggetti e abilità
 | Oggetto | Effetto | Usabile su |
 |---|---|---|
-| Caffè | +15 secondi alla domanda corrente | solo esami a tempo |
-| Appunti | elimina due opzioni sbagliate (50/50) | solo domande a scelta |
-| Riassunto | mostra l'indizio della domanda | domande con indizio |
-| Energy drink | recupera Energia | sempre |
+| Caffè | +15 secondi alla domanda corrente | solo se la domanda corrente ha il timer |
+| Appunti | elimina due opzioni sbagliate (50/50) | solo se restano almeno 3 opzioni sbagliate visibili (quindi una volta per domanda, mai sul Vero/Falso né sul completamento) |
+| Riassunto | mostra l'indizio della domanda | domande con indizio non ancora mostrato |
+| Energy drink | recupera 4 punti di Energia, senza superare il massimo | solo se l'Energia non è al massimo |
 
 | Abilità | Costo Concentrazione | Effetto |
 |---|---|---|
-| Ripasso lampo | 2 | mostra l'indizio |
-| Colpo di genio | 3 | la prossima risposta corretta vale doppio |
+| Ripasso lampo | 2 | mostra l'indizio (stesso effetto del Riassunto) |
+| Colpo di genio | 3 | la prossima risposta corretta vale doppio danno; non si accumula, un errore non lo annulla, finisce con lo scontro |
+
+Un indizio conta come penalità nel voto una sola volta per domanda, da qualunque fonte arrivi. Oggetti e abilità si usano solo mentre una domanda attende risposta; un oggetto o un'abilità non applicabile non viene consumato.
 
 Oggetti ottenuti come ricompensa a fine esame (in base al voto).
 
@@ -105,12 +107,13 @@ model
 engine
   battle       ExamBattle, ExamBattleFactory, BattleServices, BattleState, BattleOutcome,
                BattleResult, BattleListener, QuestionPool, PresentedQuestion, AnswerResult,
-               BattleRules, StandardBattleRules, ExamStrategy (interfaccia, con chi la usa)
+               BattleRules, StandardBattleRules, ExamStrategy (interfaccia, con chi la usa),
+               BattleEffect, BattleControls, BattleEffects, Ability (record: nome, costo, effetto)
   strategy     WrittenExamStrategy, OralExamStrategy, ProjectExamStrategy (solo implementazioni:
                strategy dipende da battle, mai il contrario)
   grading      GradeCalculator, PerformanceGradeCalculator, Performance
-  item         ItemEffect, CoffeeEffect, NotesEffect, SummaryEffect, EnergyDrinkEffect
-  ability      Ability, QuickReview, StrokeOfGenius
+  effect       ExtraTimeEffect, FiftyFiftyEffect, HintEffect, EnergyRestoreEffect, DoubleDamageEffect
+               (solo implementazioni di BattleEffect: effect dipende da battle, mai il contrario)
   timer        QuestionTimer, TimerListener, ScheduledQuestionTimer
   game         Game (partita: studente + sessione + progressione), RewardPolicy
   repository   QuestionRepository, ExamCatalog, ProfileCatalog, ItemCatalog, SaveGameRepository,
@@ -203,11 +206,24 @@ public final class Item {
     public String description();
 }
 
-/** engine.item: il comportamento di un oggetto durante un esame.
- *  L'associazione Item → ItemEffect è una Map costruita in app e passata all'engine. */
-public interface ItemEffect {
+/** engine.battle: l'effetto di un oggetto o di un'abilità durante un esame.
+ *  Oggetti: Map<Item, BattleEffect> costruita in app. Abilità: dati, record Ability(nome,
+ *  costo in Concentrazione, BattleEffect). Così "mostra indizio" (Riassunto e Ripasso lampo)
+ *  si scrive una volta sola (HintEffect). */
+public interface BattleEffect {
     boolean canBeUsedIn(BattleState state);
-    void applyTo(ExamBattle battle);
+    void applyTo(BattleControls controls);
+}
+
+/** Interfaccia ristretta con cui un effetto modifica lo scontro (incapsulamento: la modifica
+ *  non è vietata, è controllata). La implementa una classe interna privata di ExamBattle;
+ *  ExamBattle espone solo useItem/useAbility, che verificano prima di applicare. */
+public interface BattleControls {
+    void addExtraTime();              // BattleRules.extraSeconds()
+    void removeTwoWrongOptions();     // dalla PresentedQuestion corrente, scelte con il RandomGenerator
+    void showHint();                  // una volta per domanda: Performance.withHint()
+    void restoreEnergy();             // BattleRules.energyRestored()
+    void doubleNextCorrectAnswer();   // BattleRules.boostedDamageMultiplier()
 }
 
 // engine.repository: interfacce definite dall'engine (che le usa) e implementate in persistence (DIP)
@@ -236,17 +252,17 @@ public interface BattleListener {
 |---|---|
 | Incapsulamento, validazione nei costruttori | Stats, Grade, Exam, Student (fail fast, `IllegalArgumentException`) |
 | Ereditarietà, classi astratte | `AbstractQuestion` (campi comuni di tutte le domande), `AbstractChoiceQuestion` |
-| Interfacce, polimorfismo | Question, ExamStrategy, ItemEffect, Ability, GradeCalculator, BattleRules; Visitor (`QuestionVisitor`) al posto di `instanceof` sul tipo di domanda |
-| SRP | Transcript registra gli esami superati (senza doppioni) e calcola media ponderata sui CFU e CFU totali, e nient'altro: **non** contiene la regola di laurea né il voto di laurea (è la violazione di SRP vista a lezione con `puoLaurearsi()` in `Libretto`), che stanno in Game (#8); la formattazione dei voti sta in Grade; la stampa sta nella UI; dati e comportamento degli oggetti sono separati (Item nel model, ItemEffect nell'engine) |
-| OCP | nuovo tipo di esame, domanda, oggetto, abilità = nuova classe, nessuna modifica all'engine; nell'engine nessuno `switch`/`if` su `ExamType`: l'associazione tipo → strategia è una `EnumMap<ExamType, ExamStrategy>` costruita in `app` e passata all'engine; allo stesso modo un nuovo oggetto = nuovo `ItemEffect` + una voce nella `Map<Item, ItemEffect>` costruita in `app` |
+| Interfacce, polimorfismo | Question, ExamStrategy, BattleEffect, GradeCalculator, BattleRules; Visitor (`QuestionVisitor`) al posto di `instanceof` sul tipo di domanda |
+| SRP | Transcript registra gli esami superati (senza doppioni) e calcola media ponderata sui CFU e CFU totali, e nient'altro: **non** contiene la regola di laurea né il voto di laurea (è la violazione di SRP vista a lezione con `puoLaurearsi()` in `Libretto`), che stanno in Game (#8); la formattazione dei voti sta in Grade; la stampa sta nella UI; dati e comportamento degli oggetti sono separati (Item nel model, BattleEffect nell'engine) |
+| OCP | nuovo tipo di esame, domanda, oggetto, abilità = nuova classe, nessuna modifica all'engine; nell'engine nessuno `switch`/`if` su `ExamType`: l'associazione tipo → strategia è una `EnumMap<ExamType, ExamStrategy>` costruita in `app` e passata all'engine; allo stesso modo un nuovo oggetto = un `BattleEffect` (nuovo o esistente) + una voce nella mappa id → effetto costruita in `app`; una nuova abilità = un record `Ability` con un effetto |
 | LSP | contratti espliciti in Javadoc; metodi di validazione condivisi (es. `Grade.of(int)` unico punto di creazione) |
 | ISP | ChoiceQuestion separata da Question; listener piccoli e separati |
-| DIP | ExamBattle dipende da ExamStrategy, GradeCalculator, QuestionTimer, ItemEffect; Game dipende da SaveGameRepository; le interfacce di repository e cataloghi stanno in `engine.repository` (dalla parte di chi le usa) e `persistence` le implementa: la dipendenza va da `persistence` verso `engine`; tutto collegato in `app` |
+| DIP | ExamBattle dipende da ExamStrategy, GradeCalculator, QuestionTimer, BattleEffect; Game dipende da SaveGameRepository; le interfacce di repository e cataloghi stanno in `engine.repository` (dalla parte di chi le usa) e `persistence` le implementa: la dipendenza va da `persistence` verso `engine`; tutto collegato in `app` |
 | Clean Code | nomi significativi, metodi piccoli, niente codice commentato, DRY, niente liste parallele (data clumping) |
 | Package | struttura per responsabilità (3.2) |
 | List | domande della sessione, ordine degli esami |
 | HashSet + equals/hashCode | esami superati; domande già poste nello scontro (`QuestionPool`, per non ripeterle); identità per `id` |
-| HashMap | libretto `Map<Exam, Grade>`; inventario `Map<Item, Integer>` (quantità); effetti `Map<Item, ItemEffect>` in `app` |
+| HashMap | libretto `Map<Exam, Grade>`; inventario `Map<Item, Integer>` (quantità); effetti `Map<Item, BattleEffect>` costruita in `app` |
 | Stream API | media ponderata, CFU totali, filtri domande per difficoltà, statistiche; catene lunghe spezzate in metodi con nome |
 | Modelli di esecuzione | GUI event-driven; timer della domanda su thread separato (ScheduledExecutorService) con passaggio al thread JavaFX via `Platform.runLater`; stato condiviso protetto |
 | Gradle | build, run, test, dipendenze, plugin JavaFX |
@@ -313,7 +329,7 @@ I controller non contengono regole di gioco: traducono eventi in chiamate all'en
 | 5 | Persistence: XML + XSD + XPath per profili, esami e domande; prima materia | `feature/xml-content` |
 | 6 | Engine: GradeCalculator e Performance con test | `feature/grading` |
 | 7 (7a) | Engine: ExamBattle e strategie d'esame (con timer finto nei test) | `feature/battle` |
-| 22 (7b) | Engine: effetti degli oggetti (ItemEffect) e abilità | `feature/item-effects` |
+| 22 (7b) | Engine: effetti degli oggetti e abilità (BattleEffect) | `feature/item-effects` |
 | 23 (7c) | Engine: timer concorrente (ScheduledQuestionTimer) | `feature/question-timer` |
 | 8 | Engine: Game, progressione, ricompense | `feature/game` |
 | 9 | Persistence: salvataggi JSON con Gson, SaveMapper, test | `feature/save-json` |
