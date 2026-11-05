@@ -57,6 +57,8 @@ Esempio: `feat: Grade con validazione 18-31 e lode`
   implementazioni concrete.
 
 ## Modo di lavorare
+- **Wiki aggiornata a ogni issue chiusa**: quando si chiude una issue si aggiorna la pagina
+  della Wiki corrispondente in `docs/wiki/` (indice in `docs/wiki/Home.md`).
 - **Spiegare prima di procedere**: prima di passare al passo successivo, spiegare allo
   studente cosa è stato fatto e perché, in modo che il codice sia compreso e non solo
   generato.

@@ -197,6 +197,7 @@ duplicazione, proponendo prima la soluzione.
 ---
 
 ## 2026-11-05 (sesta parte) — Calcolo del voto (issue #6) e divisione della #7
+## 2026-11-05 (quinta parte) — README e Wiki
 
 **Strumento:** Claude Code (Claude Opus 5.5)
 
@@ -216,6 +217,17 @@ astratto; dividere la #7 in tre issue (scontro e strategie, oggetti e abilità, 
 - `GradeCalculatorContractTest` astratto su una griglia di 484 prestazioni, esteso da
   `PerformanceGradeCalculatorTest`. Verificato che fallisca rendendo la penalità un bonus.
   351 test verdi.
+Riscrivere il README dal template del corso senza segnaposto; creare `docs/wiki/` con
+`Home.md` (descrizione e indice delle pagine di design §6) e una bozza di
+`Classi-e-interfacce.md` per il model; aggiungere a `CLAUDE.md` la regola di aggiornare la
+Wiki a ogni issue chiusa.
+
+**Prodotto dall'AI:**
+- `README.md`: descrizione, prerequisiti, comandi `build`/`run`/`test`, struttura dei
+  package, sezione breve sull'uso dell'AI.
+- `docs/wiki/Home.md` con avvio rapido e indice (stato di ogni pagina);
+  `docs/wiki/Classi-e-interfacce.md` con le scelte del model motivate.
+- Regola sulla Wiki in `CLAUDE.md`.
 
 **Modificato / verificato da me:**
 - [ ] _da completare_
