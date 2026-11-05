@@ -282,11 +282,12 @@ public interface BattleListener {
 - Classi senza identità chiara e stabile (ExamBattle, Game): **niente equals** (lezione 13).
 
 ### 3.6 Concorrenza (timer degli scritti)
-- `QuestionTimer` (interfaccia) con `start(int seconds, TimerListener listener)`, `addSeconds(int)`, `stop()`.
-- `ScheduledQuestionTimer` usa uno `ScheduledExecutorService` a thread singolo che decrementa il tempo ogni secondo. Il tempo rimanente è condiviso tra il thread del timer e il thread della UI (Caffè aggiunge secondi): va protetto (`synchronized` o `AtomicInteger`). Nella Wiki si spiega il perché con il caso della race condition visto a lezione.
-- L'engine non sa nulla di JavaFX: l'adattatore in `ui` inoltra le notifiche con `Platform.runLater`.
-- Il timer viene fermato a fine scontro e alla chiusura dell'app (`shutdown`).
-- Nei test si usa un `ManualQuestionTimer` che avanza solo quando il test lo chiede.
+- `QuestionTimer` (interfaccia) con `start(int seconds, TimerListener listener)`, `addSeconds(int)`, `stop()`. Contratto: dopo `stop()` o un nuovo `start()` nessuna notifica del conto alla rovescia precedente raggiunge un listener.
+- `ScheduledQuestionTimer(ScheduledExecutorService scheduler, Executor notifier)`: `scheduleAtFixedRate` ogni secondo su uno scheduler a thread singolo (daemon) creato in `app`. Il timer non possiede lo scheduler: lo chiude chi lo crea, con `shutdownNow()` in `Application.stop()` (#11).
+- **Notifiche tramite l'`Executor`**: in `app` `Platform::runLater`, nei test un esecutore diretto o in coda. Così `ExamBattle` viene modificato sempre dal solo thread della UI e resta non thread-safe per scelta (thread confinement). Le notifiche si consegnano **fuori dal lock**: chiamare codice esterno tenendo un lock rischia il deadlock.
+- **Stato condiviso protetto con `synchronized`**: tempo residuo, `ScheduledFuture`, listener e numero di generazione cambiano insieme (tick sul thread del timer, `addSeconds` del Caffè e `start`/`stop` sul thread della UI). `AtomicInteger` renderebbe atomico solo il contatore, non l'invariante su più campi. Nella Wiki si spiega il perché con la race condition del contatore della lezione 16.
+- **Scadenze vecchie ignorate**: ogni `start()` e `stop()` incrementa un numero di generazione; ogni tick e ogni notifica ricorda la generazione in cui è nato e, alla consegna, viene scartato se non è più quella corrente. Così una scadenza già in coda che arriva dopo la risposta non conta sulla domanda successiva.
+- Nei test niente tempo reale: `ManualQuestionTimer` per lo scontro; per `ScheduledQuestionTimer` uno scheduler manuale (registra il compito senza pianificarlo, il test fa scattare i secondi) e un esecutore in coda che simula la coda di `Platform.runLater`.
 
 ### 3.7 Persistenza
 - **Contenuti (sola lettura)**: XML in `resources/content`, validati con XSD all'avvio. Un errore nei contenuti blocca l'avvio con messaggio chiaro (fail fast). I file si leggono con `getResourceAsStream`, gli schemi dal loro URL (`getResource`) così gli `xs:include` si risolvono anche dentro il JAR. Ogni errore diventa una `ContentException` (file, riga, colonna o id). Le domande si costruiscono con una `Map<String, QuestionParser>` (nome dell'elemento → parser) costruita in `app`: nessuno `switch` sul tipo di domanda. XPath serve per leggere i campi relativi a un elemento; i filtri sulle domande si fanno con gli Stream nell'engine.
@@ -333,6 +334,7 @@ I controller non contengono regole di gioco: traducono eventi in chiamate all'en
 | 23 (7c) | Engine: timer concorrente (ScheduledQuestionTimer) | `feature/question-timer` |
 | 8 | Engine: Game, progressione, ricompense | `feature/game` |
 | 9 | Persistence: salvataggi JSON con Gson, SaveMapper, test | `feature/save-json` |
+| 29 | Persistence: annotation `@QuestionElement` per i parser delle domande (lezione 03) | `feature/question-element` |
 | 10 | UI: menu, nuova partita, sessione | `feature/ui-session` |
 | 11 | UI: schermata esame, timer reale, esito, laurea | `feature/ui-battle` |
 | 12 | Contenuti: le cinque materie complete, bilanciamento | `feature/content` |
