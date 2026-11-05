@@ -23,6 +23,21 @@ public record Performance(int correctAnswers, int wrongAnswers, int hintsUsed) {
         requireNonNegative(hintsUsed, "Hints used");
     }
 
+    /** @return the performance before the first answer */
+    public static Performance none() {
+        return new Performance(0, 0, 0);
+    }
+
+    /** @return a new performance with one more correct answer */
+    public Performance withCorrectAnswer() {
+        return new Performance(correctAnswers + 1, wrongAnswers, hintsUsed);
+    }
+
+    /** @return a new performance with one more wrong answer */
+    public Performance withWrongAnswer() {
+        return new Performance(correctAnswers, wrongAnswers + 1, hintsUsed);
+    }
+
     /** @return the number of answers given, correct or wrong */
     public int answered() {
         return correctAnswers + wrongAnswers;
