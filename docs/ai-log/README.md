@@ -18,3 +18,4 @@ giorno: in ordine alfabetico sono già in ordine cronologico.
 | 2026-11-05 | [README e Wiki](2026-11-05-05-readme-e-wiki.md) |
 | 2026-11-05 | [Calcolo del voto (issue #6) e divisione della #7](2026-11-05-06-calcolo-del-voto.md) |
 | 2026-11-05 | [Correzioni dopo la revisione delle domande](2026-11-05-07-correzioni-alle-domande.md) |
+| 2026-11-05 | [Registro AI diviso in un file per sessione](2026-11-05-08-registro-diviso-per-sessione.md) |
