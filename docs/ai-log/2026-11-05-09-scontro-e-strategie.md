@@ -23,6 +23,9 @@ il `GradeCalculator`; il Progetto non filtra per tipo di domanda.
   `BattleState`, `AnswerResult`, `BattleOutcome` (voto se e solo se superato), strategie con
   `ExamStrategyContractTest`, `QuestionTimer`/`TimerListener`, `ExamBattle` ed
   `ExamBattleFactory`; `Performance.none/withCorrectAnswer/withWrongAnswer`.
+- Refactor richiesto prima del merge: `ExamStrategy` spostata in `engine.battle` per
+  eliminare il ciclo con `engine.strategy` (DIP); design e Wiki aggiornati. Requisiti
+  annotati nella issue #23 (Executor per le notifiche, scadenze superate, tempo protetto).
 - Nei test: `ManualQuestionTimer`, `FakeRandom`, regole fisse, calcolatori come lambda.
   Verificato che togliendo `harder()` dall'orale falliscano tre test. 463 test verdi.
 
