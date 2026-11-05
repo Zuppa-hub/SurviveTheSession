@@ -1,6 +1,7 @@
 package it.unicam.cs.mpgc.rpg127295.model.question;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -91,5 +92,10 @@ class FillInQuestionTest extends QuestionContractTest {
                 () -> assertThrows(NullPointerException.class,
                         () -> new FillInQuestion(details("Q-1", "Domanda"), new HashSet<>(Arrays.asList("LIFO", null)))),
                 () -> assertThrows(NullPointerException.class, () -> new FillInQuestion(null, ACCEPTED)));
+    }
+
+    @Test
+    void isVisitedAsAFillInQuestion() {
+        assertEquals(CategoryVisitor.FILL_IN, question().accept(new CategoryVisitor()));
     }
 }

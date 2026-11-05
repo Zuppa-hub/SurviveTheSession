@@ -4,8 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -101,16 +103,32 @@ abstract class QuestionContractTest {
                 () -> assertNotEquals("Q-1", question()));
     }
 
+    @Test
+    void acceptPassesTheQuestionItselfToTheVisitor() {
+        Question question = question();
+
+        assertSame(question, question.accept(new IdentityVisitor()));
+    }
+
     /** A minimal question of a different kind, used to check equality across types. */
-    private static final class AnotherKindOfQuestion extends AbstractQuestion {
+    private static final class AnotherKindOfQuestion extends AbstractChoiceQuestion {
 
         AnotherKindOfQuestion(QuestionDetails details) {
-            super(details);
+            super(details, List.of("a", "b"), "a");
+        }
+    }
+
+    /** Returns the visited question, whatever its category. */
+    private static final class IdentityVisitor implements QuestionVisitor<Question> {
+
+        @Override
+        public Question visitChoice(ChoiceQuestion question) {
+            return question;
         }
 
         @Override
-        public boolean isCorrect(String answer) {
-            return false;
+        public Question visitFillIn(FillInQuestion question) {
+            return question;
         }
     }
 }
