@@ -31,4 +31,21 @@ record FixedBattleRules(int resistance, int damage, int energyLoss, int concentr
     public int concentrationPerCorrectAnswer() {
         return concentration;
     }
+
+    /** 15, as in the standard rules. */
+    @Override
+    public int extraSeconds() {
+        return 15;
+    }
+
+    /** 3: less than the energy lost by two mistakes, so the tests can see the cap. */
+    @Override
+    public int energyRestored() {
+        return 3;
+    }
+
+    @Override
+    public int boostedDamageMultiplier() {
+        return 2;
+    }
 }
