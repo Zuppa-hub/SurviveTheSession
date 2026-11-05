@@ -20,7 +20,7 @@ class BattleStateTest {
     private static final Performance NONE = new Performance(0, 0, 0);
 
     private static BattleState state(int resistance, int maxResistance) {
-        return new BattleState(resistance, maxResistance, STATS, NONE, Optional.empty(), Optional.empty());
+        return new BattleState(resistance, maxResistance, STATS, NONE, Optional.empty(), Optional.empty(), false, false);
     }
 
     @Test
@@ -47,14 +47,20 @@ class BattleStateTest {
 
         assertAll(
                 () -> assertThrows(NullPointerException.class,
-                        () -> new BattleState(1, 1, null, NONE, noQuestion, noAnswer)),
+                        () -> new BattleState(1, 1, null, NONE, noQuestion, noAnswer, false, false)),
                 () -> assertThrows(NullPointerException.class,
-                        () -> new BattleState(1, 1, STATS, null, noQuestion, noAnswer)),
+                        () -> new BattleState(1, 1, STATS, null, noQuestion, noAnswer, false, false)),
                 () -> assertThrows(NullPointerException.class,
-                        () -> new BattleState(1, 1, STATS, NONE, null, noAnswer)),
+                        () -> new BattleState(1, 1, STATS, NONE, null, noAnswer, false, false)),
                 () -> assertThrows(NullPointerException.class,
-                        () -> new BattleState(1, 1, STATS, NONE, noQuestion, null)),
+                        () -> new BattleState(1, 1, STATS, NONE, noQuestion, null, false, false)),
                 () -> assertThrows(NullPointerException.class, () -> new AnswerResult(null, true)));
+    }
+
+    @Test
+    void onlyAQuestionWaitingForAnAnswerCanBeTimed() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new BattleState(1, 1, STATS, NONE, Optional.empty(), Optional.empty(), true, false));
     }
 
     @Test
