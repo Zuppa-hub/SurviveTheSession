@@ -24,5 +24,7 @@ dopo l'ok, TDD e una materia (Programmazione) con 15-20 domande in un commit sep
   eseguendo il codice. 322 test verdi.
 
 **Modificato / verificato da me:**
-- [ ] revisione delle 18 domande una per una
-- [ ] _da completare_
+- Fatte spostare le interfacce dei repository nell'engine (DIP).
+- Chiesto `common.xsd` con `xs:include` invece di schemi duplicati.
+- Riviste le 18 domande di Programmazione una per una: corretto l'indizio della PROG-01,
+  aggiunta la risposta "overload" alla PROG-18, PROG-16 portata a EASY.

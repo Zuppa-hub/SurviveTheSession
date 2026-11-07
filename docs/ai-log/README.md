@@ -6,6 +6,18 @@ riporta data, richiesta fatta all'AI, cosa ha prodotto e cosa ho modificato o ve
 I file si chiamano `AAAA-MM-GG-NN-titolo.md`, dove `NN` è il numero della sessione nel
 giorno: in ordine alfabetico sono già in ordine cronologico.
 
+Le sezioni "Modificato / verificato da me" sono state redatte con l'aiuto di Claude Code a
+partire dalle decisioni prese da me durante le revisioni, poi rilette e corrette da me.
+
+Flusso di lavoro: per ogni issue Claude Code proponeva la soluzione; la proposta veniva
+analizzata con Claude in chat, usato come revisore della progettazione, che suggeriva
+correzioni o alternative motivate dalle lezioni del corso; io decidevo cosa approvare e
+chiedevo le modifiche a Claude Code. Le decisioni elencate nelle sezioni "Modificato /
+verificato da me" sono quindi mie, ma quasi tutte sono nate da questo confronto. Sono invece
+interamente mie le verifiche di build ed esecuzione, la lettura delle PR prima del merge e la
+risoluzione del conflitto della PR #21. La revisione delle domande di Programmazione è stata
+fatta insieme a Claude in chat.
+
 | Data | Sessione |
 |------|----------|
 | 2026-10-23 | [Scheletro del progetto](2026-10-23-01-scheletro-del-progetto.md) |

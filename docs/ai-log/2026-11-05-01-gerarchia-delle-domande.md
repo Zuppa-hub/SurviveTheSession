@@ -26,4 +26,9 @@ implementazione per classe, PR su `develop`.
   ereditati dai test di ogni tipo concreto (LSP verificato dai test). 194 test verdi.
 
 **Modificato / verificato da me:**
-- [ ] _da completare_
+- Refactoring dei test: chiesti `assertAll`, `@CsvSource` e la rinomina in `StatsTest`.
+- Approvata la classe `Preconditions` (DRY) e fissata la regola `requireNonNull` /
+  `IllegalArgumentException`.
+- Approvati `QuestionDetails`, la regola del 50/50 (almeno 3 opzioni sbagliate) ed
+  esattamente 4 opzioni.
+- Richiesto il contratto di `equals` nel Javadoc di `Question`.

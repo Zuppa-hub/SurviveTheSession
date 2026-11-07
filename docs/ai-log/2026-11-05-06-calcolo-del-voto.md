@@ -20,4 +20,4 @@ astratto; dividere la #7 in tre issue (scontro e strategie, oggetti e abilità, 
   351 test verdi.
 
 **Modificato / verificato da me:**
-- [ ] _da completare_
+- Aggiunta la quarta regola del contratto: un indizio in più non migliora mai il voto.

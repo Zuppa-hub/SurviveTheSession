@@ -23,4 +23,10 @@ ogni classe; cancellare `BuildSetupTest`; aprire la PR.
   `Grade`, `Difficulty`, `Subject`, `Stats`, `Exam` (+ `ExamType`). 68 test verdi.
 
 **Modificato / verificato da me:**
-- [ ] _da completare_
+- Deciso nessuno `switch` sul tipo d'esame nell'engine: l'associazione tipo → strategia è una
+  `EnumMap` costruita in `app`.
+- Fatta togliere `resistance` da `Exam`: è una regola di bilanciamento e va nell'engine.
+- Richiesto `label()` in `Grade`.
+- Deciso che la lode vale 30 nella media e che il massimo di concentrazione è il valore
+  iniziale del profilo.
+- Fissata la convenzione dei commit.

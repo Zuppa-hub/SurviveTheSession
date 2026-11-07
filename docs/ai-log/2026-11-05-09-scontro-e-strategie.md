@@ -30,4 +30,8 @@ il `GradeCalculator`; il Progetto non filtra per tipo di domanda.
   Verificato che togliendo `harder()` dall'orale falliscano tre test. 463 test verdi.
 
 **Modificato / verificato da me:**
-- [ ] _da completare_
+- Approvato il Visitor.
+- Deciso che a domande finite decide il voto, non la bocciatura.
+- Tolto il filtro per tipo di domanda dall'esame Progetto.
+- Fatto eliminare il ciclo fra `engine.battle` ed `engine.strategy`.
+- Fissati i requisiti di concorrenza per la #23.

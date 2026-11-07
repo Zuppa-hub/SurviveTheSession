@@ -25,4 +25,7 @@ scadenze vecchie solo nel timer con il numero di generazione; requisito di `shut
 - Wiki: nuova pagina "Modelli di esecuzione", Home e Classi e interfacce aggiornate.
 
 **Modificato / verificato da me:**
-- [ ] _da completare_
+- Approvati il numero di generazione nel timer, `synchronized` invece di `AtomicInteger` e
+  nessun test con thread reali (ripetibilità).
+- Chiesti nella Wiki il deadlock e la ripetibilità.
+- Fatta creare la issue sull'annotation personalizzata (#29).

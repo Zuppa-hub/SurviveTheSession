@@ -25,4 +25,6 @@ mappa id → effetto in `app` subito, con test di fail fast su `items.xml`.
   521 test verdi.
 
 **Modificato / verificato da me:**
-- [ ] _da completare_
+- Deciso un unico effetto per Riassunto e Ripasso lampo.
+- Richiesto un solo metodo di verifica condiviso (DRY).
+- Approvata la mappa oggetto → effetto con fail fast.

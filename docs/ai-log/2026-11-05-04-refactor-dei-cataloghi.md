@@ -15,4 +15,4 @@ duplicazione, proponendo prima la soluzione.
   I test esistenti dei cataloghi, invariati, restano verdi.
 
 **Modificato / verificato da me:**
-- [ ] _da completare_
+- Chiesta la ricerca O(1) con una `Map` invece della lista (lezione 14).

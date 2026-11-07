@@ -24,4 +24,6 @@ le etichette per area; lavorare sulla issue #1 nel branch `feature/build-setup`
 - Pull request #15 su `develop` (`Closes #1`).
 
 **Modificato / verificato da me:**
+- Lanciati `./gradlew build` e `./gradlew run`.
+- Segnalato il warning di deprecazione di Gradle e fatto indagare: dipende dal plugin JavaFX.
 - Verificato ma non modificato il commit e pronto per il merge della PR #15. 

@@ -16,4 +16,5 @@ Wiki a ogni issue chiusa.
 - Regola sulla Wiki in `CLAUDE.md`.
 
 **Modificato / verificato da me:**
-- [ ] _da completare_
+- Risolto io il conflitto della PR #21, perdendo per errore una voce del registro, poi
+  recuperata dalla storia di Git.

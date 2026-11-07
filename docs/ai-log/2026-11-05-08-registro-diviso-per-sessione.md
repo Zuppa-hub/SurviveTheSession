@@ -17,4 +17,4 @@ con `docs/ai-log/README.md` come indice; aggiornare `CLAUDE.md` e la regola 10 d
   `docs/design.md` §4; link aggiornato nel README del progetto.
 
 **Modificato / verificato da me:**
-- [ ] _da completare_
+- Deciso di dividere il registro in un file per sessione.

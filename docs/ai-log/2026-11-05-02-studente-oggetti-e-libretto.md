@@ -20,4 +20,6 @@ di progressione tra model ed engine; dopo l'ok, TDD e PR.
   nell'engine (#8).
 
 **Modificato / verificato da me:**
-- [ ] _da completare_
+- Fatto separare `Item` (dato) dal suo effetto: il model non deve dipendere dall'engine.
+- Fatta togliere la regola di laurea dal libretto (violazione di SRP vista a lezione con
+  `puoLaurearsi()`).
