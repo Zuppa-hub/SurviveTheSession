@@ -118,7 +118,8 @@ engine
   effect       ExtraTimeEffect, FiftyFiftyEffect, HintEffect, EnergyRestoreEffect, DoubleDamageEffect
                (solo implementazioni di BattleEffect: effect dipende da battle, mai il contrario)
   timer        QuestionTimer, TimerListener, ScheduledQuestionTimer
-  game         Game (partita: studente + sessione; avvia gli scontri e ne applica l'esito), GameListener,
+  game         Game (partita: studente + sessione; startExam(esame, listener) crea, collega e avvia lo
+               scontro in un'unica chiamata, poi ne applica l'esito), GameListener,
                ExamReport, ProgressionRules, StandardProgressionRules, RewardPolicy,
                StandardRewardPolicy, Reward, Graduation (regola e voto di laurea)
   repository   QuestionRepository, ExamCatalog, ProfileCatalog, ItemCatalog, SaveGameRepository,
@@ -263,7 +264,7 @@ public interface BattleListener {
 | LSP | contratti espliciti in Javadoc; metodi di validazione condivisi (es. `Grade.of(int)` unico punto di creazione) |
 | ISP | ChoiceQuestion separata da Question; listener piccoli e separati |
 | DIP | ExamBattle dipende da ExamStrategy, GradeCalculator, QuestionTimer, BattleEffect; Game dipende da SaveGameRepository; le interfacce di repository e cataloghi stanno in `engine.repository` (dalla parte di chi le usa) e `persistence` le implementa: la dipendenza va da `persistence` verso `engine`; tutto collegato in `app` |
-| Clean Code | nomi significativi, metodi piccoli, niente codice commentato, DRY, niente liste parallele (data clumping) |
+| Clean Code | nomi significativi, metodi piccoli, niente codice commentato, DRY, niente liste parallele (data clumping); niente accoppiamento temporale: un ordine di chiamate che il codice non impone (es. creare lo scontro e poi chiamare `begin()`) è uno stato non valido possibile, quindi `Game.startExam` crea e avvia lo scontro in un'unica chiamata |
 | Package | struttura per responsabilità (3.2) |
 | List | domande della sessione, ordine degli esami |
 | HashSet + equals/hashCode | esami superati; domande già poste nello scontro (`QuestionPool`, per non ripeterle); identità per `id` |

@@ -298,7 +298,16 @@ La UI non interroga lo scontro di continuo: si registra come `BattleListener` (O
 riceve le notifiche (domanda presentata, risposta valutata, secondo passato, fine). Lo stato
 le arriva come `BattleState`, una fotografia immutabile. Tutti i metodi di `BattleListener`
 hanno un'implementazione `default` vuota, così ogni listener scrive solo le notifiche che gli
-servono (ISP): la partita, ad esempio, ascolta solo la fine dello scontro.
+servono: la partita, ad esempio, ascolta solo la fine dello scontro.
+
+È un **compromesso** rispetto all'ISP. La soluzione più pulita sarebbero listener più piccoli
+e separati (uno per le domande, uno per il tempo, uno per la fine), così un client
+dipenderebbe davvero solo dai metodi che usa. Con i `default` vuoti l'interfaccia resta una
+sola: chi la implementa non è costretto a scrivere metodi inutili, ma dipende comunque da
+tutti, e il compilatore non segnala più un metodo dimenticato. Qui l'abbiamo accettato
+perché i clienti sono due (la schermata d'esame, che usa quasi tutte le notifiche, e la
+partita, che ne usa una) e dividere l'interfaccia moltiplicherebbe le registrazioni senza un
+vantaggio concreto.
 
 ### Strategie d'esame: nessuno `switch` sul tipo
 `ExamStrategy` decide la prossima domanda, se c'è un timer e quanto pesano gli errori:
@@ -468,9 +477,15 @@ lo registra già il libretto, e una seconda lista nella sessione sarebbe uno sta
 che può andare fuori sincrono. È `Game` a combinare le due cose (`remainingExams()`).
 
 ### `Game`: avviare un esame e applicarne l'esito
-`startExam(esame)` controlla che l'esame si possa sostenere, ricarica l'Energia dello
-studente, crea lo scontro con `ExamBattleFactory` e lo restituisce: la UI aggiunge i suoi
-listener e lo avvia.
+`startExam(esame, listener)` controlla che l'esame si possa sostenere, ricarica l'Energia
+dello studente, crea lo scontro con `ExamBattleFactory`, registra prima il proprio listener e
+poi quello della UI, e **avvia lo scontro**: la UI riceve subito la prima domanda.
+- **Niente accoppiamento temporale.** All'inizio `startExam` restituiva uno scontro da
+  avviare, e la UI doveva ricordarsi di aggiungere il listener e chiamare `begin()`. Un ordine
+  di chiamate che il codice non impone è uno stato non valido possibile: uno scontro creato e
+  mai iniziato avrebbe lasciato la partita "occupata" per sempre. Facendo tutto in un'unica
+  chiamata, quello stato non può più esistere. Se lo scontro finisce appena iniziato (ad
+  esempio senza domande), la partita applica subito l'esito e torna libera.
 - **Energia a ogni esame.** L'Energia si ricarica all'inizio di **ogni** esame, non solo dopo
   una bocciatura. Se si ricaricasse solo dopo una bocciatura, uno studente che supera un esame
   con poca Energia avrebbe convenienza a farsi bocciare apposta nel successivo per
