@@ -23,8 +23,11 @@ gli altri.
   `BattleListener` con metodi `default` vuoti.
 - `app.GameAssembly`: composition root che collega contenuti, scontro, timer reale, effetti e
   ricompense; `Main` la costruisce e chiude lo scheduler.
+- Prima del merge, su richiesta: `startExam(esame, listener)` registra il listener della UI
+  e avvia lo scontro (niente accoppiamento temporale con `begin()`); design e Wiki aggiornati,
+  con i metodi `default` di `BattleListener` spiegati come compromesso sull'ISP.
 - Wiki aggiornata. Verificato che togliendo la ricarica dell'Energia il test dedicato
-  fallisca. 585 test verdi; `./gradlew run` si avvia.
+  fallisca. 587 test verdi; `./gradlew run` si avvia.
 
 **Modificato / verificato da me:**
 - [ ] _da completare_
