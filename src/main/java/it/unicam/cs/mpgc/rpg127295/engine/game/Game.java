@@ -17,8 +17,10 @@ import java.util.Optional;
 /**
  * A game: one student facing a session of exams.
  * <ul>
- *   <li>{@link #startExam} restores the student's energy and creates the battle; every exam
- *       starts rested, so failing never pays off as a way to recover.</li>
+ *   <li>{@link #startExam} restores the student's energy, creates the battle, registers the
+ *       caller's listener and begins it, all in one call: a battle created but not begun cannot
+ *       exist, because no order of calls is left to the caller. Every exam starts rested, so
+ *       failing never pays off as a way to recover.</li>
  *   <li>When the battle ends the game applies the outcome: a passed exam goes in the
  *       transcript and gives its reward (items, experience, maybe new levels); a failed or
  *       abandoned one stays in the session.</li>
@@ -52,15 +54,19 @@ public final class Game {
     }
 
     /**
-     * Restores the student's energy and creates the battle of the exam, not begun yet: the
-     * caller adds its listeners and begins it.
+     * Restores the student's energy, creates the battle of the exam and begins it, with the
+     * listener of the caller already registered: it receives the first question. The game
+     * listens first, so the outcome is applied before the caller hears of the end.
      *
+     * @param listener the caller's listener, such as the exam screen
+     * @return the battle in progress, or already over if it ended as soon as it began
      * @throws IllegalArgumentException if the exam is not in the session
      * @throws IllegalStateException    if another battle is in progress, or the exam is passed
      *                                  or not available yet (the final boss)
      */
-    public ExamBattle startExam(Exam exam) {
+    public ExamBattle startExam(Exam exam, BattleListener listener) {
         Objects.requireNonNull(exam, "Exam must not be null");
+        Objects.requireNonNull(listener, "Listener must not be null");
         requireStartable(exam);
         student.updateStats(Stats::restoreFullEnergy);
         ExamBattle battle = battles.create(student, exam);
@@ -70,7 +76,9 @@ public final class Game {
                 conclude(exam, outcome);
             }
         });
+        battle.addListener(listener);
         currentBattle = Optional.of(battle);
+        battle.begin();
         return battle;
     }
 
