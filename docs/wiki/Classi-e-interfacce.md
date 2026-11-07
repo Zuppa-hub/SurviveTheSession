@@ -1,7 +1,8 @@
 # Classi e interfacce
 
-> Bozza: copre il **model** (issue #2, #3, #4), il calcolo del voto (issue #6), lo scontro
-> con le strategie d'esame (issue #7) e gli effetti di oggetti e abilità (issue #22) nell'engine. Le altre sezioni su engine, persistence e
+> Bozza: copre il **model** (issue #2, #3, #4) e nell'engine il calcolo del voto (issue #6), lo
+> scontro con le strategie d'esame (issue #7), gli effetti di oggetti e abilità (issue #22) e
+> la partita con progressione, ricompense e laurea (issue #8). Le altre sezioni su engine, persistence e
 > UI si aggiungono con le issue corrispondenti.
 
 Il model contiene le entità e lo stato del gioco e **non dipende da nessun altro
@@ -14,7 +15,7 @@ vuoto, numero positivo o non negativo) stanno in un solo punto, `model.Precondit
 
 | Package | Classi |
 |---|---|
-| `model.exam` | `Grade`, `Exam`, `ExamType` |
+| `model.exam` | `Grade`, `Exam`, `ExamType`, `ExamSession` |
 | `model.question` | `Question`, `ChoiceQuestion`, `QuestionVisitor`, `QuestionDetails`, `AbstractQuestion`, `AbstractChoiceQuestion`, `MultipleChoiceQuestion`, `TrueFalseQuestion`, `CodeOutputQuestion`, `FillInQuestion`, `Subject`, `Difficulty` |
 | `model.student` | `Student`, `StudentProfile`, `Stats`, `Level` |
 | `model.item` | `Item`, `Inventory` |
@@ -22,6 +23,8 @@ vuoto, numero positivo o non negativo) stanno in un solo punto, `model.Precondit
 | `engine.grading` | `Performance`, `GradeCalculator`, `PerformanceGradeCalculator` |
 | `engine.battle` | `ExamBattle`, `ExamBattleFactory`, `BattleServices`, `ExamStrategy`, `BattleEffect`, `BattleControls`, `BattleEffects`, `Ability`, `BattleState`, `BattleOutcome`, `BattleResult`, `BattleListener`, `QuestionPool`, `PresentedQuestion`, `AnswerResult`, `BattleRules`, `StandardBattleRules` |
 | `engine.strategy` | `WrittenExamStrategy`, `OralExamStrategy`, `ProjectExamStrategy` |
+| `engine.game` | `Game`, `GameListener`, `ExamReport`, `ProgressionRules`, `StandardProgressionRules`, `RewardPolicy`, `StandardRewardPolicy`, `Reward`, `Graduation` |
+| `app` | `GameAssembly`, `GameEffects`, `GameContent`, `Main` |
 | `engine.effect` | `ExtraTimeEffect`, `FiftyFiftyEffect`, `HintEffect`, `EnergyRestoreEffect`, `DoubleDamageEffect` |
 | `engine.timer` | `QuestionTimer`, `TimerListener`, `ScheduledQuestionTimer` |
 
@@ -293,7 +296,9 @@ stabile.
 
 La UI non interroga lo scontro di continuo: si registra come `BattleListener` (Observer) e
 riceve le notifiche (domanda presentata, risposta valutata, secondo passato, fine). Lo stato
-le arriva come `BattleState`, una fotografia immutabile.
+le arriva come `BattleState`, una fotografia immutabile. Tutti i metodi di `BattleListener`
+hanno un'implementazione `default` vuota, così ogni listener scrive solo le notifiche che gli
+servono (ISP): la partita, ad esempio, ascolta solo la fine dello scontro.
 
 ### Strategie d'esame: nessuno `switch` sul tipo
 `ExamStrategy` decide la prossima domanda, se c'è un timer e quanto pesano gli errori:
@@ -453,3 +458,76 @@ come pagarlo), così il percorso è uno solo.
 ### Verifica dei test
 Togliendo per prova l'azzeramento del Colpo di genio dopo la risposta corretta, il test
 dedicato fallisce.
+
+## La partita (`engine.game`)
+
+### `ExamSession`: l'ordine, non lo stato
+`ExamSession` (nel model) è l'elenco ordinato degli esami della sessione: non vuoto, senza
+esami ripetuti. L'ultimo è il **boss finale**. La sessione **non** sa quali esami sono superati:
+lo registra già il libretto, e una seconda lista nella sessione sarebbe uno stato duplicato
+che può andare fuori sincrono. È `Game` a combinare le due cose (`remainingExams()`).
+
+### `Game`: avviare un esame e applicarne l'esito
+`startExam(esame)` controlla che l'esame si possa sostenere, ricarica l'Energia dello
+studente, crea lo scontro con `ExamBattleFactory` e lo restituisce: la UI aggiunge i suoi
+listener e lo avvia.
+- **Energia a ogni esame.** L'Energia si ricarica all'inizio di **ogni** esame, non solo dopo
+  una bocciatura. Se si ricaricasse solo dopo una bocciatura, uno studente che supera un esame
+  con poca Energia avrebbe convenienza a farsi bocciare apposta nel successivo per
+  ricaricarsi: la regola premierebbe il comportamento sbagliato. La Concentrazione invece
+  passa da un esame all'altro: è la risorsa delle abilità.
+- **Esito.** `Game` si registra sullo scontro come listener della sola fine. Se l'esame è
+  superato registra il voto nel libretto, chiede la ricompensa a `RewardPolicy`, mette gli
+  oggetti nell'inventario e aggiunge l'esperienza. Se è bocciato o abbandonato non cambia
+  nulla: l'esame resta tra quelli da sostenere.
+- **Boss finale.** `availableExams()` restituisce gli esami da sostenere tranne l'ultimo,
+  che diventa disponibile solo quando è l'unico rimasto. `startExam` lo rifiuta prima con
+  `IllegalStateException`.
+- **Una notifica sola.** Dopo aver applicato l'esito, `Game` notifica i `GameListener` con un
+  `ExamReport` (esame, esito, ricompensa, livelli guadagnati): è quello che mostra la
+  schermata di esito. Tutto il resto (statistiche, libretto, laurea) si legge dalla partita.
+
+### Progressione: il model sa *come*, l'engine *quando*
+`Level.levelUp(costo)` e `Stats.improve(...)` (model) sanno come cambiare livello e
+statistiche in modo valido. `ProgressionRules` (engine) decide quando e di quanto: salire dal
+livello n costa 100 × n esperienza, e ogni livello dà +1 Conoscenza, +2 Energia massima e +1
+Concentrazione massima. `Game` applica un ciclo:
+
+```java
+while (student.level().experience() >= costOfNextLevel()) {
+    int cost = costOfNextLevel();
+    student.updateLevel(level -> level.levelUp(cost));
+    student.updateStats(stats -> stats.improve(knowledgeBonus, maxEnergyBonus, maxConcentrationBonus));
+}
+```
+
+Un ciclo e non un `if`, perché un esame con molta esperienza può far salire di più livelli.
+
+### Ricompense
+`RewardPolicy` è un'interfaccia funzionale: dato un esame superato e il voto, restituisce la
+`Reward` (esperienza e oggetti). `StandardRewardPolicy` dà CFU × (voto − 15) di esperienza (la
+lode vale 30) e da zero a tre oggetti secondo il voto, scelti tra quelli del catalogo con il
+`RandomGenerator` iniettato, così nei test la scelta è deterministica. I valori sono
+provvisori: il bilanciamento è nella #12.
+
+### Laurea fuori dal libretto (SRP)
+La regola "tutti gli esami della sessione superati" e il voto di laurea stanno in
+`Graduation`, non in `Transcript`. È l'esempio di `puoLaurearsi()` nella classe `Libretto` visto
+a lezione: il libretto registra i voti e calcola la media, e cambierebbe per un motivo in più
+se contenesse anche le regole di laurea. Il voto di laurea è la media ponderata riportata su
+110 (media × 110 / 30, arrotondata): la proporzione lineare tra le due scale, per cui una
+media di 30 vale 110 e una di 18 vale 66. Punti bonus e lode di laurea dipendono dai
+regolamenti dei corsi e sono esclusi. `Graduation` è una classe semplice, senza interfaccia:
+c'è una sola regola, e un'interfaccia non risolverebbe nessun problema reale.
+
+### `GameAssembly`: la composition root
+`GameAssembly` (in `app`) è l'unico punto in cui si scelgono e si collegano le
+implementazioni concrete: regole, calcolatore del voto, timer reale, strategie nella
+`EnumMap`, effetti di `GameEffects`, ricompense e sessione presa da `exams.xml`. Costruisce
+tutto nel costruttore, quindi una strategia mancante o un oggetto senza effetto fermano
+l'avvio. `newGame(nome, profilo)` crea lo studente e la partita. `Main` costruisce
+l'assembly e chiude lo scheduler del timer, nient'altro; un test collega i contenuti veri con
+l'engine e avvia uno scritto, verificando timer e abilità.
+
+### Verifica dei test
+Togliendo per prova la ricarica dell'Energia da `startExam`, il test dedicato fallisce.
