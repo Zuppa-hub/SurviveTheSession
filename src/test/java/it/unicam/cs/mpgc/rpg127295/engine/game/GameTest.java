@@ -11,12 +11,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import it.unicam.cs.mpgc.rpg127295.engine.FakeRandom;
 import it.unicam.cs.mpgc.rpg127295.engine.TestQuestions;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.BattleEffects;
+import it.unicam.cs.mpgc.rpg127295.engine.battle.BattleListener;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.BattleOutcome;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.BattleResult;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.BattleServices;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamBattle;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamBattleFactory;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamStrategy;
+import it.unicam.cs.mpgc.rpg127295.engine.battle.PresentedQuestion;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.StandardBattleRules;
 import it.unicam.cs.mpgc.rpg127295.engine.grading.Performance;
 import it.unicam.cs.mpgc.rpg127295.engine.strategy.OralExamStrategy;
@@ -29,6 +31,7 @@ import it.unicam.cs.mpgc.rpg127295.model.exam.ExamType;
 import it.unicam.cs.mpgc.rpg127295.model.exam.Grade;
 import it.unicam.cs.mpgc.rpg127295.model.item.Item;
 import it.unicam.cs.mpgc.rpg127295.model.question.Difficulty;
+import it.unicam.cs.mpgc.rpg127295.model.question.Question;
 import it.unicam.cs.mpgc.rpg127295.model.student.Level;
 import it.unicam.cs.mpgc.rpg127295.model.student.Stats;
 import it.unicam.cs.mpgc.rpg127295.model.student.Student;
@@ -37,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -49,8 +53,11 @@ class GameTest {
     private static final Exam FIRST = exam("PROG1");
     private static final Exam SECOND = exam("ASD");
     private static final Exam BOSS = exam("MDP");
+    private static final BattleListener NO_LISTENER = new BattleListener() {
+    };
 
     private Optional<Grade> grade = Optional.of(Grade.of(27));
+    private List<Question> questions = List.of(choice("Q-1"), choice("Q-2"));
     private Reward reward = new Reward(150, Map.of(COFFEE, 1));
     private final List<ExamReport> reports = new ArrayList<>();
     private final Student student = new Student("Andrea",
@@ -68,7 +75,7 @@ class GameTest {
         BattleServices services = new BattleServices(new StandardBattleRules(), performance -> grade,
                 new ManualQuestionTimer(), FakeRandom.first(), BattleEffects.none());
         ExamBattleFactory battles = new ExamBattleFactory(strategies,
-                subject -> List.of(choice("Q-1"), choice("Q-2")), services);
+                subject -> questions, services);
         Game game = new Game(student, new ExamSession(List.of(exams)), battles,
                 new StandardProgressionRules(), (exam, passedWith) -> reward);
         game.addListener(reports::add);
@@ -76,9 +83,7 @@ class GameTest {
     }
 
     private static void pass(Game game, Exam exam) {
-        ExamBattle battle = game.startExam(exam);
-        battle.begin();
-        battle.answer(CORRECT);
+        game.startExam(exam, NO_LISTENER).answer(CORRECT);
     }
 
     @Test
@@ -86,9 +91,41 @@ class GameTest {
         Game game = game(FIRST);
         student.updateStats(stats -> stats.loseEnergy(5));
 
-        game.startExam(FIRST);
+        game.startExam(FIRST, NO_LISTENER);
 
         assertEquals(6, student.stats().energy());
+    }
+
+    @Test
+    void startingAnExamBeginsItWithTheListenerOfTheCaller() {
+        Game game = game(FIRST);
+        List<PresentedQuestion> presented = new ArrayList<>();
+
+        ExamBattle battle = game.startExam(FIRST, new BattleListener() {
+            @Override
+            public void onQuestionPresented(PresentedQuestion question, OptionalInt seconds) {
+                presented.add(question);
+            }
+        });
+
+        assertAll(
+                () -> assertEquals(1, presented.size()),
+                () -> assertEquals(Optional.of(presented.getFirst()), battle.state().currentQuestion()),
+                () -> assertEquals(Optional.of(battle), game.currentBattle()));
+    }
+
+    @Test
+    void anExamThatEndsAsSoonAsItBeginsFreesTheGame() {
+        questions = List.of();
+        grade = Optional.empty();
+        Game game = game(FIRST);
+
+        ExamBattle battle = game.startExam(FIRST, NO_LISTENER);
+
+        assertAll(
+                () -> assertTrue(battle.isOver()),
+                () -> assertEquals(Optional.empty(), game.currentBattle()),
+                () -> assertEquals(BattleResult.FAILED, reports.getFirst().outcome().result()));
     }
 
     @Test
@@ -152,11 +189,10 @@ class GameTest {
     @Test
     void aRetiredExamCanBeTakenAgain() {
         Game game = game(FIRST);
-        ExamBattle battle = game.startExam(FIRST);
-        battle.begin();
+        ExamBattle battle = game.startExam(FIRST, NO_LISTENER);
 
         battle.retire();
-        game.startExam(FIRST);
+        game.startExam(FIRST, NO_LISTENER);
 
         assertEquals(BattleOutcome.retired(Performance.none()), reports.getFirst().outcome());
     }
@@ -165,7 +201,7 @@ class GameTest {
     void theBossIsAvailableOnlyAfterAllTheOtherExams() {
         Game game = game(FIRST, SECOND, BOSS);
         List<Exam> atTheStart = game.availableExams();
-        boolean bossRefused = throwsIllegalState(() -> game.startExam(BOSS));
+        boolean bossRefused = throwsIllegalState(() -> game.startExam(BOSS, NO_LISTENER));
 
         pass(game, FIRST);
         pass(game, SECOND);
@@ -216,14 +252,15 @@ class GameTest {
     void rejectsExamsThatCannotBeTaken() {
         Game game = game(FIRST, SECOND);
         Game busy = game(FIRST, SECOND);
-        busy.startExam(FIRST);
+        busy.startExam(FIRST, NO_LISTENER);
         pass(game, FIRST);
 
         assertAll(
-                () -> assertThrows(IllegalStateException.class, () -> game.startExam(FIRST)),
-                () -> assertThrows(IllegalArgumentException.class, () -> game.startExam(exam("RETI"))),
-                () -> assertThrows(IllegalStateException.class, () -> busy.startExam(SECOND)),
-                () -> assertThrows(NullPointerException.class, () -> game.startExam(null)),
+                () -> assertThrows(IllegalStateException.class, () -> game.startExam(FIRST, NO_LISTENER)),
+                () -> assertThrows(IllegalArgumentException.class, () -> game.startExam(exam("RETI"), NO_LISTENER)),
+                () -> assertThrows(IllegalStateException.class, () -> busy.startExam(SECOND, NO_LISTENER)),
+                () -> assertThrows(NullPointerException.class, () -> game.startExam(null, NO_LISTENER)),
+                () -> assertThrows(NullPointerException.class, () -> game.startExam(SECOND, null)),
                 () -> assertThrows(NullPointerException.class, () -> game.addListener(null)));
     }
 

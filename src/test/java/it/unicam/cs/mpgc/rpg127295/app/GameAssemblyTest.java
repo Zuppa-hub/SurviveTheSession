@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import it.unicam.cs.mpgc.rpg127295.engine.FakeRandom;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.Ability;
+import it.unicam.cs.mpgc.rpg127295.engine.battle.BattleListener;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamBattle;
 import it.unicam.cs.mpgc.rpg127295.engine.game.Game;
 import it.unicam.cs.mpgc.rpg127295.engine.repository.ItemCatalog;
@@ -60,8 +61,8 @@ class GameAssemblyTest {
         Game game = assembly().newGame("Andrea", "commuter");
         Exam programming = content.exams().findByCode("PROG1").orElseThrow();
 
-        ExamBattle battle = game.startExam(programming);
-        battle.begin();
+        ExamBattle battle = game.startExam(programming, new BattleListener() {
+        });
 
         assertAll(
                 () -> assertEquals(1, scheduler.activeTasks()),
