@@ -29,9 +29,9 @@ Il profilo determina le statistiche iniziali. Tre profili, definiti in un file d
 
 ### 2.2 Statistiche
 - **Conoscenza**: aumenta i "punti" tolti all'esame con una risposta corretta e la probabilità di ricevere un indizio gratuito.
-- **Energia** (vita): diminuisce a ogni risposta sbagliata o tempo scaduto. A zero lo studente viene bocciato in quell'esame.
+- **Energia** (vita): diminuisce a ogni risposta sbagliata o tempo scaduto. A zero lo studente viene bocciato in quell'esame. Si ricarica del tutto all'inizio di ogni esame: ricaricarla solo dopo una bocciatura incentiverebbe a farsi bocciare per ricaricarsi.
 - **Concentrazione** (risorsa): si spende per le abilità; si recupera di 1 a ogni risposta corretta.
-- **Livello ed esperienza**: superare un esame dà esperienza; salire di livello aumenta Conoscenza ed Energia massima. È la progressione RPG.
+- **Livello ed esperienza**: superare un esame dà esperienza (CFU × (voto − 15), la lode vale 30); salire di livello costa 100 × livello attuale e aumenta Conoscenza (+1), Energia massima (+2) e Concentrazione massima (+1). Un esame può far salire di più livelli. È la progressione RPG. Valori provvisori, bilanciamento nella #12.
 
 ### 2.3 Lo scontro (esame)
 - L'esame ha una **resistenza** (punti esame). Ogni risposta corretta la riduce di un danno che cresce con la Conoscenza. La resistenza non è un dato di `Exam`: è una regola di bilanciamento e la calcola l'engine da CFU e difficoltà.
@@ -40,7 +40,10 @@ Il profilo determina le statistiche iniziali. Tre profili, definiti in un file d
 - La prova termina quando la resistenza arriva a zero **oppure** quando le domande finiscono. In entrambi i casi decide il **voto** (18-30, 31 = 30 e lode), calcolato dalla prestazione (percentuale di risposte corrette, eventuali penalità): con un voto l'esame è superato, senza voto è una bocciatura.
 - Energia a zero: bocciatura, senza calcolare il voto.
 - Azioni del turno: **Rispondi**, **Usa oggetto**, **Usa abilità**, **Ritirati** (l'esame resta da sostenere, nessun voto).
-- Bocciatura o ritiro: l'esame resta nella sessione e si può ritentare; prima di ritentare lo studente recupera Energia.
+- Bocciatura o ritiro: l'esame resta nella sessione e si può ritentare; l'Energia si ricarica all'inizio del nuovo tentativo, come di ogni esame.
+- Superamento: voto nel libretto, esperienza e oggetti come ricompensa (18-23 nessuno, 24-27 uno, 28-30 due, lode tre, scelti a caso tra quelli del catalogo; provvisorio).
+- L'ultimo esame della sessione è il **boss finale**: si può sostenere solo quando tutti gli altri sono superati.
+- Laurea: quando tutti gli esami della sessione sono superati. Voto di laurea = media ponderata × 110 / 30, arrotondato (media 30 → 110, media 18 → 66); punti bonus e lode di laurea dipendono dai regolamenti dei corsi e sono esclusi.
 
 ### 2.4 Tipi di esame (strategie)
 | Tipo | Comportamento |
@@ -80,7 +83,7 @@ Cinque materie reali del corso di Informatica, ognuna con un file XML di domande
 2. Algoritmi e Strutture Dati (scritto)
 3. Basi di Dati (orale)
 4. Reti di Calcolatori (orale)
-5. Metodologie di Programmazione (progetto, boss finale): domande su SOLID, Clean Code, Git, collezioni, equals/hashCode, Stream API, modelli di esecuzione.
+5. Metodologie di Programmazione (progetto, boss finale, ultimo esame della sessione: disponibile solo dopo aver superato gli altri): domande su SOLID, Clean Code, Git, collezioni, equals/hashCode, Stream API, modelli di esecuzione.
 
 ---
 
@@ -96,7 +99,7 @@ Cinque materie reali del corso di Informatica, ognuna con un file XML di domande
 
 ### 3.2 Package (base `it.unicam.cs.mpgc.rpg127295`)
 ```
-app            composition root, avvio JavaFX
+app            composition root (GameAssembly: collega contenuti, engine e timer), avvio JavaFX
 model
   student      Student, Stats, StudentProfile, Level
   exam         Exam, ExamType, ExamSession, Grade
@@ -115,7 +118,10 @@ engine
   effect       ExtraTimeEffect, FiftyFiftyEffect, HintEffect, EnergyRestoreEffect, DoubleDamageEffect
                (solo implementazioni di BattleEffect: effect dipende da battle, mai il contrario)
   timer        QuestionTimer, TimerListener, ScheduledQuestionTimer
-  game         Game (partita: studente + sessione + progressione), RewardPolicy
+  game         Game (partita: studente + sessione; startExam(esame, listener) crea, collega e avvia lo
+               scontro in un'unica chiamata, poi ne applica l'esito), GameListener,
+               ExamReport, ProgressionRules, StandardProgressionRules, RewardPolicy,
+               StandardRewardPolicy, Reward, Graduation (regola e voto di laurea)
   repository   QuestionRepository, ExamCatalog, ProfileCatalog, ItemCatalog, SaveGameRepository,
                SaveData (DTO del contratto di salvataggio), SaveMapper
 persistence
@@ -253,12 +259,12 @@ public interface BattleListener {
 | Incapsulamento, validazione nei costruttori | Stats, Grade, Exam, Student (fail fast, `IllegalArgumentException`) |
 | Ereditarietà, classi astratte | `AbstractQuestion` (campi comuni di tutte le domande), `AbstractChoiceQuestion` |
 | Interfacce, polimorfismo | Question, ExamStrategy, BattleEffect, GradeCalculator, BattleRules; Visitor (`QuestionVisitor`) al posto di `instanceof` sul tipo di domanda |
-| SRP | Transcript registra gli esami superati (senza doppioni) e calcola media ponderata sui CFU e CFU totali, e nient'altro: **non** contiene la regola di laurea né il voto di laurea (è la violazione di SRP vista a lezione con `puoLaurearsi()` in `Libretto`), che stanno in Game (#8); la formattazione dei voti sta in Grade; la stampa sta nella UI; dati e comportamento degli oggetti sono separati (Item nel model, BattleEffect nell'engine) |
+| SRP | Transcript registra gli esami superati (senza doppioni) e calcola media ponderata sui CFU e CFU totali, e nient'altro: **non** contiene la regola di laurea né il voto di laurea (è la violazione di SRP vista a lezione con `puoLaurearsi()` in `Libretto`), che stanno in `Graduation` (#8), usata da `Game`; la formattazione dei voti sta in Grade; la stampa sta nella UI; dati e comportamento degli oggetti sono separati (Item nel model, BattleEffect nell'engine) |
 | OCP | nuovo tipo di esame, domanda, oggetto, abilità = nuova classe, nessuna modifica all'engine; nell'engine nessuno `switch`/`if` su `ExamType`: l'associazione tipo → strategia è una `EnumMap<ExamType, ExamStrategy>` costruita in `app` e passata all'engine; allo stesso modo un nuovo oggetto = un `BattleEffect` (nuovo o esistente) + una voce nella mappa id → effetto costruita in `app`; una nuova abilità = un record `Ability` con un effetto |
 | LSP | contratti espliciti in Javadoc; metodi di validazione condivisi (es. `Grade.of(int)` unico punto di creazione) |
 | ISP | ChoiceQuestion separata da Question; listener piccoli e separati |
 | DIP | ExamBattle dipende da ExamStrategy, GradeCalculator, QuestionTimer, BattleEffect; Game dipende da SaveGameRepository; le interfacce di repository e cataloghi stanno in `engine.repository` (dalla parte di chi le usa) e `persistence` le implementa: la dipendenza va da `persistence` verso `engine`; tutto collegato in `app` |
-| Clean Code | nomi significativi, metodi piccoli, niente codice commentato, DRY, niente liste parallele (data clumping) |
+| Clean Code | nomi significativi, metodi piccoli, niente codice commentato, DRY, niente liste parallele (data clumping); niente accoppiamento temporale: un ordine di chiamate che il codice non impone (es. creare lo scontro e poi chiamare `begin()`) è uno stato non valido possibile, quindi `Game.startExam` crea e avvia lo scontro in un'unica chiamata |
 | Package | struttura per responsabilità (3.2) |
 | List | domande della sessione, ordine degli esami |
 | HashSet + equals/hashCode | esami superati; domande già poste nello scontro (`QuestionPool`, per non ripeterle); identità per `id` |
