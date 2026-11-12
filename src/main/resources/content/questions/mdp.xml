@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Metodologie di Programmazione (boss finale): 5 scelta multipla, 3 vero/falso, 4 output del codice, 3 completamento. -->
+<questions subject="MDP">
+
+    <multipleChoice id="MDP-01" difficulty="EASY">
+        <prompt>Quale principio SOLID chiede che una classe abbia un solo motivo per cambiare?</prompt>
+        <correct>Single Responsibility Principle</correct>
+        <wrong>Open/Closed Principle</wrong>
+        <wrong>Liskov Substitution Principle</wrong>
+        <wrong>Dependency Inversion Principle</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="MDP-02" difficulty="HARD">
+        <prompt>Una sottoclasse ridefinisce un metodo lanciando UnsupportedOperationException, mentre il metodo della superclasse funzionava. Quale principio SOLID viene violato?</prompt>
+        <hint>Il codice scritto per il tipo base si rompe quando riceve il sottotipo.</hint>
+        <correct>Liskov Substitution Principle</correct>
+        <wrong>Interface Segregation Principle</wrong>
+        <wrong>Single Responsibility Principle</wrong>
+        <wrong>Open/Closed Principle</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="MDP-03" difficulty="MEDIUM">
+        <prompt>Quale comando Git crea un nuovo branch e si sposta su di esso con un'unica operazione?</prompt>
+        <correct>git switch -c nome</correct>
+        <wrong>git branch nome</wrong>
+        <wrong>git merge nome</wrong>
+        <wrong>git init nome</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="MDP-04" difficulty="MEDIUM">
+        <prompt>In JPA, quale annotation indica il campo che fa da chiave primaria di un'entità?</prompt>
+        <correct>@Id</correct>
+        <wrong>@Entity</wrong>
+        <wrong>@Column</wrong>
+        <wrong>@Table</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="MDP-05" difficulty="HARD">
+        <prompt>In JavaFX, cosa bisogna usare per aggiornare l'interfaccia da un thread diverso dal JavaFX Application Thread?</prompt>
+        <hint>L'aggiornamento va messo in coda al thread dell'interfaccia.</hint>
+        <correct>Platform.runLater</correct>
+        <wrong>Thread.sleep</wrong>
+        <wrong>Platform.exit</wrong>
+        <wrong>Application.launch</wrong>
+    </multipleChoice>
+
+    <trueFalse id="MDP-06" difficulty="MEDIUM" answer="false">
+        <prompt>Se due oggetti hanno lo stesso hashCode, allora equals fra loro restituisce sicuramente true.</prompt>
+        <hint>Il contratto vale in una sola direzione.</hint>
+    </trueFalse>
+
+    <trueFalse id="MDP-07" difficulty="MEDIUM" answer="true">
+        <prompt>Un documento XML ben formato può comunque non essere valido rispetto al suo XML Schema.</prompt>
+    </trueFalse>
+
+    <trueFalse id="MDP-08" difficulty="HARD" answer="true">
+        <prompt>In Gradle, una dipendenza dichiarata con testImplementation è disponibile per compilare ed eseguire i test, ma non nel codice principale.</prompt>
+    </trueFalse>
+
+    <codeOutput id="MDP-09" difficulty="EASY">
+        <prompt>Cosa stampa questo codice?</prompt>
+        <code><![CDATA[
+            List<Integer> numbers = List.of(1, 2, 3, 4, 5, 6);
+            int result = numbers.stream()
+                    .filter(n -> n % 2 == 0)
+                    .mapToInt(n -> n * n)
+                    .sum();
+            System.out.println(result);
+        ]]></code>
+        <correct>56</correct>
+        <wrong>12</wrong>
+        <wrong>21</wrong>
+        <wrong>91</wrong>
+    </codeOutput>
+
+    <codeOutput id="MDP-10" difficulty="MEDIUM">
+        <prompt>Cosa stampa questo codice?</prompt>
+        <hint>Un record genera da solo equals e hashCode a partire dai suoi componenti.</hint>
+        <code><![CDATA[
+            record Point(int x, int y) {
+            }
+            Set<Point> points = new HashSet<>();
+            points.add(new Point(1, 2));
+            points.add(new Point(1, 2));
+            System.out.println(points.size());
+        ]]></code>
+        <correct>1</correct>
+        <wrong>2</wrong>
+        <wrong>0</wrong>
+        <wrong>4</wrong>
+    </codeOutput>
+
+    <codeOutput id="MDP-11" difficulty="HARD">
+        <prompt>Cosa stampa questo codice?</prompt>
+        <hint>remove(int) e remove(Object) sono due metodi diversi.</hint>
+        <code><![CDATA[
+            List<Integer> list = new ArrayList<>(List.of(10, 20, 30));
+            list.remove(1);
+            list.remove(Integer.valueOf(10));
+            System.out.println(list);
+        ]]></code>
+        <correct>[30]</correct>
+        <wrong>[10, 30]</wrong>
+        <wrong>[20, 30]</wrong>
+        <wrong>[10, 20]</wrong>
+    </codeOutput>
+
+    <codeOutput id="MDP-12" difficulty="MEDIUM">
+        <prompt>Cosa stampa questo codice?</prompt>
+        <hint>get() aspetta che il compito sia terminato.</hint>
+        <code><![CDATA[
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Future<Integer> future = executor.submit(() -> 6 * 7);
+            System.out.println(future.get());
+            executor.shutdown();
+        ]]></code>
+        <correct>42</correct>
+        <wrong>null</wrong>
+        <wrong>0</wrong>
+        <wrong>67</wrong>
+    </codeOutput>
+
+    <fillIn id="MDP-13" difficulty="EASY">
+        <prompt>Nel Clean Code, come si chiama un numero scritto direttamente nel codice, senza un nome che ne spieghi il significato?</prompt>
+        <hint>Si sostituisce con una costante con nome.</hint>
+        <answer>numero magico</answer>
+        <answer>magic number</answer>
+    </fillIn>
+
+    <fillIn id="MDP-14" difficulty="MEDIUM">
+        <prompt>Quale annotation chiede al compilatore di verificare che un metodo ridefinisca davvero un metodo di un supertipo?</prompt>
+        <answer>@Override</answer>
+        <answer>Override</answer>
+    </fillIn>
+
+    <fillIn id="MDP-15" difficulty="HARD">
+        <prompt>In XML Schema, con quale elemento si definisce un tipo che può avere elementi figli e attributi?</prompt>
+        <hint>Il suo opposto è simpleType.</hint>
+        <answer>complexType</answer>
+        <answer>xs:complexType</answer>
+    </fillIn>
+</questions>
