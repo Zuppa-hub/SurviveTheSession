@@ -16,7 +16,9 @@ chiedevo le modifiche a Claude Code. Le decisioni elencate nelle sezioni "Modifi
 verificato da me" sono quindi mie, ma quasi tutte sono nate da questo confronto. Sono invece
 interamente mie le verifiche di build ed esecuzione, la lettura delle PR prima del merge e la
 risoluzione del conflitto della PR #21. La revisione delle domande di Programmazione è stata
-fatta insieme a Claude in chat.
+fatta insieme a Claude in chat. Dal 12/11, per i tempi di consegna, Claude Code ha deciso e
+implementato le soluzioni senza approvazione preventiva della proposta; ogni PR è stata
+rivista da me, con il supporto di Claude in chat, prima del merge.
 
 | Data | Sessione |
 |------|----------|

@@ -66,3 +66,17 @@ Esempio: `feat: Grade con validazione 18-31 e lode`
 - **Spiegare prima di procedere**: prima di passare al passo successivo, spiegare allo
   studente cosa è stato fatto e perché, in modo che il codice sia compreso e non solo
   generato.
+
+## Flusso dal 12/11
+Per rispettare la consegna del 19/11:
+- Per ogni issue Claude Code decide la soluzione rispettando `docs/design.md`, le regole del
+  §4 e le scelte fatte finora (SOLID, Clean Code, TDD, minimo necessario, nessun pattern
+  nuovo senza un problema reale). Non aspetta l'ok sulla proposta: la implementa e la scrive
+  nella descrizione della PR.
+- Si ferma e chiede prima solo per decisioni che cambiano lo scope o contraddicono il design.
+- Ogni PR ha in fondo alla descrizione una sezione **"Guida alla revisione"**: le 3-5
+  decisioni principali con il motivo, i file da leggere per primi, cosa provare a mano.
+  `./gradlew clean build` deve passare.
+- **Niente merge**: la PR la rivede Andrea, che fa il merge. Nell'attesa si può lavorare alla
+  issue successiva in un nuovo branch, se non dipende dalla PR aperta.
+- Wiki aggiornata nella PR di ogni issue, come sempre.
