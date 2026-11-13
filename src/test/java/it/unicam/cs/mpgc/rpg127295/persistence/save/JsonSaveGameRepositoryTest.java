@@ -10,12 +10,17 @@ import it.unicam.cs.mpgc.rpg127295.engine.repository.SaveData;
 import it.unicam.cs.mpgc.rpg127295.engine.repository.SaveGameException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -92,6 +97,26 @@ class JsonSaveGameRepositoryTest {
                     () -> assertEquals("Andrea Due", repository.load("andrea").orElseThrow().studentName()),
                     () -> assertEquals(List.of(directory.resolve("andrea.json")), files.toList()));
         }
+    }
+
+    @Test
+    void withoutAtomicMoveTheOldFileIsReplacedAnyway() {
+        List<Set<CopyOption>> attempts = new ArrayList<>();
+        JsonSaveGameRepository repository = new JsonSaveGameRepository(directory, (source, target, options) -> {
+            attempts.add(Set.of(options));
+            if (attempts.size() % 2 == 1) {
+                throw new AtomicMoveNotSupportedException(source.toString(), target.toString(), "not supported");
+            }
+            Files.move(source, target, options);
+        });
+        repository.save("andrea", sample("Andrea"));
+
+        repository.save("andrea", sample("Andrea Due"));
+
+        assertAll(
+                () -> assertEquals("Andrea Due", repository.load("andrea").orElseThrow().studentName()),
+                () -> assertEquals(List.of(Set.of(StandardCopyOption.ATOMIC_MOVE),
+                        Set.of(StandardCopyOption.REPLACE_EXISTING)), attempts.subList(2, 4)));
     }
 
     @Test

@@ -10,7 +10,9 @@ import it.unicam.cs.mpgc.rpg127295.engine.battle.Ability;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.BattleListener;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamBattle;
 import it.unicam.cs.mpgc.rpg127295.engine.game.Game;
+import it.unicam.cs.mpgc.rpg127295.engine.game.ExamReport;
 import it.unicam.cs.mpgc.rpg127295.engine.repository.ItemCatalog;
+import it.unicam.cs.mpgc.rpg127295.engine.repository.SaveGameException;
 import it.unicam.cs.mpgc.rpg127295.engine.repository.SaveMapper;
 import it.unicam.cs.mpgc.rpg127295.engine.timer.ManualScheduler;
 import it.unicam.cs.mpgc.rpg127295.model.exam.Exam;
@@ -19,6 +21,7 @@ import it.unicam.cs.mpgc.rpg127295.model.item.Item;
 import it.unicam.cs.mpgc.rpg127295.model.student.Student;
 import it.unicam.cs.mpgc.rpg127295.persistence.content.ContentException;
 import it.unicam.cs.mpgc.rpg127295.persistence.content.XmlDocumentLoader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,6 +42,7 @@ class GameAssemblyTest {
     private static GameContent content;
     private final ManualScheduler scheduler = new ManualScheduler();
     private final InMemorySaveGameRepository saves = new InMemorySaveGameRepository();
+    private final List<SaveGameException> saveFailures = new ArrayList<>();
 
     @BeforeAll
     static void loadShippedContent() {
@@ -51,7 +55,7 @@ class GameAssemblyTest {
     }
 
     private GameAssembly assembly() {
-        return new GameAssembly(content, scheduler, DIRECT, RANDOM, saves);
+        return new GameAssembly(content, scheduler, DIRECT, RANDOM, saves, saveFailures::add);
     }
 
     @Test
@@ -108,6 +112,24 @@ class GameAssemblyTest {
     }
 
     @Test
+    void aFailedAutomaticSaveIsReportedAndTheGameGoesOn() {
+        SaveGameException diskFull = new SaveGameException("Disco pieno");
+        GameAssembly assembly = new GameAssembly(content, scheduler, DIRECT, RANDOM,
+                new FailingSaveGameRepository(diskFull), saveFailures::add);
+        Game game = assembly.newGame("Andrea", "nerd", "andrea");
+        List<ExamReport> reports = new ArrayList<>();
+        game.addListener(reports::add);
+        Exam programming = content.exams().findByCode("PROG1").orElseThrow();
+
+        game.startExam(programming, NO_LISTENER).retire();
+        game.startExam(programming, NO_LISTENER).retire();
+
+        assertAll(
+                () -> assertEquals(List.of(diskFull, diskFull), saveFailures),
+                () -> assertEquals(2, reports.size()));
+    }
+
+    @Test
     void loadingAMissingSlotGivesNothing() {
         assertEquals(Optional.empty(), assembly().loadGame("never-saved"));
     }
@@ -132,22 +154,24 @@ class GameAssemblyTest {
                 itemCatalogOf(new Item("pen", "Penna", "Scrive")), content.questions());
 
         assertThrows(ContentException.class,
-                () -> new GameAssembly(withUnknownItem, scheduler, DIRECT, RANDOM, saves));
+                () -> new GameAssembly(withUnknownItem, scheduler, DIRECT, RANDOM, saves, saveFailures::add));
     }
 
     @Test
     void rejectsNullArguments() {
         assertAll(
                 () -> assertThrows(NullPointerException.class,
-                        () -> new GameAssembly(null, scheduler, DIRECT, RANDOM, saves)),
+                        () -> new GameAssembly(null, scheduler, DIRECT, RANDOM, saves, saveFailures::add)),
                 () -> assertThrows(NullPointerException.class,
-                        () -> new GameAssembly(content, null, DIRECT, RANDOM, saves)),
+                        () -> new GameAssembly(content, null, DIRECT, RANDOM, saves, saveFailures::add)),
                 () -> assertThrows(NullPointerException.class,
-                        () -> new GameAssembly(content, scheduler, null, RANDOM, saves)),
+                        () -> new GameAssembly(content, scheduler, null, RANDOM, saves, saveFailures::add)),
                 () -> assertThrows(NullPointerException.class,
-                        () -> new GameAssembly(content, scheduler, DIRECT, null, saves)),
+                        () -> new GameAssembly(content, scheduler, DIRECT, null, saves, saveFailures::add)),
                 () -> assertThrows(NullPointerException.class,
-                        () -> new GameAssembly(content, scheduler, DIRECT, RANDOM, null)));
+                        () -> new GameAssembly(content, scheduler, DIRECT, RANDOM, null, saveFailures::add)),
+                () -> assertThrows(NullPointerException.class,
+                        () -> new GameAssembly(content, scheduler, DIRECT, RANDOM, saves, null)));
     }
 
     private static ItemCatalog itemCatalogOf(Item... items) {
