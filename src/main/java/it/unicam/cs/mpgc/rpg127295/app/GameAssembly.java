@@ -20,6 +20,7 @@ import it.unicam.cs.mpgc.rpg127295.model.exam.ExamSession;
 import it.unicam.cs.mpgc.rpg127295.model.exam.ExamType;
 import it.unicam.cs.mpgc.rpg127295.model.student.Student;
 import it.unicam.cs.mpgc.rpg127295.model.student.StudentProfile;
+import it.unicam.cs.mpgc.rpg127295.ui.GameService;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,7 @@ import java.util.random.RandomGenerator;
  * effects and timer are chosen and connected. Everything is built in the constructor, so a
  * missing strategy or an item without effect stops the application at startup (fail fast).
  */
-public final class GameAssembly {
+public final class GameAssembly implements GameService {
 
     private final GameContent content;
     private final ExamBattleFactory battles;
@@ -71,6 +72,11 @@ public final class GameAssembly {
         this.saveFailures = Objects.requireNonNull(saveFailures, "Save failure callback must not be null");
     }
 
+    @Override
+    public List<StudentProfile> profiles() {
+        return content.profiles().all();
+    }
+
     /**
      * Creates a game saved in the given slot after every exam.
      *
@@ -78,6 +84,7 @@ public final class GameAssembly {
      * @param slot      letters, digits, - and _ only
      * @throws IllegalArgumentException if no profile has that id or the slot name is invalid
      */
+    @Override
     public Game newGame(String name, String profileId, String slot) {
         SaveGameRepository.requireValidSlot(slot);
         StudentProfile profile = content.profiles().findById(profileId)
@@ -89,11 +96,13 @@ public final class GameAssembly {
      * @return the game saved in the slot, which keeps being saved there; empty if never saved
      * @throws SaveGameException if the saved game is unreadable or does not match the content
      */
+    @Override
     public Optional<Game> loadGame(String slot) {
         return saves.load(slot).map(data -> gameOf(mapper.toStudent(data), slot));
     }
 
     /** @return the slots with a saved game, in alphabetical order */
+    @Override
     public List<String> savedGames() {
         return saves.listSlots();
     }
