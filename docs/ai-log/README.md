@@ -37,3 +37,4 @@ rivista da me, con il supporto di Claude in chat, prima del merge.
 | 2026-11-05 | [Effetti di oggetti e abilità (issue #22, 7b)](2026-11-05-10-effetti-oggetti-e-abilita.md) |
 | 2026-11-05 | [Timer concorrente (issue #23, 7c)](2026-11-05-11-timer-concorrente.md) |
 | 2026-11-07 | [Partita, progressione, ricompense e laurea (issue #8)](2026-11-07-01-partita-e-progressione.md) |
+| 2026-11-12 | [Domande delle quattro materie mancanti](2026-11-12-02-domande-delle-quattro-materie.md) |

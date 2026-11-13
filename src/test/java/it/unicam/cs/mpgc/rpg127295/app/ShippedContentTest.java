@@ -17,7 +17,9 @@ import it.unicam.cs.mpgc.rpg127295.model.question.TrueFalseQuestion;
 import it.unicam.cs.mpgc.rpg127295.model.student.Stats;
 import it.unicam.cs.mpgc.rpg127295.model.student.StudentProfile;
 import it.unicam.cs.mpgc.rpg127295.persistence.content.XmlDocumentLoader;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -40,6 +42,18 @@ class ShippedContentTest {
                 () -> assertEquals(ExamType.WRITTEN, programming.type()),
                 () -> assertEquals(12, programming.credits()),
                 () -> assertEquals(Difficulty.MEDIUM, programming.difficulty()));
+    }
+
+    @Test
+    void theSessionHasFiveExamsWithTheProjectAsFinalBoss() {
+        List<Exam> exams = content.exams().all();
+
+        assertAll(
+                () -> assertEquals(List.of("PROG1", "ASD1", "BD1", "RETI1", "MDP1"),
+                        exams.stream().map(Exam::code).toList()),
+                () -> assertEquals(List.of(ExamType.WRITTEN, ExamType.WRITTEN, ExamType.ORAL, ExamType.ORAL,
+                        ExamType.PROJECT), exams.stream().map(Exam::type).toList()),
+                () -> assertEquals("Metodologie di Programmazione", exams.getLast().subject().name()));
     }
 
     @Test
@@ -69,19 +83,27 @@ class ShippedContentTest {
     }
 
     @Test
-    void programmingUsesEveryKindOfQuestion() {
-        List<Question> questions = questionsOf(content.exams().findByCode("PROG1").orElseThrow());
+    void everyExamUsesEveryKindOfQuestion() {
+        content.exams().all().forEach(exam -> {
+            List<Question> questions = questionsOf(exam);
+            assertAll(exam.code(),
+                    () -> assertTrue(questions.stream().anyMatch(MultipleChoiceQuestion.class::isInstance)),
+                    () -> assertTrue(questions.stream().anyMatch(TrueFalseQuestion.class::isInstance)),
+                    () -> assertTrue(questions.stream().anyMatch(CodeOutputQuestion.class::isInstance)),
+                    () -> assertTrue(questions.stream().anyMatch(FillInQuestion.class::isInstance)));
+        });
+    }
 
-        assertAll(
-                () -> assertTrue(questions.stream().anyMatch(MultipleChoiceQuestion.class::isInstance)),
-                () -> assertTrue(questions.stream().anyMatch(TrueFalseQuestion.class::isInstance)),
-                () -> assertTrue(questions.stream().anyMatch(CodeOutputQuestion.class::isInstance)),
-                () -> assertTrue(questions.stream().anyMatch(FillInQuestion.class::isInstance)));
+    @Test
+    void everyExamHasQuestionsOfEveryDifficulty() {
+        content.exams().all().forEach(exam -> assertEquals(EnumSet.allOf(Difficulty.class),
+                questionsOf(exam).stream().map(Question::difficulty).collect(Collectors.toSet()), exam.code()));
     }
 
     @Test
     void notesCanBeUsedOnEveryFourOptionQuestion() {
-        questionsOf(content.exams().findByCode("PROG1").orElseThrow()).stream()
+        content.exams().all().stream()
+                .flatMap(exam -> questionsOf(exam).stream())
                 .filter(question -> !(question instanceof TrueFalseQuestion))
                 .filter(ChoiceQuestion.class::isInstance)
                 .map(ChoiceQuestion.class::cast)
