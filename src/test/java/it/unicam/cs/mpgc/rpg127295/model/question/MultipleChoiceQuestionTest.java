@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class MultipleChoiceQuestionTest extends ChoiceQuestionContractTest {
@@ -31,6 +32,11 @@ class MultipleChoiceQuestionTest extends ChoiceQuestionContractTest {
 
     private static MultipleChoiceQuestion withOptions(List<String> options, String correctOption) {
         return new MultipleChoiceQuestion(details("Q-1", "Domanda"), options, correctOption);
+    }
+
+    @Test
+    void hasNoCodeSnippet() {
+        assertEquals(Optional.empty(), createQuestion("Q-1", "Domanda").codeSnippet());
     }
 
     @Test

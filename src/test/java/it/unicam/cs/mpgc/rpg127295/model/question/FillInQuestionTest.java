@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -34,6 +35,11 @@ class FillInQuestionTest extends QuestionContractTest {
 
     private FillInQuestion question() {
         return createQuestion("Q-1", "Con quale politica funziona uno stack?");
+    }
+
+    @Test
+    void hasNoCodeSnippet() {
+        assertEquals(Optional.empty(), question().codeSnippet());
     }
 
     @ParameterizedTest
