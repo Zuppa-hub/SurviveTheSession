@@ -16,7 +16,9 @@ chiedevo le modifiche a Claude Code. Le decisioni elencate nelle sezioni "Modifi
 verificato da me" sono quindi mie, ma quasi tutte sono nate da questo confronto. Sono invece
 interamente mie le verifiche di build ed esecuzione, la lettura delle PR prima del merge e la
 risoluzione del conflitto della PR #21. La revisione delle domande di Programmazione è stata
-fatta insieme a Claude in chat.
+fatta insieme a Claude in chat. Dal 12/11, per i tempi di consegna, Claude Code ha deciso e
+implementato le soluzioni senza approvazione preventiva della proposta; ogni PR è stata
+rivista da me, con il supporto di Claude in chat, prima del merge.
 
 | Data | Sessione |
 |------|----------|
@@ -36,3 +38,4 @@ fatta insieme a Claude in chat.
 | 2026-11-05 | [Timer concorrente (issue #23, 7c)](2026-11-05-11-timer-concorrente.md) |
 | 2026-11-07 | [Partita, progressione, ricompense e laurea (issue #8)](2026-11-07-01-partita-e-progressione.md) |
 | 2026-11-12 | [Domande delle quattro materie mancanti](2026-11-12-02-domande-delle-quattro-materie.md) |
+| 2026-11-13 | [Salvataggi JSON (issue #9)](2026-11-13-01-salvataggi-json.md) |
