@@ -22,8 +22,11 @@ vuoto e file corrotto o versione ignota → eccezione dedicata, salvataggio auto
   `ATOMIC_MOVE`, lettura che rifiuta file corrotti e versioni sconosciute.
 - `AutoSave` e `GameAssembly.newGame(nome, profilo, slot)`, `loadGame`, `savedGames`; `Main`
   con la cartella `~/.sopravvivi-alla-sessione/saves`.
-- Wiki: pagina Persistenza. Verificato che togliendo la registrazione di `AutoSave` il test
-  dedicato fallisca. 632 test verdi.
+- Prima del merge, su richiesta: `AutoSave` cattura la `SaveGameException` e la passa a un
+  callback senza fermare la partita (test con un repository che fallisce); ripiego senza
+  `ATOMIC_MOVE` testato con un `FileMover` package-private.
+- Wiki: pagina Persistenza. Verificato che togliendo la registrazione di `AutoSave`, o
+  rilanciando l'eccezione invece di segnalarla, i test dedicati falliscano. 634 test verdi.
 
 **Modificato / verificato da me:**
 - [ ] _da completare_

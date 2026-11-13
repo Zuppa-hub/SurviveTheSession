@@ -81,8 +81,14 @@ Un salvataggio non scrive direttamente su `<slot>.json`. Scrive su un file tempo
 stessa cartella e poi lo **sposta** al posto di quello vecchio (`Files.move` con
 `ATOMIC_MOVE`). Se il gioco si chiude a metà scrittura, resta il salvataggio precedente
 intero, mai un file troncato a metà. La cartella è la stessa perché lo spostamento atomico
-funziona solo all'interno dello stesso file system; se il file system non lo supporta, si
-ripiega su una sostituzione normale.
+funziona solo all'interno dello stesso file system. Se il file system non supporta lo
+spostamento atomico (`AtomicMoveNotSupportedException`), si ripiega su `Files.move` con
+`REPLACE_EXISTING`: meno sicuro, ma sempre meglio che scrivere direttamente sul file finale.
+
+Il ripiego dipende dal file system, e i test non possono scegliere su quale girano. Per questo
+lo spostamento passa da una piccola interfaccia package-private (`FileMover`, normalmente
+`Files::move`): il test ne passa una che rifiuta `ATOMIC_MOVE` e verifica che il secondo
+tentativo usi `REPLACE_EXISTING` e che il salvataggio venga sostituito.
 
 ### Nomi degli slot
 Il nome di uno slot diventa il nome di un file, quindi è validato: solo lettere, numeri, `-` e
@@ -112,6 +118,14 @@ l'esito dell'esame: `Game` non dipende né dalla persistenza né dalla UI.
 
 `GameAssembly` offre `newGame(nome, profilo, slot)`, `loadGame(slot)` e `savedGames()`; una
 partita caricata continua a salvarsi nello stesso slot.
+
+**Un salvataggio fallito non ferma la partita.** Se il disco è pieno o la cartella non è
+scrivibile, `AutoSave` cattura la `SaveGameException` e la passa a un callback
+(`Consumer<SaveGameException>`) ricevuto da `GameAssembly`. La partita prosegue e gli altri
+listener ricevono comunque l'esito dell'esame. Oggi `Main` scrive l'avviso sull'errore
+standard; con la GUI (#10) il callback mostrerà un messaggio al giocatore. Senza questa scelta
+l'eccezione risalirebbe dalla notifica di fine esame fino alla UI e interromperebbe il gioco
+per un problema che non riguarda le regole.
 
 ### Test
 `JsonSaveGameRepositoryTest` usa una cartella temporanea di JUnit (`@TempDir`), creata e
