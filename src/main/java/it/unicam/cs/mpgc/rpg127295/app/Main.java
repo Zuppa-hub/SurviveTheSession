@@ -2,6 +2,8 @@ package it.unicam.cs.mpgc.rpg127295.app;
 
 import it.unicam.cs.mpgc.rpg127295.persistence.content.ContentException;
 import it.unicam.cs.mpgc.rpg127295.persistence.content.XmlDocumentLoader;
+import it.unicam.cs.mpgc.rpg127295.persistence.save.JsonSaveGameRepository;
+import java.nio.file.Path;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.random.RandomGenerator;
 
@@ -14,6 +16,9 @@ import java.util.random.RandomGenerator;
  */
 public final class Main {
 
+    private static final Path SAVES_DIRECTORY =
+            Path.of(System.getProperty("user.home"), ".sopravvivi-alla-sessione", "saves");
+
     private Main() {
     }
 
@@ -22,7 +27,8 @@ public final class Main {
         try {
             GameContent content = GameContent.load(
                     new XmlDocumentLoader(GameContent.CONTENT_ROOT, GameContent.SCHEMA_ROOT));
-            new GameAssembly(content, scheduler, Runnable::run, RandomGenerator.getDefault());
+            new GameAssembly(content, scheduler, Runnable::run, RandomGenerator.getDefault(),
+                    new JsonSaveGameRepository(SAVES_DIRECTORY));
             System.out.println("RPG avviato: " + content.exams().all().size() + " esami caricati");
         } catch (ContentException error) {
             System.err.println("Impossibile avviare il gioco, contenuti non validi:");
