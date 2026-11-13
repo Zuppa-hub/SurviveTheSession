@@ -37,7 +37,9 @@ Package base: `it.unicam.cs.mpgc.rpg127295`.
 10. A ogni sessione aggiungere un file in `docs/ai-log/`, chiamato
     `AAAA-MM-GG-NN-titolo.md` (`NN` = numero della sessione nel giorno), con data, cosa è
     stato chiesto e cosa è stato prodotto, e aggiungerlo all'indice
-    `docs/ai-log/README.md`. La parte "verificato da me" la compila Andrea.
+    `docs/ai-log/README.md`. La parte "Modificato / verificato da me" la scrive Claude Code
+    in prima persona per Andrea (supervisione, revisione con Claude in chat, prompt di
+    correzione), senza segnaposti; Andrea la corregge nel prompt successivo se serve.
 
 ## Convenzione dei commit
 Prefisso minuscolo seguito da testo in italiano:

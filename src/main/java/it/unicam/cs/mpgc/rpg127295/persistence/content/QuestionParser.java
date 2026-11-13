@@ -7,8 +7,9 @@ import org.w3c.dom.Element;
 /**
  * Builds one kind of question from its XML element.
  * <p>
- * Parsers are registered by element name in a map built in the composition root, so a new
- * kind of question needs a new parser and a new map entry, not a change to the repository (OCP).
+ * Every parser declares its element with {@link QuestionElement}; the composition root builds the
+ * map element → parser by reading it, so a new kind of question needs a new annotated parser,
+ * not a change to the repository (OCP).
  */
 @FunctionalInterface
 public interface QuestionParser {
