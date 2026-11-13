@@ -99,7 +99,8 @@ Cinque materie reali del corso di Informatica, ognuna con un file XML di domande
 
 ### 3.2 Package (base `it.unicam.cs.mpgc.rpg127295`)
 ```
-app            composition root (GameAssembly: collega contenuti, engine e timer), avvio JavaFX
+app            composition root (GameAssembly: collega contenuti, engine e timer;
+               GameApplication: avvio e chiusura di JavaFX)
 model
   student      Student, Stats, StudentProfile, Level
   exam         Exam, ExamType, ExamSession, Grade
@@ -128,7 +129,8 @@ persistence
   content      implementazioni XML dei cataloghi e del repository delle domande (DOM, XSD, XPath),
                QuestionParser con l'annotation @QuestionElement, QuestionParsers
   save         JsonSaveGameRepository (Gson)
-ui             controller JavaFX, ViewNavigator, adattatori dei listener
+ui             GameService (interfaccia implementata da app), ViewNavigator, controller JavaFX,
+               ExamRow, SlotNames, Alerts, adattatori dei listener
 ```
 Risorse:
 ```
@@ -316,6 +318,13 @@ Schermate (FXML + controller):
 6. **Laurea**: riepilogo finale con media ponderata e CFU.
 
 I controller non contengono regole di gioco: traducono eventi in chiamate all'engine e aggiornano la vista. Stile con un unico CSS, grafica semplice e pulita.
+
+Struttura (#10, #11):
+- `app.GameApplication` (sottoclasse di `Application`, avviata da `Main`) è la composition root della GUI: carica i contenuti, crea lo scheduler del timer e `GameAssembly` con `Platform::runLater` come esecutore delle notifiche, mostra il menu; `stop()` chiama `scheduler.shutdownNow()`. Contenuti non validi → finestra d'errore e uscita.
+- `ui.GameService` è l'interfaccia con cui la UI crea e carica le partite (profili, salvataggi, nuova partita, caricamento); la implementa `GameAssembly`. Così `ui` dipende solo da engine e model, e `app` dipende da `ui` (DIP, nessun ciclo).
+- `ui.ViewNavigator` carica gli FXML (senza `fx:controller`) e passa a ogni controller le sue dipendenze nel costruttore; un unico `styles.css`.
+- Classi di supporto senza JavaFX, testate con JUnit: `ExamRow` (stato di ogni esame: superato, disponibile, bloccato) e `SlotNames` (nome del salvataggio ricavato dal nome del giocatore).
+- Un salvataggio automatico fallito mostra un avviso (callback della #9) e la partita prosegue.
 
 ---
 

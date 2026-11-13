@@ -21,6 +21,7 @@ import it.unicam.cs.mpgc.rpg127295.model.item.Item;
 import it.unicam.cs.mpgc.rpg127295.model.student.Student;
 import it.unicam.cs.mpgc.rpg127295.persistence.content.ContentException;
 import it.unicam.cs.mpgc.rpg127295.persistence.content.XmlDocumentLoader;
+import it.unicam.cs.mpgc.rpg127295.ui.GameService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -139,6 +140,13 @@ class GameAssemblyTest {
         GameAssembly assembly = assembly();
 
         assertThrows(IllegalArgumentException.class, () -> assembly.newGame("Andrea", "nerd", "../andrea"));
+    }
+
+    @Test
+    void isTheGameServiceOfTheUserInterface() {
+        GameService service = assembly();
+
+        assertEquals(content.profiles().all(), service.profiles());
     }
 
     @Test

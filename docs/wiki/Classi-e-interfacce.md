@@ -555,3 +555,11 @@ stanno nell'engine; `JsonSaveGameRepository` (Gson) sta in `persistence.save`. I
 automatico è `AutoSave`, un `GameListener` registrato in `app`: `Game` non conosce la
 persistenza. I dettagli (versione del formato, scrittura atomica, errori) sono nella pagina
 [Persistenza](Persistenza).
+
+## Interfaccia grafica (`ui`)
+
+`GameService` (interfaccia definita nella UI, implementata da `GameAssembly`), `ViewNavigator`
+(carica gli FXML e crea i controller con le loro dipendenze), i controller `MenuController`,
+`NewGameController`, `SessionController`, le classi di supporto testate `ExamRow` e `SlotNames`,
+e `Alerts`. In `app`, `GameApplication` avvia e chiude JavaFX. I dettagli sono nella pagina
+[Interfaccia grafica](Interfaccia-grafica).
