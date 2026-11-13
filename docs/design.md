@@ -123,7 +123,7 @@ engine
                ExamReport, ProgressionRules, StandardProgressionRules, RewardPolicy,
                StandardRewardPolicy, Reward, Graduation (regola e voto di laurea)
   repository   QuestionRepository, ExamCatalog, ProfileCatalog, ItemCatalog, SaveGameRepository,
-               SaveData (DTO del contratto di salvataggio), SaveMapper
+               SaveData (DTO del contratto di salvataggio), SaveMapper, SaveGameException
 persistence
   content      implementazioni XML dei cataloghi e del repository delle domande (DOM, XSD, XPath)
   save         JsonSaveGameRepository (Gson)
@@ -237,9 +237,9 @@ public interface QuestionRepository { List<Question> findBySubject(Subject subje
 public interface ExamCatalog    { List<Exam> all(); Optional<Exam> findByCode(String code); }
 public interface ProfileCatalog { List<StudentProfile> all(); Optional<StudentProfile> findById(String id); }
 public interface ItemCatalog    { List<Item> all(); Optional<Item> findById(String id); }
-public interface SaveGameRepository {
+public interface SaveGameRepository {           // slot: solo lettere, numeri, - e _
     void save(String slot, SaveData data);
-    Optional<SaveData> load(String slot);
+    Optional<SaveData> load(String slot);         // vuoto se non esiste; SaveGameException se illeggibile
     List<String> listSlots();
     void delete(String slot);
 }
@@ -263,7 +263,7 @@ public interface BattleListener {
 | OCP | nuovo tipo di esame, domanda, oggetto, abilità = nuova classe, nessuna modifica all'engine; nell'engine nessuno `switch`/`if` su `ExamType`: l'associazione tipo → strategia è una `EnumMap<ExamType, ExamStrategy>` costruita in `app` e passata all'engine; allo stesso modo un nuovo oggetto = un `BattleEffect` (nuovo o esistente) + una voce nella mappa id → effetto costruita in `app`; una nuova abilità = un record `Ability` con un effetto |
 | LSP | contratti espliciti in Javadoc; metodi di validazione condivisi (es. `Grade.of(int)` unico punto di creazione) |
 | ISP | ChoiceQuestion separata da Question; listener piccoli e separati |
-| DIP | ExamBattle dipende da ExamStrategy, GradeCalculator, QuestionTimer, BattleEffect; Game dipende da SaveGameRepository; le interfacce di repository e cataloghi stanno in `engine.repository` (dalla parte di chi le usa) e `persistence` le implementa: la dipendenza va da `persistence` verso `engine`; tutto collegato in `app` |
+| DIP | ExamBattle dipende da ExamStrategy, GradeCalculator, QuestionTimer, BattleEffect; `Game` non conosce la persistenza: il salvataggio automatico è un `GameListener` (`AutoSave`) registrato in `app`, che dipende da `SaveGameRepository`; le interfacce di repository e cataloghi stanno in `engine.repository` (dalla parte di chi le usa) e `persistence` le implementa: la dipendenza va da `persistence` verso `engine`; tutto collegato in `app` |
 | Clean Code | nomi significativi, metodi piccoli, niente codice commentato, DRY, niente liste parallele (data clumping); niente accoppiamento temporale: un ordine di chiamate che il codice non impone (es. creare lo scontro e poi chiamare `begin()`) è uno stato non valido possibile, quindi `Game.startExam` crea e avvia lo scontro in un'unica chiamata |
 | Package | struttura per responsabilità (3.2) |
 | List | domande della sessione, ordine degli esami |
@@ -297,8 +297,12 @@ public interface BattleListener {
 
 ### 3.7 Persistenza
 - **Contenuti (sola lettura)**: XML in `resources/content`, validati con XSD all'avvio. Un errore nei contenuti blocca l'avvio con messaggio chiaro (fail fast). I file si leggono con `getResourceAsStream`, gli schemi dal loro URL (`getResource`) così gli `xs:include` si risolvono anche dentro il JAR. Ogni errore diventa una `ContentException` (file, riga, colonna o id). Le domande si costruiscono con una `Map<String, QuestionParser>` (nome dell'elemento → parser) costruita in `app`: nessuno `switch` sul tipo di domanda. XPath serve per leggere i campi relativi a un elemento; i filtri sulle domande si fanno con gli Stream nell'engine.
-- **Salvataggi**: JSON con Gson in `~/.sopravvivi-alla-sessione/saves/<slot>.json`. Si salvano DTO semplici (`SaveData`: id profilo, statistiche, livello, esperienza, inventario come id → quantità, libretto come codice esame → voto, esami rimanenti), non gli oggetti del dominio: il `SaveMapper` (in `engine.repository`, perché usa solo model e interfacce dei cataloghi) ricostruisce il dominio usando i cataloghi. `SaveData` fa parte del contratto di `SaveGameRepository`, quindi sta con l'interfaccia in `engine.repository` e contiene solo tipi del JDK. Così il formato di salvataggio non dipende dalle classi interne e `persistence` contiene solo la scrittura JSON.
-- Salvataggio automatico dopo ogni esame concluso; caricamento dal menu.
+- **Salvataggi**: JSON con Gson in `~/.sopravvivi-alla-sessione/saves/<slot>.json` (cartella iniettata nel costruttore, una cartella temporanea nei test). Si salvano DTO semplici (`SaveData`: nome, id profilo, statistiche, livello, esperienza, inventario come id → quantità, libretto come codice esame → voto in ordine di registrazione), non gli oggetti del dominio. Gli esami rimanenti non si salvano: si ricavano da sessione e libretto, e salvarli sarebbe uno stato duplicato. il `SaveMapper` (in `engine.repository`, perché usa solo model e interfacce dei cataloghi) ricostruisce il dominio usando i cataloghi. `SaveData` fa parte del contratto di `SaveGameRepository`, quindi sta con l'interfaccia in `engine.repository` e contiene solo tipi del JDK. Così il formato di salvataggio non dipende dalle classi interne e `persistence` contiene solo la scrittura JSON.
+- Il file ha un campo `formatVersion` (oggi 1) accanto ai dati della partita: un file di una versione sconosciuta viene rifiutato invece di essere letto male.
+- Nomi degli slot: solo lettere, numeri, `-` e `_` (altrimenti `IllegalArgumentException`), così un nome non può uscire dalla cartella dei salvataggi.
+- Scrittura su un file temporaneo nella stessa cartella e poi spostamento atomico al posto del file vecchio: un'interruzione a metà non lascia mai un salvataggio troncato. Lettura e scrittura con stream bufferizzati in UTF-8.
+- File mancante → `Optional.empty()`; file corrotto, versione sconosciuta o dati che non corrispondono ai contenuti (profilo, oggetto o esame inesistente) → `SaveGameException`.
+- Salvataggio automatico dopo ogni esame concluso: `AutoSave` è un `GameListener` registrato in `app`; caricamento dal menu.
 - Estensione possibile (documentata nella Wiki): `JpaSaveGameRepository` con H2, senza toccare engine e UI.
 
 ### 3.8 Interfaccia grafica
