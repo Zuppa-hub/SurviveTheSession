@@ -39,4 +39,5 @@ rivista da me, con il supporto di Claude in chat, prima del merge.
 | 2026-11-07 | [Partita, progressione, ricompense e laurea (issue #8)](2026-11-07-01-partita-e-progressione.md) |
 | 2026-11-12 | [Domande delle quattro materie mancanti](2026-11-12-02-domande-delle-quattro-materie.md) |
 | 2026-11-13 | [Salvataggi JSON (issue #9)](2026-11-13-01-salvataggi-json.md) |
+| 2026-11-13 | [Annotation dei parser delle domande (issue #29)](2026-11-13-02-annotation-dei-parser.md) |
 | 2026-11-13 | [GUI: menu, nuova partita e sessione (issue #10)](2026-11-13-03-gui-menu-e-sessione.md) |

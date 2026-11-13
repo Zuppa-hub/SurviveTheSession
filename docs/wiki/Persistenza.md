@@ -1,7 +1,7 @@
 # Persistenza
 
-> Bozza: copre i salvataggi JSON (issue #9). La parte sui contenuti XML (issue #5) è
-> riassunta qui e si completa con la #29.
+> Bozza: copre i salvataggi JSON (issue #9) e l'annotation dei parser (issue #29). La parte
+> sui contenuti XML (issue #5) è riassunta.
 
 Il gioco legge e scrive due tipi di dati, con esigenze diverse:
 
@@ -22,6 +22,65 @@ In entrambi i casi l'engine non conosce il formato: usa interfacce definite in
 I file sono letti con `getResourceAsStream`, validati con XSD (tipi condivisi in `common.xsd`
 con `xs:include`) e interrogati con XPath. Ogni errore diventa una `ContentException` con file,
 riga e colonna, e il gioco si ferma all'avvio con un messaggio chiaro.
+
+## Annotation personalizzata `@QuestionElement` (lezione 03)
+
+Ogni tipo di domanda ha nell'XML il suo elemento (`<multipleChoice>`, `<trueFalse>`,
+`<codeOutput>`, `<fillIn>`) e un parser che lo trasforma in una domanda. Il repository delle
+domande usa una mappa elemento → parser, così un nuovo tipo di domanda non richiede di
+modificare il repository (OCP).
+
+All'inizio la mappa era scritta a mano in `GameContent`:
+
+```java
+Map.of("multipleChoice", new MultipleChoiceParser(),
+       "trueFalse", new TrueFalseParser(), ...)
+```
+
+Il nome dell'elemento stava lontano dalla classe che lo gestisce: aggiungendo un parser bisognava
+ricordarsi di aggiungere anche la stringa giusta in un altro file. Ora ogni parser lo dichiara
+da sé con un'annotation personalizzata, uno degli argomenti della lezione 03 del Prof. Rossi:
+
+```java
+@QuestionElement("fillIn")
+public final class FillInParser implements QuestionParser { ... }
+```
+
+L'annotation è definita così:
+
+```java
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface QuestionElement {
+    String value();
+}
+```
+
+- **`@Retention(RUNTIME)`**: l'annotation resta nel bytecode e si può leggere mentre il
+  programma gira. Con `SOURCE` (come `@Override`) sparirebbe dopo la compilazione, con
+  `CLASS` resterebbe nel file `.class` ma non sarebbe leggibile con la reflection.
+- **`@Target(TYPE)`**: si mette solo su una classe, perché descrive un parser intero; il
+  compilatore la rifiuta su un metodo o un campo.
+- **`@Documented`**: compare nella Javadoc di ogni parser, così chi legge la documentazione vede
+  quale elemento gestisce.
+- **`value()`**: con un solo attributo chiamato `value` si può scrivere
+  `@QuestionElement("fillIn")` senza il nome dell'attributo.
+
+`QuestionParsers.byElement(parsers)` costruisce la mappa leggendo l'annotation con la reflection
+(`parser.getClass().getAnnotation(QuestionElement.class)`). `GameContent` passa solo l'elenco dei
+parser:
+
+```java
+QuestionParsers.byElement(List.of(
+        new MultipleChoiceParser(), new TrueFalseParser(), new CodeOutputParser(), new FillInParser()));
+```
+
+**Fail fast.** Un parser senza annotation, o due parser che dichiarano lo stesso elemento,
+fermano l'avvio con una `ContentException` che nomina la classe: ad esempio "Parser
+FillInParser does not declare its element with @QuestionElement". I test lo verificano con un
+parser senza annotation e con un secondo parser per `fillIn`, e verificano anche che
+l'annotation abbia davvero `RUNTIME`, `TYPE` e `@Documented`.
 
 ## Salvataggi JSON
 

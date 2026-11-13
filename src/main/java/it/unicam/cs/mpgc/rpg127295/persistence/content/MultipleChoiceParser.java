@@ -6,6 +6,7 @@ import it.unicam.cs.mpgc.rpg127295.model.question.QuestionDetails;
 import org.w3c.dom.Element;
 
 /** Builds a {@link MultipleChoiceQuestion} from a {@code <multipleChoice>} element. */
+@QuestionElement("multipleChoice")
 public final class MultipleChoiceParser implements QuestionParser {
 
     @Override
