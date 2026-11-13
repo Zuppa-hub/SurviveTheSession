@@ -11,6 +11,7 @@ import it.unicam.cs.mpgc.rpg127295.persistence.content.ContentException;
 import it.unicam.cs.mpgc.rpg127295.persistence.content.FillInParser;
 import it.unicam.cs.mpgc.rpg127295.persistence.content.MultipleChoiceParser;
 import it.unicam.cs.mpgc.rpg127295.persistence.content.QuestionParser;
+import it.unicam.cs.mpgc.rpg127295.persistence.content.QuestionParsers;
 import it.unicam.cs.mpgc.rpg127295.persistence.content.TrueFalseParser;
 import it.unicam.cs.mpgc.rpg127295.persistence.content.XmlDocumentLoader;
 import it.unicam.cs.mpgc.rpg127295.persistence.content.XmlExamCatalog;
@@ -23,8 +24,8 @@ import java.util.Map;
 /**
  * All the read-only content of the game, loaded and validated at startup.
  * <p>
- * Part of the composition root: it chooses the XML implementations and registers the parser
- * of each question element.
+ * Part of the composition root: it chooses the XML implementations and the parsers of the
+ * questions, mapped to their elements through {@code @QuestionElement}.
  */
 public record GameContent(ExamCatalog exams, ProfileCatalog profiles, ItemCatalog items,
                           QuestionRepository questions) {
@@ -42,12 +43,10 @@ public record GameContent(ExamCatalog exams, ProfileCatalog profiles, ItemCatalo
                 XmlQuestionRepository.load(loader, questionParsers(), subjectsOf(exams)));
     }
 
+    /** The element of each parser is read from its {@code @QuestionElement} annotation. */
     private static Map<String, QuestionParser> questionParsers() {
-        return Map.of(
-                "multipleChoice", new MultipleChoiceParser(),
-                "trueFalse", new TrueFalseParser(),
-                "codeOutput", new CodeOutputParser(),
-                "fillIn", new FillInParser());
+        return QuestionParsers.byElement(List.of(
+                new MultipleChoiceParser(), new TrueFalseParser(), new CodeOutputParser(), new FillInParser()));
     }
 
     private static List<Subject> subjectsOf(ExamCatalog exams) {
