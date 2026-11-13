@@ -23,4 +23,6 @@ indizi che non regalino la risposta; PR con l'elenco completo delle domande, sen
   opzioni. 589 test verdi; `./gradlew run` carica 5 esami.
 
 **Modificato / verificato da me:**
-- [ ] _da completare_
+- Revisionate le 60 domande dei quattro nuovi esami insieme a Claude in chat; corretti un
+  distrattore ambiguo (MDP-02), una domanda fuori programma (MDP-13) e un indizio che rivelava
+  la risposta (RETI-15).
