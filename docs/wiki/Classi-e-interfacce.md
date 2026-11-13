@@ -24,7 +24,7 @@ vuoto, numero positivo o non negativo) stanno in un solo punto, `model.Precondit
 | `engine.battle` | `ExamBattle`, `ExamBattleFactory`, `BattleServices`, `ExamStrategy`, `BattleEffect`, `BattleControls`, `BattleEffects`, `Ability`, `BattleState`, `BattleOutcome`, `BattleResult`, `BattleListener`, `QuestionPool`, `PresentedQuestion`, `AnswerResult`, `BattleRules`, `StandardBattleRules` |
 | `engine.strategy` | `WrittenExamStrategy`, `OralExamStrategy`, `ProjectExamStrategy` |
 | `engine.game` | `Game`, `GameListener`, `ExamReport`, `ProgressionRules`, `StandardProgressionRules`, `RewardPolicy`, `StandardRewardPolicy`, `Reward`, `Graduation` |
-| `app` | `GameAssembly`, `GameEffects`, `GameContent`, `Main` |
+| `app` | `GameAssembly`, `AutoSave`, `GameEffects`, `GameContent`, `Main` |
 | `engine.effect` | `ExtraTimeEffect`, `FiftyFiftyEffect`, `HintEffect`, `EnergyRestoreEffect`, `DoubleDamageEffect` |
 | `engine.timer` | `QuestionTimer`, `TimerListener`, `ScheduledQuestionTimer` |
 
@@ -546,3 +546,12 @@ l'engine e avvia uno scritto, verificando timer e abilità.
 
 ### Verifica dei test
 Togliendo per prova la ricarica dell'Energia da `startExam`, il test dedicato fallisce.
+
+## Salvataggi (`engine.repository`, `persistence.save`)
+
+`SaveData` (DTO con soli tipi del JDK), `SaveMapper` (studente ↔ dati, con i cataloghi),
+`SaveGameRepository` (contratto, con la validazione dei nomi degli slot) e `SaveGameException`
+stanno nell'engine; `JsonSaveGameRepository` (Gson) sta in `persistence.save`. Il salvataggio
+automatico è `AutoSave`, un `GameListener` registrato in `app`: `Game` non conosce la
+persistenza. I dettagli (versione del formato, scrittura atomica, errori) sono nella pagina
+[Persistenza](Persistenza).
