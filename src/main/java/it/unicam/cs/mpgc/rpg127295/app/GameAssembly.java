@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Consumer;
 import java.util.random.RandomGenerator;
 
 /**
@@ -43,16 +44,19 @@ public final class GameAssembly {
     private final RewardPolicy rewards;
     private final SaveGameRepository saves;
     private final SaveMapper mapper;
+    private final Consumer<SaveGameException> saveFailures;
 
     /**
-     * @param scheduler  runs the countdown of timed questions; owned by the caller, who shuts it down
-     * @param uiExecutor delivers the timer notifications on the user interface thread
-     * @param random     shuffles options and chooses questions and rewards
-     * @param saves      where games are saved after every exam
+     * @param scheduler    runs the countdown of timed questions; owned by the caller, who shuts it down
+     * @param uiExecutor   delivers the timer notifications on the user interface thread
+     * @param random       shuffles options and chooses questions and rewards
+     * @param saves        where games are saved after every exam
+     * @param saveFailures told of every automatic save that failed; the game goes on
      * @throws it.unicam.cs.mpgc.rpg127295.persistence.content.ContentException if an item has no effect
      */
     public GameAssembly(GameContent content, ScheduledExecutorService scheduler, Executor uiExecutor,
-                        RandomGenerator random, SaveGameRepository saves) {
+                        RandomGenerator random, SaveGameRepository saves,
+                        Consumer<SaveGameException> saveFailures) {
         this.content = Objects.requireNonNull(content, "Content must not be null");
         Objects.requireNonNull(scheduler, "Scheduler must not be null");
         Objects.requireNonNull(uiExecutor, "UI executor must not be null");
@@ -64,6 +68,7 @@ public final class GameAssembly {
         this.rewards = new StandardRewardPolicy(content.items(), random);
         this.saves = Objects.requireNonNull(saves, "Save repository must not be null");
         this.mapper = new SaveMapper(content.profiles(), content.items(), content.exams());
+        this.saveFailures = Objects.requireNonNull(saveFailures, "Save failure callback must not be null");
     }
 
     /**
@@ -95,7 +100,7 @@ public final class GameAssembly {
 
     private Game gameOf(Student student, String slot) {
         Game game = new Game(student, session, battles, new StandardProgressionRules(), rewards);
-        game.addListener(new AutoSave(saves, mapper, slot, student));
+        game.addListener(new AutoSave(saves, mapper, slot, student, saveFailures));
         return game;
     }
 

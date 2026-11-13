@@ -28,7 +28,8 @@ public final class Main {
             GameContent content = GameContent.load(
                     new XmlDocumentLoader(GameContent.CONTENT_ROOT, GameContent.SCHEMA_ROOT));
             new GameAssembly(content, scheduler, Runnable::run, RandomGenerator.getDefault(),
-                    new JsonSaveGameRepository(SAVES_DIRECTORY));
+                    new JsonSaveGameRepository(SAVES_DIRECTORY),
+                    failure -> System.err.println("Salvataggio non riuscito: " + failure.getMessage()));
             System.out.println("RPG avviato: " + content.exams().all().size() + " esami caricati");
         } catch (ContentException error) {
             System.err.println("Impossibile avviare il gioco, contenuti non validi:");

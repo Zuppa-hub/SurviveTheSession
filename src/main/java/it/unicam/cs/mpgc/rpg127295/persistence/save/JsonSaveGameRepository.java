@@ -14,6 +14,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -41,11 +42,21 @@ public final class JsonSaveGameRepository implements SaveGameRepository {
     private static final String EXTENSION = ".json";
 
     private final Path directory;
+    private final FileMover mover;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     /** @param directory where the saves are kept; created at the first save if missing */
     public JsonSaveGameRepository(Path directory) {
+        this(directory, Files::move);
+    }
+
+    /**
+     * For the tests: the fallback without atomic move depends on the file system, so the tests
+     * pass a mover that refuses {@code ATOMIC_MOVE} instead of needing such a file system.
+     */
+    JsonSaveGameRepository(Path directory, FileMover mover) {
         this.directory = Objects.requireNonNull(directory, "Directory must not be null");
+        this.mover = Objects.requireNonNull(mover, "File mover must not be null");
     }
 
     @Override
@@ -122,11 +133,15 @@ public final class JsonSaveGameRepository implements SaveGameRepository {
         }
     }
 
-    private static void replace(Path source, Path target) throws IOException {
+    /**
+     * Moves the new file over the old one atomically; where the file system cannot do that,
+     * replaces it with a normal move, which is still better than writing the target directly.
+     */
+    private void replace(Path source, Path target) throws IOException {
         try {
-            Files.move(source, target, StandardCopyOption.ATOMIC_MOVE);
+            mover.move(source, target, StandardCopyOption.ATOMIC_MOVE);
         } catch (AtomicMoveNotSupportedException notSupported) {
-            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+            mover.move(source, target, StandardCopyOption.REPLACE_EXISTING);
         }
     }
 
@@ -167,6 +182,12 @@ public final class JsonSaveGameRepository implements SaveGameRepository {
             throw new SaveGameException("Saved game " + slot + " contains no game");
         }
         return data;
+    }
+
+    /** Moves a file, as {@link Files#move}. */
+    @FunctionalInterface
+    interface FileMover {
+        void move(Path source, Path target, CopyOption... options) throws IOException;
     }
 
     /** The content of a file: the format version and the game. */
