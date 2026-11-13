@@ -12,6 +12,7 @@ import org.w3c.dom.Element;
  * The snippet keeps its relative indentation: blank lines around it are dropped and the
  * indentation shared by all lines, which comes from the XML layout, is removed.
  */
+@QuestionElement("codeOutput")
 public final class CodeOutputParser implements QuestionParser {
 
     @Override

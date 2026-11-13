@@ -126,7 +126,8 @@ engine
   repository   QuestionRepository, ExamCatalog, ProfileCatalog, ItemCatalog, SaveGameRepository,
                SaveData (DTO del contratto di salvataggio), SaveMapper, SaveGameException
 persistence
-  content      implementazioni XML dei cataloghi e del repository delle domande (DOM, XSD, XPath)
+  content      implementazioni XML dei cataloghi e del repository delle domande (DOM, XSD, XPath),
+               QuestionParser con l'annotation @QuestionElement, QuestionParsers
   save         JsonSaveGameRepository (Gson)
 ui             GameService (interfaccia implementata da app), ViewNavigator, controller JavaFX
                (menu, nuova partita, sessione, esame, esito, laurea), Alerts; classi di supporto
@@ -279,7 +280,7 @@ public interface BattleListener {
 | Stream API | media ponderata, CFU totali, filtri domande per difficoltà, statistiche; catene lunghe spezzate in metodi con nome |
 | Modelli di esecuzione | GUI event-driven; timer della domanda su thread separato (ScheduledExecutorService) con passaggio al thread JavaFX via `Platform.runLater`; stato condiviso protetto |
 | Gradle | build, run, test, dipendenze, plugin JavaFX |
-| Annotation | `@Override`, `@FunctionalInterface` (listener e timer), `@Test`; da completare con le slide del Prof. Rossi |
+| Annotation | `@Override`, `@FunctionalInterface` (listener e timer), `@Test`; annotation personalizzata `@QuestionElement` (lezione 03): ogni parser dichiara l'elemento XML che gestisce e `app` costruisce la mappa elemento → parser leggendola con la reflection (`getAnnotation`), invece di scrivere a mano le stringhe |
 | Persistenza | contenuti XML (sola lettura, in resources) + salvataggi JSON (Gson, cartella dell'utente) |
 | XML, XML Schema, XPath, parser | domande ed esami in XML, validati con XSD all'avvio, interrogati con XPath |
 | JavaFX | FXML + CSS + controller sottili |
@@ -303,7 +304,7 @@ public interface BattleListener {
 - Nei test niente tempo reale: `ManualQuestionTimer` per lo scontro; per `ScheduledQuestionTimer` uno scheduler manuale (registra il compito senza pianificarlo, il test fa scattare i secondi) e un esecutore in coda che simula la coda di `Platform.runLater`.
 
 ### 3.7 Persistenza
-- **Contenuti (sola lettura)**: XML in `resources/content`, validati con XSD all'avvio. Un errore nei contenuti blocca l'avvio con messaggio chiaro (fail fast). I file si leggono con `getResourceAsStream`, gli schemi dal loro URL (`getResource`) così gli `xs:include` si risolvono anche dentro il JAR. Ogni errore diventa una `ContentException` (file, riga, colonna o id). Le domande si costruiscono con una `Map<String, QuestionParser>` (nome dell'elemento → parser) costruita in `app`: nessuno `switch` sul tipo di domanda. XPath serve per leggere i campi relativi a un elemento; i filtri sulle domande si fanno con gli Stream nell'engine.
+- **Contenuti (sola lettura)**: XML in `resources/content`, validati con XSD all'avvio. Un errore nei contenuti blocca l'avvio con messaggio chiaro (fail fast). I file si leggono con `getResourceAsStream`, gli schemi dal loro URL (`getResource`) così gli `xs:include` si risolvono anche dentro il JAR. Ogni errore diventa una `ContentException` (file, riga, colonna o id). Le domande si costruiscono con una `Map<String, QuestionParser>` (nome dell'elemento → parser) costruita in `app` leggendo l'annotation `@QuestionElement` di ogni parser (`QuestionParsers.byElement`): nessuno `switch` sul tipo di domanda, e il nome dell'elemento sta accanto alla classe che lo gestisce. Un parser senza annotation o due parser per lo stesso elemento fermano l'avvio (`ContentException`). XPath serve per leggere i campi relativi a un elemento; i filtri sulle domande si fanno con gli Stream nell'engine.
 - **Salvataggi**: JSON con Gson in `~/.sopravvivi-alla-sessione/saves/<slot>.json` (cartella iniettata nel costruttore, una cartella temporanea nei test). Si salvano DTO semplici (`SaveData`: nome, id profilo, statistiche, livello, esperienza, inventario come id → quantità, libretto come codice esame → voto in ordine di registrazione), non gli oggetti del dominio. Gli esami rimanenti non si salvano: si ricavano da sessione e libretto, e salvarli sarebbe uno stato duplicato. il `SaveMapper` (in `engine.repository`, perché usa solo model e interfacce dei cataloghi) ricostruisce il dominio usando i cataloghi. `SaveData` fa parte del contratto di `SaveGameRepository`, quindi sta con l'interfaccia in `engine.repository` e contiene solo tipi del JDK. Così il formato di salvataggio non dipende dalle classi interne e `persistence` contiene solo la scrittura JSON.
 - Il file ha un campo `formatVersion` (oggi 1) accanto ai dati della partita: un file di una versione sconosciuta viene rifiutato invece di essere letto male.
 - Nomi degli slot: solo lettere, numeri, `-` e `_` (altrimenti `IllegalArgumentException`), così un nome non può uscire dalla cartella dei salvataggi.
@@ -344,7 +345,7 @@ Struttura (#10, #11):
 7. Niente codice commentato, niente commenti ovvi.
 8. Ogni classe di model ed engine ha test JUnit. I test non dipendono da tempo reale, file reali o casualità.
 9. Un branch `feature/<nome>` per ogni issue; commit piccoli e descrittivi; pull request su `develop` con descrizione; merge dopo che Andrea ha letto il codice.
-10. A ogni sessione aggiungere un file in `docs/ai-log/` chiamato `AAAA-MM-GG-NN-titolo.md` (`NN` = numero della sessione nel giorno: i nomi si ordinano da soli per data) con cosa è stato chiesto e cosa è stato prodotto, e una riga nell'indice `docs/ai-log/README.md`. Un file per sessione evita i conflitti tra pull request aperte insieme. La parte "verificato da me" la compila Andrea.
+10. A ogni sessione aggiungere un file in `docs/ai-log/` chiamato `AAAA-MM-GG-NN-titolo.md` (`NN` = numero della sessione nel giorno: i nomi si ordinano da soli per data) con cosa è stato chiesto e cosa è stato prodotto, e una riga nell'indice `docs/ai-log/README.md`. Un file per sessione evita i conflitti tra pull request aperte insieme. La parte "Modificato / verificato da me" la scrive Claude Code in prima persona per Andrea, con quello che Andrea ha fatto davvero nella sessione (supervisione, revisione con Claude in chat, prompt di correzione); Andrea la rilegge e la corregge nel prompt successivo se serve. Nessun segnaposto da compilare.
 
 ## 5. Piano di lavoro (issue)
 | # | Issue | Branch |
