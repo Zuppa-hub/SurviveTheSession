@@ -47,7 +47,7 @@ public final class NewGameController {
             errorLabel.setText("Esiste già una partita salvata come \"" + slot + "\": scegli un altro nome.");
             return;
         }
-        navigator.showSession(games.newGame(name, profile.id(), slot));
+        navigator.openGame(games.newGame(name, profile.id(), slot));
     }
 
     @FXML
