@@ -14,7 +14,7 @@
         <prompt>Una sottoclasse ridefinisce un metodo lanciando UnsupportedOperationException, mentre il metodo della superclasse funzionava. Quale principio SOLID viene violato?</prompt>
         <hint>Il codice scritto per il tipo base si rompe quando riceve il sottotipo.</hint>
         <correct>Liskov Substitution Principle</correct>
-        <wrong>Interface Segregation Principle</wrong>
+        <wrong>Dependency Inversion Principle</wrong>
         <wrong>Single Responsibility Principle</wrong>
         <wrong>Open/Closed Principle</wrong>
     </multipleChoice>
@@ -121,10 +121,11 @@
     </codeOutput>
 
     <fillIn id="MDP-13" difficulty="EASY">
-        <prompt>Nel Clean Code, come si chiama un numero scritto direttamente nel codice, senza un nome che ne spieghi il significato?</prompt>
-        <hint>Si sostituisce con una costante con nome.</hint>
-        <answer>numero magico</answer>
-        <answer>magic number</answer>
+        <prompt>Nel Clean Code, come si chiama il problema di due o più dati che viaggiano sempre insieme senza essere raggruppati in un oggetto, come due liste parallele legate dall'indice?</prompt>
+        <hint>La soluzione è creare un oggetto che li contenga entrambi.</hint>
+        <answer>data clumping</answer>
+        <answer>data clump</answer>
+        <answer>raggruppamento di dati</answer>
     </fillIn>
 
     <fillIn id="MDP-14" difficulty="MEDIUM">

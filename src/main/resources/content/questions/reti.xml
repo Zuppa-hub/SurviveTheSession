@@ -125,7 +125,7 @@
 
     <fillIn id="RETI-15" difficulty="HARD">
         <prompt>Quanti bit è lungo un indirizzo IPv6?</prompt>
-        <hint>Quattro volte quelli di un indirizzo IPv4.</hint>
+        <hint>Si scrive in 8 gruppi separati da due punti.</hint>
         <answer>128</answer>
     </fillIn>
 </questions>
