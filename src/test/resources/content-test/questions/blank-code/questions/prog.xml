@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<questions subject="PROG">
+    <codeOutput id="PROG-01" difficulty="EASY">
+        <prompt>Cosa stampa?</prompt>
+        <code>
+        </code>
+        <correct>1</correct>
+        <wrong>2</wrong>
+        <wrong>3</wrong>
+        <wrong>4</wrong>
+    </codeOutput>
+</questions>

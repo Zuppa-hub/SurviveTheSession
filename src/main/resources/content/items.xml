@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<items>
+    <item id="coffee">
+        <name>Caffè</name>
+        <description>Aggiunge 15 secondi alla domanda corrente. Solo negli esami a tempo.</description>
+    </item>
+    <item id="notes">
+        <name>Appunti</name>
+        <description>Elimina due risposte sbagliate. Solo nelle domande con quattro opzioni.</description>
+    </item>
+    <item id="summary">
+        <name>Riassunto</name>
+        <description>Mostra l'indizio della domanda, se ne ha uno.</description>
+    </item>
+    <item id="energy-drink">
+        <name>Energy drink</name>
+        <description>Recupera Energia.</description>
+    </item>
+</items>

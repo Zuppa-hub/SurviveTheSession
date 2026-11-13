@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<questions subject="PROG">
+    <multipleChoice id="PROG-01" difficulty="EASY">
+        <prompt>Quale collezione non ammette duplicati?</prompt>
+        <hint>Pensa agli insiemi</hint>
+        <correct>Set</correct>
+        <wrong>List</wrong>
+        <wrong>Queue</wrong>
+        <wrong>Deque</wrong>
+    </multipleChoice>
+    <trueFalse id="PROG-02" difficulty="EASY" answer="false">
+        <prompt>In Java una classe può estendere due classi.</prompt>
+    </trueFalse>
+    <codeOutput id="PROG-03" difficulty="MEDIUM">
+        <prompt>Cosa stampa questo codice?</prompt>
+        <code><![CDATA[
+            int x = 1;
+            if (x > 0) {
+                x += x++;
+            }
+            System.out.println(x);
+        ]]></code>
+        <correct>2</correct>
+        <wrong>1</wrong>
+        <wrong>3</wrong>
+        <wrong>4</wrong>
+    </codeOutput>
+    <fillIn id="PROG-04" difficulty="HARD">
+        <prompt>Con quale politica funziona uno stack?</prompt>
+        <answer>LIFO</answer>
+        <answer>Last In First Out</answer>
+    </fillIn>
+</questions>

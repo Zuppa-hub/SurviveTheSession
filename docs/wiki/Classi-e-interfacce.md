@@ -1,0 +1,557 @@
+# Classi e interfacce
+
+> Bozza: copre il **model** (issue #2, #3, #4) e nell'engine il calcolo del voto (issue #6), lo
+> scontro con le strategie d'esame (issue #7), gli effetti di oggetti e abilità (issue #22) e
+> la partita con progressione, ricompense e laurea (issue #8). Le altre sezioni su engine, persistence e
+> UI si aggiungono con le issue corrispondenti.
+
+Il model contiene le entità e lo stato del gioco e **non dipende da nessun altro
+package**: niente engine, niente persistenza, niente UI. Ogni classe valida i propri dati
+nel costruttore (fail fast): `Objects.requireNonNull` per i riferimenti nulli,
+`IllegalArgumentException` per i valori non validi. I controlli ricorrenti (testo non
+vuoto, numero positivo o non negativo) stanno in un solo punto, `model.Preconditions`.
+
+## Panoramica
+
+| Package | Classi |
+|---|---|
+| `model.exam` | `Grade`, `Exam`, `ExamType`, `ExamSession` |
+| `model.question` | `Question`, `ChoiceQuestion`, `QuestionVisitor`, `QuestionDetails`, `AbstractQuestion`, `AbstractChoiceQuestion`, `MultipleChoiceQuestion`, `TrueFalseQuestion`, `CodeOutputQuestion`, `FillInQuestion`, `Subject`, `Difficulty` |
+| `model.student` | `Student`, `StudentProfile`, `Stats`, `Level` |
+| `model.item` | `Item`, `Inventory` |
+| `model.transcript` | `Transcript`, `TranscriptEntry` |
+| `engine.grading` | `Performance`, `GradeCalculator`, `PerformanceGradeCalculator` |
+| `engine.battle` | `ExamBattle`, `ExamBattleFactory`, `BattleServices`, `ExamStrategy`, `BattleEffect`, `BattleControls`, `BattleEffects`, `Ability`, `BattleState`, `BattleOutcome`, `BattleResult`, `BattleListener`, `QuestionPool`, `PresentedQuestion`, `AnswerResult`, `BattleRules`, `StandardBattleRules` |
+| `engine.strategy` | `WrittenExamStrategy`, `OralExamStrategy`, `ProjectExamStrategy` |
+| `engine.game` | `Game`, `GameListener`, `ExamReport`, `ProgressionRules`, `StandardProgressionRules`, `RewardPolicy`, `StandardRewardPolicy`, `Reward`, `Graduation` |
+| `app` | `GameAssembly`, `AutoSave`, `GameEffects`, `GameContent`, `Main` |
+| `engine.effect` | `ExtraTimeEffect`, `FiftyFiftyEffect`, `HintEffect`, `EnergyRestoreEffect`, `DoubleDamageEffect` |
+| `engine.timer` | `QuestionTimer`, `TimerListener`, `ScheduledQuestionTimer` |
+
+## Esami e voti
+
+### `Grade`: una classe, non un record
+Un voto va da 18 a 30, e 31 rappresenta il 30 e lode. Il costruttore è privato e l'unico
+modo di creare un voto è `Grade.of(int)`: la validazione dell'intervallo sta quindi in un
+solo punto. Un record avrebbe sempre un costruttore pubblico, cioè un secondo modo di
+creare voti che bisognerebbe validare di nuovo.
+
+`Grade` è un value object: due voti sono uguali se hanno lo stesso valore. Offre
+`label()` per il testo mostrato al giocatore ("28", "30 e lode"), `valueForAverage()` (la
+lode vale 30 nella media) ed è `Comparable`.
+
+### `Exam` ed `ExamType`
+`Exam` ha codice, materia, tipo, CFU e difficoltà. La sua identità è il **codice**: due
+esami con lo stesso codice sono lo stesso esame, per questo `equals` e `hashCode` usano
+solo quello e `Exam` può fare da chiave nel libretto. Non è un record perché un record
+confronterebbe tutti i campi.
+
+La resistenza dell'esame non è un campo di `Exam`: è una regola di bilanciamento e la
+calcolerà l'engine da CFU e difficoltà.
+
+`ExamType` (scritto, orale, progetto) è un enum **senza comportamento**. Ogni tipo verrà
+associato alla sua strategia con una `EnumMap<ExamType, ExamStrategy>` costruita
+nell'avvio dell'applicazione: l'engine non conterrà `switch` o `if` sul tipo, e un nuovo
+tipo d'esame sarà una nuova classe più una voce nella mappa (OCP).
+
+## Domande
+
+```
+Question
+├── AbstractQuestion               equals/hashCode final sull'id
+│   ├── FillInQuestion
+│   └── AbstractChoiceQuestion     implementa ChoiceQuestion; isCorrect final
+│       ├── MultipleChoiceQuestion (4 opzioni)
+│       ├── TrueFalseQuestion      (Vero/Falso)
+│       └── CodeOutputQuestion     (4 output + code())
+QuestionDetails                    id, materia, difficoltà, testo, indizio
+```
+
+### Il contratto di `Question`
+La Javadoc di `Question` dichiara le aspettative valide per **ogni** implementazione:
+le domande sono immutabili, `isCorrect` non lancia mai eccezioni (con risposte sbagliate,
+vuote o nulle restituisce `false`) e due domande sono uguali **se e solo se** hanno lo
+stesso id, qualunque sia il loro tipo concreto. In `AbstractQuestion` `equals` e
+`hashCode` sono `final`, così nessuna sottoclasse può rompere questa regola.
+
+La risposta è il **testo** dell'opzione, non l'indice: non dipende dall'ordine in cui le
+opzioni vengono mostrate né da quelle nascoste dal 50/50.
+
+### `QuestionDetails`: un parameter object
+I cinque dati comuni a tutte le domande viaggiano sempre insieme. Senza raggrupparli,
+`CodeOutputQuestion` avrebbe otto parametri nel costruttore. Con il record
+`QuestionDetails` i costruttori ne hanno da due a quattro, e la validazione dei dati
+comuni sta in un solo punto. Le fabbriche `withHint` e `withoutHint` evitano di passare
+`Optional` come parametro.
+
+### Domande a scelta e 50/50
+`AbstractChoiceQuestion` valida le opzioni (almeno due, non vuote, distinte, con quella
+corretta tra loro) e implementa `isCorrect` come `final`: tutte le domande a scelta
+controllano la risposta allo stesso modo.
+
+Gli Appunti eliminano due opzioni sbagliate, quindi si possono usare solo se
+`wrongOptions().size() >= 3`. Il Vero/Falso è comunque una `ChoiceQuestion` (così la UI
+mostra tutte le domande a scelta allo stesso modo), ma con una sola opzione sbagliata la
+regola lo esclude da sola, senza controllare il tipo concreto.
+
+### `CodeOutputQuestion` e LSP
+`CodeOutputQuestion` è sorella di `MultipleChoiceQuestion`, non figlia: entrambe
+estendono `AbstractChoiceQuestion`. Rispetta il contratto delle domande a scelta senza
+cambiarlo: il testo della domanda resta in `prompt()` e lo snippet è un dato **in più**,
+esposto da `code()`.
+
+### Test di contratto
+Il principio di sostituzione di Liskov è verificato dai test, non solo dichiarato.
+`QuestionContractTest` e `ChoiceQuestionContractTest` sono classi di test astratte con le
+asserzioni del contratto; il test di ogni tipo concreto le estende e fornisce le proprie
+domande. Le stesse asserzioni girano così su tutte le implementazioni, compresa la regola
+"uguali se e solo se stesso id" verificata anche tra tipi diversi.
+
+### `QuestionVisitor`: niente `instanceof` sul tipo di domanda
+Tre parti del gioco devono comportarsi in modo diverso secondo la **categoria** della
+domanda:
+- l'**engine** mescola le opzioni delle domande a scelta, mentre il completamento non ne ha;
+- la **UI** (#11) mostra dei pulsanti oppure un campo di testo;
+- l'effetto degli **Appunti** (#22) elimina due opzioni sbagliate, quindi ha senso solo su
+  una domanda a scelta.
+
+La soluzione più immediata è chiedere `if (question instanceof ChoiceQuestion choice)` in
+tutti e tre i punti. Però ogni punto dovrebbe conoscere i tipi concreti, e chi aggiunge un
+tipo dovrebbe cercarli tutti.
+
+Con il **Visitor** è la domanda stessa a scegliere. `Question` ha un metodo
+`accept(QuestionVisitor<R> visitor)`. Le domande a scelta lo implementano (in modo `final`,
+in `AbstractChoiceQuestion`) chiamando `visitor.visitChoice(this)`; `FillInQuestion`
+chiama `visitor.visitFillIn(this)`. Chi usa la domanda scrive un visitor con i due casi e
+riceve la domanda già con il tipo giusto, senza cast. Ad esempio, per sapere quali opzioni
+mostrare:
+
+```java
+List<String> options = question.accept(new QuestionVisitor<>() {
+    public List<String> visitChoice(ChoiceQuestion q) { return q.options(); }
+    public List<String> visitFillIn(FillInQuestion q) { return List.of(); }
+});
+```
+
+**Il compromesso.** Il visitor ha un metodo per **categoria**, non per classe concreta.
+- Un nuovo tipo dentro una categoria esistente (ad esempio un'altra domanda a scelta) non
+  cambia nulla: estende `AbstractChoiceQuestion` ed è già visitato come scelta.
+- Una categoria nuova (ad esempio una domanda in cui si ordinano degli elementi) richiede un
+  metodo in più in `QuestionVisitor`, e quindi in tutti i visitor. È voluto: il compilatore
+  segnala ogni punto che deve decidere come trattarla, mentre con `instanceof` il nuovo
+  caso finirebbe in silenzio nel ramo sbagliato.
+
+Le domande non sono cambiate nei dati: si è aggiunto solo il metodo `accept`.
+
+### `FillInQuestion`
+La risposta viene normalizzata prima del confronto: spazi iniziali e finali tolti, spazi
+interni ridotti a uno, lettere minuscole (con `Locale.ROOT`, indipendente dalla lingua del
+sistema). Si possono accettare più risposte equivalenti, ad esempio "LIFO" e "Last In First
+Out".
+
+### `Subject` e `Difficulty`
+`Subject` è un record e non un enum: le materie arrivano dai file di contenuto, così se ne
+può aggiungere una senza modificare il codice. `Difficulty` è un enum con `harder()`, che
+servirà all'orale in cui il professore "incalza".
+
+## Studente
+
+### `Stats` e `Level`: valori immutabili
+`Stats` (conoscenza, energia, concentrazione con i loro massimi) e `Level` (livello ed
+esperienza) sono record immutabili: ogni operazione restituisce un nuovo valore. I limiti
+sono garantiti dal costruttore: l'energia non scende sotto zero e non supera il massimo,
+spendere più concentrazione di quella disponibile è un errore (`IllegalStateException`).
+
+Le regole di progressione sono divise tra model ed engine. Il model sa **come** cambia lo
+stato in modo valido (`Level.levelUp(cost)` controlla solo che l'esperienza basti,
+`Stats.improve(...)` applica i bonus); l'engine deciderà **quando** e **di quanto** (soglie
+di esperienza, bonus a ogni livello, esperienza data da un esame).
+
+### `Student` e `StudentProfile`
+`StudentProfile` ha le statistiche iniziali, che devono essere "piene"; la sua identità è
+l'id. `Student` è creato a partire da un profilo e sostituisce statistiche e livello con
+`updateStats` e `updateLevel`, che ricevono una funzione (`UnaryOperator`, interfaccia
+funzionale) da passare come lambda:
+
+```java
+student.updateStats(stats -> stats.loseEnergy(3));
+```
+
+`Student` espone direttamente `Inventory` e `Transcript`, che proteggono da soli le
+proprie regole. Non ha `equals`: non ha un'identità stabile (il nome non è unico).
+
+## Oggetti
+
+### `Item` senza comportamento
+`Item` è solo un dato: id, nome e descrizione, con identità sull'id. Cosa fa un oggetto
+durante un esame (ad esempio il Caffè che aggiunge 15 secondi) dipende dallo stato dello
+scontro, che è nell'engine. Se `Item` contenesse quel comportamento, il model dipenderebbe
+dall'engine. Per questo il comportamento starà in un'interfaccia dell'engine,
+`ItemEffect`, e l'associazione `Item → ItemEffect` sarà una mappa costruita all'avvio.
+
+### `Inventory`
+Associa a ogni oggetto la sua quantità (`Map<Item, Integer>`). Invariante: le quantità
+sono sempre positive, e un oggetto che arriva a zero viene tolto. `items()` restituisce una
+copia immutabile.
+
+## Libretto
+
+### `Transcript`: una sola responsabilità
+Il libretto registra gli esami superati, impedisce di registrare due volte lo stesso esame
+e calcola CFU totali e media ponderata sui CFU (con gli Stream; la lode vale 30). Usa una
+`LinkedHashMap<Exam, Grade>`, che è una `HashMap` ma conserva l'ordine di registrazione.
+
+Il libretto **non** sa se lo studente può laurearsi né calcola il voto di laurea: sono
+regole di gioco e staranno in `Game`. È la violazione di SRP vista a lezione con il metodo
+`puoLaurearsi()` nella classe `Libretto`: una classe che registra i voti cambierebbe anche
+quando cambiano le regole di laurea.
+
+Un voto insufficiente non si può registrare, ma non serve un controllo: `Grade` non può
+esistere sotto il 18, quindi lo stato non valido è impedito dal tipo stesso.
+
+## Calcolo del voto (`engine.grading`)
+
+Il voto è una regola di gioco, quindi sta nell'engine e non in `Grade`: `Grade` sa solo
+quali valori sono validi, non come si ottengono.
+
+### `Performance`
+Record con le risposte corrette, quelle sbagliate (compresi i tempi scaduti) e gli
+indizi usati, tutti non negativi. Offre `answered()` (risposte date) e `isFlawless()`:
+almeno una risposta, nessun errore, nessun indizio. Zero risposte non è una prestazione
+perfetta.
+
+### Il contratto di `GradeCalculator`
+`GradeCalculator` è un'interfaccia funzionale con un solo metodo,
+`Optional<Grade> calculate(Performance)`. La Javadoc dichiara le regole valide per
+**ogni** implementazione:
+
+- una prestazione sufficiente dà un `Grade`, una insufficiente `Optional.empty()`; mai
+  `null`, mai eccezioni. Un voto fuori dall'intervallo è impossibile per costruzione,
+  perché `Grade` non può esistere fuori da 18-31;
+- nessuna risposta corretta → insufficiente;
+- prestazione perfetta (nessun errore, nessun indizio) → sufficiente;
+- con le stesse risposte date e gli stessi indizi, una risposta corretta in più non
+  peggiora mai il risultato;
+- con le stesse risposte corrette e sbagliate, un indizio in più non migliora mai il
+  risultato.
+
+Nelle ultime due regole una bocciatura conta meno di qualunque voto.
+
+Il contratto **non** fissa la soglia, la formula o la penalità degli indizi. Sono scelte
+di bilanciamento, e un contratto che le imponesse coinciderebbe con un'unica
+implementazione: l'interfaccia non servirebbe più. Fissa invece le proprietà che ogni
+valutazione sensata deve avere. È lo stesso ragionamento del `ValutatoreMinimale` della
+lezione 10: anche una politica molto diversa, come "18 a chiunque superi la soglia",
+rispetta il contratto e può sostituire l'implementazione principale senza che chi la usa
+se ne accorga (LSP).
+
+### `PerformanceGradeCalculator`
+- **Soglia** al 60% di risposte corrette.
+- **Scala lineare**: dal 60% al 100% il voto sale da 18 a 30, arrotondando per difetto.
+- **Indizi**: −1 punto ciascuno, senza scendere sotto il 18. Un indizio quindi non
+  trasforma mai un esame superato in una bocciatura.
+- **Lode** solo se `isFlawless()`.
+
+Il calcolo usa **solo interi**. La soglia si controlla senza divisioni
+(`corrette × 5 ≥ date × 3`) e il voto base è:
+
+```
+18 + 12 · (5c − 3a) / (2a)        c = risposte corrette, a = risposte date
+```
+
+La divisione intera arrotonda già per difetto. Con i `double`, una quota esattamente
+sulla soglia (3 su 5) potrebbe risultare 0,5999… per un errore di rappresentazione e dare
+una bocciatura ingiusta. Alcuni esempi: 3/5 → 18, 2/3 → 20, 8/10 → 24, 8/10 con due
+indizi → 22, 6/6 senza indizi → 30 e lode, 6/6 con un indizio → 29.
+
+### Test di contratto
+Come per le domande, `GradeCalculatorContractTest` è una classe di test astratta con le
+regole del contratto, verificate su una griglia di 484 prestazioni (0-10 corrette × 0-10
+sbagliate × 0-3 indizi). `PerformanceGradeCalculatorTest` la estende e aggiunge i casi
+specifici della formula (soglia esatta, arrotondamento, lode, penalità, minimo di 18).
+Ogni futura implementazione di `GradeCalculator` dovrà estendere lo stesso test.
+
+Ho verificato che il test di contratto sappia trovare un errore: trasformando per prova la
+penalità degli indizi in un bonus, la regola "un indizio in più non migliora mai il voto"
+fallisce.
+
+## Lo scontro (`engine.battle`, `engine.strategy`, `engine.timer`)
+
+### `ExamBattle`: il flusso
+Uno scontro si crea con `ExamBattleFactory.create(studente, esame)` e si avvia con
+`begin()`, che presenta la prima domanda. Poi la UI chiama `answer(testo)` oppure
+`retire()`.
+- **Risposta corretta**: la resistenza dell'esame scende del danno e lo studente recupera
+  concentrazione.
+- **Risposta sbagliata o tempo scaduto**: lo studente perde energia.
+- **Fine della prova**: quando la resistenza arriva a zero **oppure** quando le domande
+  finiscono, decide il `GradeCalculator`: con un voto l'esame è superato, senza voto è una
+  bocciatura. Così anche chi esaurisce le domande senza abbattere l'esame viene valutato
+  sulla prestazione, e il voto ha una sola regola.
+- **Energia a zero**: bocciatura, senza calcolare il voto. **Ritiro**: nessun voto.
+
+Chiedere un'azione fuori ordine (rispondere prima di `begin()` o dopo la fine) lancia
+`IllegalStateException`. `ExamBattle` non ha `equals`: uno scontro non ha un'identità
+stabile.
+
+La UI non interroga lo scontro di continuo: si registra come `BattleListener` (Observer) e
+riceve le notifiche (domanda presentata, risposta valutata, secondo passato, fine). Lo stato
+le arriva come `BattleState`, una fotografia immutabile. Tutti i metodi di `BattleListener`
+hanno un'implementazione `default` vuota, così ogni listener scrive solo le notifiche che gli
+servono: la partita, ad esempio, ascolta solo la fine dello scontro.
+
+È un **compromesso** rispetto all'ISP. La soluzione più pulita sarebbero listener più piccoli
+e separati (uno per le domande, uno per il tempo, uno per la fine), così un client
+dipenderebbe davvero solo dai metodi che usa. Con i `default` vuoti l'interfaccia resta una
+sola: chi la implementa non è costretto a scrivere metodi inutili, ma dipende comunque da
+tutti, e il compilatore non segnala più un metodo dimenticato. Qui l'abbiamo accettato
+perché i clienti sono due (la schermata d'esame, che usa quasi tutte le notifiche, e la
+partita, che ne usa una) e dividere l'interfaccia moltiplicherebbe le registrazioni senza un
+vantaggio concreto.
+
+### Strategie d'esame: nessuno `switch` sul tipo
+`ExamStrategy` decide la prossima domanda, se c'è un timer e quanto pesano gli errori:
+
+| | prossima domanda | timer | errori |
+|---|---|---|---|
+| `WrittenExamStrategy` | una qualsiasi | 30 s | ×1 |
+| `OralExamStrategy` | dopo un errore, più difficile di quella sbagliata | no | ×1 |
+| `ProjectExamStrategy` | una qualsiasi | no | ×2 |
+
+Le strategie arrivano alla `ExamBattleFactory` in una `EnumMap<ExamType, ExamStrategy>`
+costruita nell'avvio dell'applicazione. La factory controlla che ogni tipo abbia la sua
+strategia ed è l'unico punto che la cerca nella mappa. Un nuovo tipo d'esame è una nuova
+classe più una voce nella mappa (OCP).
+
+Il Progetto non filtra le domande per tipo: per farlo l'engine dovrebbe controllare il tipo
+concreto della domanda. Si distingue invece per l'assenza di timer e il danno doppio.
+
+**Dove sta l'interfaccia.** `ExamStrategy` sta in `engine.battle`, accanto a
+`ExamBattle` che la usa; `engine.strategy` contiene solo le tre implementazioni. All'inizio
+l'interfaccia era in `engine.strategy`, insieme alle implementazioni. Però `ExamBattle`
+dipendeva da `ExamStrategy` e `ExamStrategy` da `BattleState` e `QuestionPool`, quindi i
+due package dipendevano l'uno dall'altro: un ciclo, per cui nessuno dei due si poteva capire
+o modificare da solo. Spostare l'interfaccia applica la stessa regola del DIP usata per i
+repository (l'interfaccia sta con chi la usa). Ora la dipendenza va in una sola direzione:
+`engine.strategy` → `engine.battle`.
+
+Come per domande e voti, `ExamStrategyContractTest` verifica il contratto su ogni
+strategia: nessuna domanda ripetuta, risultato vuoto solo a domande finite, secondi positivi,
+moltiplicatore almeno 1.
+
+### L'orale che incalza e le domande finite
+Dopo un errore l'orale chiede una domanda di difficoltà `harder()` rispetto a quella
+sbagliata (dopo una HARD resta HARD). Se di quella difficoltà non ne restano, il
+`QuestionPool` dà la più vicina, preferendo la più difficile a parità di distanza: lo
+studente non viene penalizzato perché il contenuto è finito.
+
+### `QuestionPool`: nessuna domanda ripetuta
+Il pool contiene le domande della materia per un solo scontro. Le domande già poste stanno
+in un `HashSet<Question>`, che usa l'`equals` di `Question`: due domande con lo stesso id
+sono la stessa domanda anche se arrivassero da oggetti diversi. La scelta tra le candidate
+la fa il `RandomGenerator` iniettato.
+
+### Opzioni mescolate senza toccare le domande
+`PresentedQuestion` è la domanda come la vede il giocatore: la domanda stessa più le opzioni
+in ordine di visualizzazione, mescolate con `Collections.shuffle(copia, random)`. Le domande
+del model restano immutabili e uguali per tutti gli scontri. Il controllo della risposta non
+cambia, perché la risposta è il **testo** dell'opzione e non la sua posizione. Per sapere se
+ci sono opzioni da mescolare si usa il `QuestionVisitor`.
+
+### `BattleRules`: i numeri in un solo punto
+Resistenza dell'esame, danno di una risposta corretta e perdita di energia sono regole di
+bilanciamento, raccolte nell'interfaccia `BattleRules`. `StandardBattleRules` ha valori
+provvisori con costanti con nome, e una `EnumMap` per i valori che dipendono dalla difficoltà
+(al posto di uno `switch`). Il bilanciamento definitivo è nella #12.
+
+| Regola | Formula provvisoria |
+|---|---|
+| resistenza | CFU × 2, 3 o 4 (facile, media, difficile): Programmazione, 12 CFU media, vale 36 |
+| danno | 4 + Conoscenza / 2: Secchione 8, Nottambulo 6, Pendolare 5 |
+| perdita di energia | 1, 2 o 3 secondo la difficoltà, × il moltiplicatore della strategia |
+| concentrazione | +1 per risposta corretta |
+
+Lo scontro dipende dall'interfaccia (DIP). Nei test si usano regole fisse, scelte perché i
+conti siano facili da leggere.
+
+### Il timer: solo un'interfaccia
+Lo scontro conosce solo `QuestionTimer` (`start`, `addSeconds`, `stop`) e `TimerListener`.
+Nei test un `ManualQuestionTimer` fa passare il tempo solo quando il test chiama
+`advance(secondi)`: nessun test aspetta secondi veri. Il timer reale,
+`ScheduledQuestionTimer`, gira su un thread separato e consegna le notifiche sul thread
+dell'interfaccia: `ExamBattle` resta non thread-safe per scelta. I dettagli (lock, scadenze
+vecchie, test senza tempo reale) sono nella pagina [Modelli di esecuzione](Modelli-di-esecuzione).
+
+### Collaboratori raggruppati
+Regole, calcolatore del voto, timer, generatore casuale ed effetti sono gli stessi per tutti
+gli scontri. Viaggiano insieme in un record, `BattleServices` (parameter object, come
+`QuestionDetails`): l'applicazione lo costruisce e lo passa a `ExamBattleFactory`, che lo
+passa a ogni scontro. Così la factory ha tre parametri e il costruttore di `ExamBattle`
+cinque, anche dopo l'arrivo di oggetti e abilità.
+
+### Verifica dei test
+Ho verificato che i test sappiano trovare un errore: togliendo per prova `harder()`
+dall'orale falliscono tre test, due della strategia e uno dello scontro.
+
+## Oggetti e abilità (`BattleEffect`)
+
+### Un solo tipo di effetto
+Il Riassunto (un oggetto) e il Ripasso lampo (un'abilità) fanno la stessa cosa: mostrano
+l'indizio. Per non scrivere due volte lo stesso effetto c'è un'unica interfaccia,
+`BattleEffect`, con `canBeUsedIn(stato)` e `applyTo(controlli)`.
+- **Oggetti**: l'applicazione associa ogni oggetto al suo effetto con una mappa
+  id → effetto (`app.GameEffects`). Un oggetto di `items.xml` senza effetto blocca l'avvio
+  (fail fast), e un test lo verifica sul contenuto distribuito.
+- **Abilità**: sono dati, non classi. Il record `Ability` ha nome, costo in Concentrazione ed
+  effetto. Una nuova abilità con un effetto esistente è una riga, non una nuova classe.
+
+| Effetto | Usato da | Usabile se | Fa |
+|---|---|---|---|
+| `ExtraTimeEffect` | Caffè | la domanda corrente ha il timer | +15 secondi |
+| `FiftyFiftyEffect` | Appunti | sono visibili almeno 3 opzioni sbagliate | toglie 2 opzioni sbagliate |
+| `HintEffect` | Riassunto, Ripasso lampo | la domanda ha un indizio non ancora mostrato | mostra l'indizio |
+| `EnergyRestoreEffect` | Energy drink | l'Energia non è al massimo | +4 Energia, senza superare il massimo |
+| `DoubleDamageEffect` | Colpo di genio | non è già attivo | la prossima risposta corretta fa danno doppio |
+
+Le implementazioni stanno in `engine.effect`; l'interfaccia sta in `engine.battle`, con
+`ExamBattle` che la usa: la stessa regola (e la stessa direzione delle dipendenze) di
+`ExamStrategy`. I numeri (15 secondi, 4 punti, ×2) stanno in `BattleRules`, non negli effetti.
+
+### `BattleControls`: incapsulamento
+Per agire, un effetto deve poter modificare lo scontro: aggiungere tempo, togliere opzioni,
+mostrare l'indizio. Se ricevesse direttamente `ExamBattle`, quei metodi dovrebbero essere
+pubblici, e chiunque (anche la UI) potrebbe chiamarli senza nessun controllo: dare tempo
+extra senza consumare un Caffè, mostrare l'indizio senza contarlo nel voto.
+
+È il principio della lezione 07 sull'incapsulamento: **non vietiamo la modifica, la
+controlliamo**. Lo scontro si può modificare, ma solo attraverso un'interfaccia ristretta,
+`BattleControls`, con esattamente le cinque operazioni che servono agli effetti. La implementa
+una classe interna privata di `ExamBattle`, che la passa a un effetto solo dopo averne
+verificato l'uso. Da fuori restano visibili solo `useItem` e `useAbility`.
+
+### Usare un oggetto o un'abilità
+`useItem(oggetto)` e `useAbility(abilità)` fanno tutte le verifiche prima di cambiare
+qualcosa:
+1. c'è una domanda che attende risposta;
+2. l'oggetto ha un effetto o l'abilità esiste in questo scontro (altrimenti
+   `IllegalArgumentException`);
+3. l'oggetto è posseduto o la Concentrazione basta;
+4. l'effetto è applicabile adesso.
+
+Se una verifica fallisce non si consuma nulla. Altrimenti si paga (un'unità dell'oggetto o
+la Concentrazione), si applica l'effetto e i listener ricevono `onEffectApplied` con il
+nuovo stato: è l'unica notifica nuova, perché lo stato contiene già tutto quello che la UI
+deve ridisegnare.
+
+La UI deve sapere se abilitare un pulsante, quindi ci sono anche `canUse(oggetto)` e
+`canUse(abilità)`. Per non scrivere due volte le stesse verifiche (DRY), i quattro metodi
+passano tutti da **un unico metodo privato**, `refusalOf`, che restituisce il motivo del
+rifiuto oppure niente. `canUse` controlla solo che non ci sia un motivo; `use` lo lancia come
+eccezione. Oggetto e abilità diventano entrambi un `Attempt` (nome, effetto, se è pagabile,
+come pagarlo), così il percorso è uno solo.
+
+### Regole che valgono per domanda e per scontro
+- **50/50 una volta per domanda.** La regola guarda le opzioni sbagliate *visibili* nella
+  `PresentedQuestion`, non quelle della domanda. Dopo un uso ne resta una sola, quindi i
+  secondi Appunti non sono applicabili e non vengono consumati. Il Vero/Falso ha una sola
+  opzione sbagliata e il completamento nessuna (grazie al Visitor la sua lista di opzioni è
+  vuota): sono esclusi senza controllare il tipo.
+- **Un indizio conta una volta.** La visibilità dell'indizio sta nella `PresentedQuestion`:
+  dopo il Riassunto, il Ripasso lampo non è più applicabile (e viceversa), quindi
+  `Performance.withHint()` viene chiamato una sola volta. Con la domanda successiva la
+  presentazione è nuova e l'indizio torna nascosto.
+- **Colpo di genio.** Lo stato è un campo di `ExamBattle`, visibile in `BattleState`. Si
+  azzera alla prima risposta corretta, che fa danno doppio; un errore non lo annulla; non si
+  accumula e finisce con lo scontro.
+
+### Verifica dei test
+Togliendo per prova l'azzeramento del Colpo di genio dopo la risposta corretta, il test
+dedicato fallisce.
+
+## La partita (`engine.game`)
+
+### `ExamSession`: l'ordine, non lo stato
+`ExamSession` (nel model) è l'elenco ordinato degli esami della sessione: non vuoto, senza
+esami ripetuti. L'ultimo è il **boss finale**. La sessione **non** sa quali esami sono superati:
+lo registra già il libretto, e una seconda lista nella sessione sarebbe uno stato duplicato
+che può andare fuori sincrono. È `Game` a combinare le due cose (`remainingExams()`).
+
+### `Game`: avviare un esame e applicarne l'esito
+`startExam(esame, listener)` controlla che l'esame si possa sostenere, ricarica l'Energia
+dello studente, crea lo scontro con `ExamBattleFactory`, registra prima il proprio listener e
+poi quello della UI, e **avvia lo scontro**: la UI riceve subito la prima domanda.
+- **Niente accoppiamento temporale.** All'inizio `startExam` restituiva uno scontro da
+  avviare, e la UI doveva ricordarsi di aggiungere il listener e chiamare `begin()`. Un ordine
+  di chiamate che il codice non impone è uno stato non valido possibile: uno scontro creato e
+  mai iniziato avrebbe lasciato la partita "occupata" per sempre. Facendo tutto in un'unica
+  chiamata, quello stato non può più esistere. Se lo scontro finisce appena iniziato (ad
+  esempio senza domande), la partita applica subito l'esito e torna libera.
+- **Energia a ogni esame.** L'Energia si ricarica all'inizio di **ogni** esame, non solo dopo
+  una bocciatura. Se si ricaricasse solo dopo una bocciatura, uno studente che supera un esame
+  con poca Energia avrebbe convenienza a farsi bocciare apposta nel successivo per
+  ricaricarsi: la regola premierebbe il comportamento sbagliato. La Concentrazione invece
+  passa da un esame all'altro: è la risorsa delle abilità.
+- **Esito.** `Game` si registra sullo scontro come listener della sola fine. Se l'esame è
+  superato registra il voto nel libretto, chiede la ricompensa a `RewardPolicy`, mette gli
+  oggetti nell'inventario e aggiunge l'esperienza. Se è bocciato o abbandonato non cambia
+  nulla: l'esame resta tra quelli da sostenere.
+- **Boss finale.** `availableExams()` restituisce gli esami da sostenere tranne l'ultimo,
+  che diventa disponibile solo quando è l'unico rimasto. `startExam` lo rifiuta prima con
+  `IllegalStateException`.
+- **Una notifica sola.** Dopo aver applicato l'esito, `Game` notifica i `GameListener` con un
+  `ExamReport` (esame, esito, ricompensa, livelli guadagnati): è quello che mostra la
+  schermata di esito. Tutto il resto (statistiche, libretto, laurea) si legge dalla partita.
+
+### Progressione: il model sa *come*, l'engine *quando*
+`Level.levelUp(costo)` e `Stats.improve(...)` (model) sanno come cambiare livello e
+statistiche in modo valido. `ProgressionRules` (engine) decide quando e di quanto: salire dal
+livello n costa 100 × n esperienza, e ogni livello dà +1 Conoscenza, +2 Energia massima e +1
+Concentrazione massima. `Game` applica un ciclo:
+
+```java
+while (student.level().experience() >= costOfNextLevel()) {
+    int cost = costOfNextLevel();
+    student.updateLevel(level -> level.levelUp(cost));
+    student.updateStats(stats -> stats.improve(knowledgeBonus, maxEnergyBonus, maxConcentrationBonus));
+}
+```
+
+Un ciclo e non un `if`, perché un esame con molta esperienza può far salire di più livelli.
+
+### Ricompense
+`RewardPolicy` è un'interfaccia funzionale: dato un esame superato e il voto, restituisce la
+`Reward` (esperienza e oggetti). `StandardRewardPolicy` dà CFU × (voto − 15) di esperienza (la
+lode vale 30) e da zero a tre oggetti secondo il voto, scelti tra quelli del catalogo con il
+`RandomGenerator` iniettato, così nei test la scelta è deterministica. I valori sono
+provvisori: il bilanciamento è nella #12.
+
+### Laurea fuori dal libretto (SRP)
+La regola "tutti gli esami della sessione superati" e il voto di laurea stanno in
+`Graduation`, non in `Transcript`. È l'esempio di `puoLaurearsi()` nella classe `Libretto` visto
+a lezione: il libretto registra i voti e calcola la media, e cambierebbe per un motivo in più
+se contenesse anche le regole di laurea. Il voto di laurea è la media ponderata riportata su
+110 (media × 110 / 30, arrotondata): la proporzione lineare tra le due scale, per cui una
+media di 30 vale 110 e una di 18 vale 66. Punti bonus e lode di laurea dipendono dai
+regolamenti dei corsi e sono esclusi. `Graduation` è una classe semplice, senza interfaccia:
+c'è una sola regola, e un'interfaccia non risolverebbe nessun problema reale.
+
+### `GameAssembly`: la composition root
+`GameAssembly` (in `app`) è l'unico punto in cui si scelgono e si collegano le
+implementazioni concrete: regole, calcolatore del voto, timer reale, strategie nella
+`EnumMap`, effetti di `GameEffects`, ricompense e sessione presa da `exams.xml`. Costruisce
+tutto nel costruttore, quindi una strategia mancante o un oggetto senza effetto fermano
+l'avvio. `newGame(nome, profilo)` crea lo studente e la partita. `Main` costruisce
+l'assembly e chiude lo scheduler del timer, nient'altro; un test collega i contenuti veri con
+l'engine e avvia uno scritto, verificando timer e abilità.
+
+### Verifica dei test
+Togliendo per prova la ricarica dell'Energia da `startExam`, il test dedicato fallisce.
+
+## Salvataggi (`engine.repository`, `persistence.save`)
+
+`SaveData` (DTO con soli tipi del JDK), `SaveMapper` (studente ↔ dati, con i cataloghi),
+`SaveGameRepository` (contratto, con la validazione dei nomi degli slot) e `SaveGameException`
+stanno nell'engine; `JsonSaveGameRepository` (Gson) sta in `persistence.save`. Il salvataggio
+automatico è `AutoSave`, un `GameListener` registrato in `app`: `Game` non conosce la
+persistenza. I dettagli (versione del formato, scrittura atomica, errori) sono nella pagina
+[Persistenza](Persistenza).
