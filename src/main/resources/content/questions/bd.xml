@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Basi di Dati: 5 scelta multipla, 3 vero/falso, 3 output del codice, 4 completamento. -->
+<questions subject="BD">
+
+    <multipleChoice id="BD-01" difficulty="EASY">
+        <prompt>Quale comando SQL si usa per leggere i dati di una tabella?</prompt>
+        <correct>SELECT</correct>
+        <wrong>INSERT</wrong>
+        <wrong>UPDATE</wrong>
+        <wrong>CREATE</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="BD-02" difficulty="MEDIUM">
+        <prompt>Quale vincolo garantisce che i valori di una colonna esistano come chiave in un'altra tabella?</prompt>
+        <hint>Serve a collegare due tabelle in modo coerente.</hint>
+        <correct>Chiave esterna (FOREIGN KEY)</correct>
+        <wrong>Chiave primaria (PRIMARY KEY)</wrong>
+        <wrong>UNIQUE</wrong>
+        <wrong>CHECK</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="BD-03" difficulty="MEDIUM">
+        <prompt>Quale clausola SQL filtra i gruppi prodotti da GROUP BY, ad esempio in base a un COUNT?</prompt>
+        <hint>WHERE filtra le righe prima del raggruppamento.</hint>
+        <correct>HAVING</correct>
+        <wrong>WHERE</wrong>
+        <wrong>ORDER BY</wrong>
+        <wrong>DISTINCT</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="BD-04" difficulty="HARD">
+        <prompt>Quale proprietà delle transazioni garantisce che una transazione venga eseguita per intero oppure per niente?</prompt>
+        <correct>Atomicità</correct>
+        <wrong>Consistenza</wrong>
+        <wrong>Isolamento</wrong>
+        <wrong>Durabilità</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="BD-05" difficulty="HARD">
+        <prompt>Una relazione in prima forma normale è anche in seconda forma normale (2NF) se...</prompt>
+        <hint>Riguarda le chiavi composte da più attributi.</hint>
+        <correct>nessun attributo non primo dipende da una parte soltanto di una chiave candidata</correct>
+        <wrong>non ci sono dipendenze transitive degli attributi non primi dalla chiave</wrong>
+        <wrong>il determinante di ogni dipendenza funzionale è una superchiave</wrong>
+        <wrong>tutti gli attributi hanno valori atomici</wrong>
+    </multipleChoice>
+
+    <trueFalse id="BD-06" difficulty="EASY" answer="true">
+        <prompt>Gli attributi di una chiave primaria non possono assumere il valore NULL.</prompt>
+    </trueFalse>
+
+    <trueFalse id="BD-07" difficulty="MEDIUM" answer="false">
+        <prompt>In SQL la condizione NULL = NULL è vera.</prompt>
+        <hint>Per controllare l'assenza di un valore si scrive IS NULL.</hint>
+    </trueFalse>
+
+    <trueFalse id="BD-08" difficulty="HARD" answer="true">
+        <prompt>Uno schema in forma normale di Boyce-Codd (BCNF) è sempre anche in terza forma normale.</prompt>
+    </trueFalse>
+
+    <codeOutput id="BD-09" difficulty="EASY">
+        <prompt>retainAll corrisponde all'operatore INTERSECT. Cosa stampa questo codice?</prompt>
+        <hint>Un TreeSet tiene gli elementi in ordine alfabetico.</hint>
+        <code><![CDATA[
+            Set<String> a = new TreeSet<>(Set.of("Rossi", "Bianchi", "Verdi"));
+            Set<String> b = Set.of("Verdi", "Neri", "Rossi");
+            a.retainAll(b);
+            System.out.println(a);
+        ]]></code>
+        <correct>[Rossi, Verdi]</correct>
+        <wrong>[Bianchi]</wrong>
+        <wrong>[Neri]</wrong>
+        <wrong>[Bianchi, Neri, Rossi, Verdi]</wrong>
+    </codeOutput>
+
+    <codeOutput id="BD-10" difficulty="MEDIUM">
+        <prompt>Lo stream fa quello che in SQL farebbe GROUP BY con COUNT(*). Cosa stampa questo codice?</prompt>
+        <code><![CDATA[
+            List<String> cities = List.of("Roma", "Milano", "Roma", "Napoli", "Roma", "Milano");
+            Map<String, Long> count = cities.stream()
+                    .collect(Collectors.groupingBy(city -> city, TreeMap::new, Collectors.counting()));
+            System.out.println(count);
+        ]]></code>
+        <correct>{Milano=2, Napoli=1, Roma=3}</correct>
+        <wrong>{Roma=3, Milano=2, Napoli=1}</wrong>
+        <wrong>{Milano=1, Napoli=1, Roma=1}</wrong>
+        <wrong>6</wrong>
+    </codeOutput>
+
+    <codeOutput id="BD-11" difficulty="HARD">
+        <prompt>Il doppio ciclo simula un INNER JOIN fra ordini e clienti. Cosa stampa questo codice?</prompt>
+        <hint>Il cliente 30 non esiste e il cliente 40 non ha ordini.</hint>
+        <code><![CDATA[
+            int[][] orders = {{1, 10}, {2, 10}, {3, 20}, {4, 30}};
+            int[] customers = {10, 20, 40};
+            int rows = 0;
+            for (int[] order : orders) {
+                for (int customer : customers) {
+                    if (order[1] == customer) {
+                        rows++;
+                    }
+                }
+            }
+            System.out.println(rows);
+        ]]></code>
+        <correct>3</correct>
+        <wrong>4</wrong>
+        <wrong>12</wrong>
+        <wrong>2</wrong>
+    </codeOutput>
+
+    <fillIn id="BD-12" difficulty="EASY">
+        <prompt>Quale parola chiave SQL, scritta subito dopo SELECT, elimina le righe duplicate dal risultato?</prompt>
+        <answer>DISTINCT</answer>
+    </fillIn>
+
+    <fillIn id="BD-13" difficulty="MEDIUM">
+        <prompt>Quale comando SQL modifica i valori di righe già presenti in una tabella?</prompt>
+        <answer>UPDATE</answer>
+    </fillIn>
+
+    <fillIn id="BD-14" difficulty="MEDIUM">
+        <prompt>Come si chiama un insieme minimale di attributi che identifica univocamente ogni tupla di una relazione?</prompt>
+        <hint>Togliendo un qualsiasi attributo, l'insieme non identifica più le tuple.</hint>
+        <answer>chiave candidata</answer>
+        <answer>chiave</answer>
+        <answer>candidate key</answer>
+    </fillIn>
+
+    <fillIn id="BD-15" difficulty="HARD">
+        <prompt>Quale livello di isolamento SQL, il più restrittivo, garantisce che l'esecuzione concorrente delle transazioni equivalga a una loro esecuzione una dopo l'altra?</prompt>
+        <answer>SERIALIZABLE</answer>
+        <answer>serializzabile</answer>
+    </fillIn>
+</questions>
