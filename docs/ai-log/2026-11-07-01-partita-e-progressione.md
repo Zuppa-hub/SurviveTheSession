@@ -30,4 +30,13 @@ gli altri.
   fallisca. 587 test verdi; `./gradlew run` si avvia.
 
 **Modificato / verificato da me:**
-- [ ] _da completare_
+- Supervisione: dettati gli obiettivi della issue (minimo necessario, punti da chiarire nella
+  proposta) e letta la proposta prima di approvarla.
+- Revisione della proposta con Claude in chat: deciso di ricaricare l'Energia all'inizio di
+  ogni esame (per non premiare chi si fa bocciare), tenute provvisorie le soglie delle
+  ricompense, tolta la partita di prova da `Main`, aggiunto `maxConcentrationBonus` = 1 e
+  introdotto il boss finale disponibile solo dopo gli altri esami (`availableExams()`).
+- Revisione della PR con Claude in chat e prompt di correzione prima del merge: eliminato
+  l'accoppiamento temporale fra `startExam` e `begin()` (`startExam(esame, listener)`) e fatto
+  spiegare nella Wiki i metodi `default` di `BattleListener` come compromesso sull'ISP.
+- PR letta prima del merge.

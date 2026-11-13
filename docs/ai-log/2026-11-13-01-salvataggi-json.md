@@ -29,4 +29,10 @@ vuoto e file corrotto o versione ignota → eccezione dedicata, salvataggio auto
   rilanciando l'eccezione invece di segnalarla, i test dedicati falliscano. 634 test verdi.
 
 **Modificato / verificato da me:**
-- [ ] _da completare_
+- Supervisione: fissate le regole del nuovo flusso di lavoro e i requisiti della issue
+  (versione del formato, slot validati, scrittura atomica, eccezione dedicata, salvataggio
+  automatico come `GameListener` in `app`).
+- Rivista la PR con Claude in chat: fatte aggiungere con un prompt di correzione la gestione
+  di un salvataggio automatico fallito (la partita non deve interrompersi) e il ripiego
+  testato quando `ATOMIC_MOVE` non è supportato.
+- PR letta prima del merge.
