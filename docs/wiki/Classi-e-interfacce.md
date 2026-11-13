@@ -63,7 +63,7 @@ Question
 │   └── AbstractChoiceQuestion     implementa ChoiceQuestion; isCorrect final
 │       ├── MultipleChoiceQuestion (4 opzioni)
 │       ├── TrueFalseQuestion      (Vero/Falso)
-│       └── CodeOutputQuestion     (4 output + code())
+│       └── CodeOutputQuestion     (4 output + code(), codeSnippet())
 QuestionDetails                    id, materia, difficoltà, testo, indizio
 ```
 
@@ -98,7 +98,9 @@ regola lo esclude da sola, senza controllare il tipo concreto.
 `CodeOutputQuestion` è sorella di `MultipleChoiceQuestion`, non figlia: entrambe
 estendono `AbstractChoiceQuestion`. Rispetta il contratto delle domande a scelta senza
 cambiarlo: il testo della domanda resta in `prompt()` e lo snippet è un dato **in più**,
-esposto da `code()`.
+esposto da `code()`. Per mostrarlo, la UI usa `Question.codeSnippet()`: vuoto di default,
+ridefinito solo da `CodeOutputQuestion`. Il contratto delle altre domande non cambia e la UI
+non chiede il tipo concreto.
 
 ### Test di contratto
 Il principio di sostituzione di Liskov è verificato dai test, non solo dichiarato.
@@ -111,7 +113,8 @@ domande. Le stesse asserzioni girano così su tutte le implementazioni, compresa
 Tre parti del gioco devono comportarsi in modo diverso secondo la **categoria** della
 domanda:
 - l'**engine** mescola le opzioni delle domande a scelta, mentre il completamento non ne ha;
-- la **UI** (#11) mostra dei pulsanti oppure un campo di testo;
+- la **UI** (#11) mostra dei pulsanti oppure un campo di testo (lo decide dalle opzioni di
+  `PresentedQuestion`, calcolate dall'engine con il visitor: vuote per il completamento);
 - l'effetto degli **Appunti** (#22) elimina due opzioni sbagliate, quindi ha senso solo su
   una domanda a scelta.
 
@@ -560,6 +563,7 @@ persistenza. I dettagli (versione del formato, scrittura atomica, errori) sono n
 
 `GameService` (interfaccia definita nella UI, implementata da `GameAssembly`), `ViewNavigator`
 (carica gli FXML e crea i controller con le loro dipendenze), i controller `MenuController`,
-`NewGameController`, `SessionController`, le classi di supporto testate `ExamRow` e `SlotNames`,
-e `Alerts`. In `app`, `GameApplication` avvia e chiude JavaFX. I dettagli sono nella pagina
+`NewGameController`, `SessionController`, `ExamController`, `OutcomeController`,
+`GraduationController`, le classi di supporto testate `ExamRow`, `SlotNames`, `BattleAction`,
+`AnswerFeedback`, `OutcomeSummary`, `GraduationSummary`, e `Alerts`. In `app`, `GameApplication` avvia e chiude JavaFX. I dettagli sono nella pagina
 [Interfaccia grafica](Interfaccia-grafica).

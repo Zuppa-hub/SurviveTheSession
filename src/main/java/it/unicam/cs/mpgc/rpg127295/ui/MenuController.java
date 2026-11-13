@@ -38,7 +38,7 @@ public final class MenuController {
     private void onLoad() {
         String slot = savedGames.getSelectionModel().getSelectedItem();
         try {
-            games.loadGame(slot).ifPresentOrElse(navigator::showSession,
+            games.loadGame(slot).ifPresentOrElse(navigator::openGame,
                     () -> Alerts.error("Partita non trovata", "Il salvataggio " + slot + " non esiste più."));
         } catch (SaveGameException error) {
             Alerts.error("Impossibile caricare la partita", error.getMessage());

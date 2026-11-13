@@ -31,6 +31,14 @@ public interface Question {
     Optional<String> hint();
 
     /**
+     * @return the code to read together with the prompt, or empty if the question has none;
+     *         only a question about the output of a snippet has it
+     */
+    default Optional<String> codeSnippet() {
+        return Optional.empty();
+    }
+
+    /**
      * @param answer the player's answer, possibly null or blank
      * @return true if the answer is correct; false otherwise, never an exception
      */

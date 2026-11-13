@@ -129,8 +129,10 @@ persistence
   content      implementazioni XML dei cataloghi e del repository delle domande (DOM, XSD, XPath),
                QuestionParser con l'annotation @QuestionElement, QuestionParsers
   save         JsonSaveGameRepository (Gson)
-ui             GameService (interfaccia implementata da app), ViewNavigator, controller JavaFX,
-               ExamRow, SlotNames, Alerts, adattatori dei listener
+ui             GameService (interfaccia implementata da app), ViewNavigator, controller JavaFX
+               (menu, nuova partita, sessione, esame, esito, laurea), Alerts; classi di supporto
+               senza JavaFX: ExamRow, SlotNames, BattleAction, AnswerFeedback, OutcomeSummary,
+               GraduationSummary
 ```
 Risorse:
 ```
@@ -153,6 +155,9 @@ public interface Question {
     Difficulty difficulty();
     String prompt();
     Optional<String> hint();
+    /** Codice da leggere insieme al testo; vuoto di default, presente solo nell'output del codice
+     *  (così la UI lo mostra senza instanceof). */
+    default Optional<String> codeSnippet() { return Optional.empty(); }
     /** true se la risposta è corretta; non lancia eccezioni per risposte sbagliate o vuote. */
     boolean isCorrect(String answer);
     /** Visitor: chiama esattamente un metodo del visitor, passando sé stessa. */
@@ -325,6 +330,8 @@ Struttura (#10, #11):
 - `ui.ViewNavigator` carica gli FXML (senza `fx:controller`) e passa a ogni controller le sue dipendenze nel costruttore; un unico `styles.css`.
 - Classi di supporto senza JavaFX, testate con JUnit: `ExamRow` (stato di ogni esame: superato, disponibile, bloccato) e `SlotNames` (nome del salvataggio ricavato dal nome del giocatore).
 - Un salvataggio automatico fallito mostra un avviso (callback della #9) e la partita prosegue.
+- Esame (#11): `ExamController` è il `BattleListener` passato a `Game.startExam`; lo scontro in corso lo legge da `Game.currentBattle()`. Le notifiche del timer arrivano sul thread di JavaFX (`Platform::runLater`). Oggetti e abilità sono pulsanti costruiti da `BattleAction` (abilitati con `ExamBattle.canUse`); il tempo scaduto si distingue da una risposta sbagliata in `AnswerFeedback`, perché lo scontro li tratta allo stesso modo. Lo snippet delle domande sull'output del codice viene da `Question.codeSnippet()`.
+- Esito e laurea (#11): `ViewNavigator.openGame` registra sulla partita, una volta sola, il `GameListener` che mostra l'esito (`ExamReport` → `OutcomeSummary`); dall'esito si torna alla sessione o, se la sessione è completa, si va alla laurea (`GraduationSummary`).
 
 ---
 
