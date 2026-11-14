@@ -17,12 +17,55 @@ salva l'istantanea (`Scene.snapshot`), senza mostrare la finestra.
 
 | Schermata | File | Cosa fa |
 |---|---|---|
-| Menu | `menu.fxml`, `MenuController` | nuova partita, elenco delle partite salvate e caricamento, uscita |
+| Menu | `menu.fxml`, `MenuController` | nuova partita, Come si gioca, elenco delle partite salvate e caricamento, uscita |
+| Come si gioca | `how-to-play.fxml`, `HowToPlayController` | sette pagine con Avanti e Indietro: obiettivo, statistiche, tipi d'esame, oggetti e abilità, voto, ricompense e livelli, boss finale, laurea e salvataggi |
 | Nuova partita | `new-game.fxml`, `NewGameController` | nome del giocatore e scelta del profilo, con descrizione e statistiche iniziali |
 | Sessione | `session.fxml`, `SessionController` | esami della sessione con il loro stato, statistiche, libretto, zaino, "Sostieni esame" |
 | Esame | `exam.fxml`, `ExamController` | domanda (con lo snippet di codice se c'è), opzioni o campo di testo, timer, barre di resistenza, Energia e Concentrazione, oggetti e abilità, "Ritirati" |
 | Esito | `outcome.fxml`, `OutcomeController` | voto o bocciatura, risposte, ricompense e livelli; poi sessione o laurea |
 | Laurea | `graduation.fxml`, `GraduationController` | libretto, media ponderata, CFU e voto di laurea su 110 |
+
+## Come si gioca: testo scritto a mano, numeri letti dalle regole
+La schermata compare da sola la prima volta che si apre Nuova partita senza partite salvate,
+prima della scelta del profilo; poi si apre dal menu, dalla nuova partita e dalla sessione. Il
+navigatore le passa l'azione da eseguire alla chiusura, così le stesse pagine portano alla
+scelta del profilo, al menu o alla sessione.
+
+Il testo delle pagine sta in `HowToPlay`, ma **nessun numero delle regole è scritto a mano**:
+- `GameService.guide()` restituisce un `GameGuide` con le stesse istanze che usano le partite
+  (`BattleRules`, strategie, `ProgressionRules`, `RewardPolicy`, `GradeCalculator`, abilità,
+  kit iniziale, sessione e profili), costruito da `GameAssembly`;
+- i numeri che le regole espongono si leggono direttamente (secondi del Caffè, Energia persa
+  per difficoltà, costo delle abilità, esperienza per salire di livello...);
+- quelli che non espongono si chiedono alle regole: la percentuale per superare un esame è la
+  più bassa per cui `GradeCalculator` dà un voto, il voto da cui arrivano oggetti è il più
+  basso per cui `RewardPolicy` ne dà almeno uno (`Grade.all()` elenca i voti senza riscrivere
+  l'intervallo).
+
+Se il bilanciamento cambia, cambiano anche le pagine. `HowToPlayTest` lo verifica con regole
+dai valori insoliti (97 secondi, ×59...), che devono comparire nel testo. Per lo stesso motivo
+la descrizione del Caffè in `items.xml` non dice più "15 secondi".
+
+## Stile: un foglio, variabili e varianti
+- **Un solo `styles.css`** per schermate e dialoghi. I colori sono variabili (looked-up colors
+  su `.root`, come `-color-accent`); JavaFX non ha variabili per le dimensioni, quindi
+  spaziature e margini stanno in poche classi di layout (`.screen`, `.page`, `.header`,
+  `.card`, `.stack`, `.row`, `.actions`...) e non negli FXML.
+- **Due impaginazioni.** Le schermate "pagina" (menu, nuova partita, come si gioca, esito,
+  laurea) sono una colonna centrata con titolo e sottotitolo in alto; sessione ed esame sono a
+  tutta finestra con l'intestazione a sinistra. Titoli, sottotitoli e margini sono gli stessi.
+- **Varianti di pulsante usate allo stesso modo ovunque:** `primary` per l'azione principale
+  della schermata (al massimo una), `secondary` per le altre (anche oggetti e abilità), `link`
+  per uscire dalla schermata (Menu, Esci, Indietro, Ritirati), `option` per le risposte.
+- **Dialoghi.** `Alerts.dialog` aggiunge il foglio di stile al `DialogPane` e una classe per il
+  tipo (`error`, `warning`) che colora l'intestazione.
+- **Liste senza strisce e stati vuoti spiegati.** Le righe vuote delle `ListView` non si
+  disegnano; una lista vuota mostra un testo che dice perché e cosa fare (`EmptyStates`): lo
+  zaino vuoto dice da che voto arrivano gli oggetti, letto dalla `RewardPolicy`.
+- **Tooltip.** Nello zaino e tra le azioni dell'esame la descrizione dell'oggetto è il tooltip
+  (`InventoryRow`, `BattleAction`).
+
+Ogni schermata è stata controllata con uno screenshot prima e dopo, allegati alla PR.
 
 ## Controller sottili
 I controller non contengono regole di gioco: traducono un clic in una chiamata all'engine e
@@ -131,8 +174,8 @@ il gioco riproverà alla fine del prossimo esame; il dettaglio tecnico va nel lo
 I controller non hanno test automatici: un test dell'interfaccia grafica richiederebbe una
 libreria apposita e un display. Sono verificati in due modi:
 - le classi con logica (`ExamRow`, `SlotNames`, `BattleAction`, `AnswerFeedback`, `Labels`,
-  `ErrorMessages`, `OutcomeSummary`, `GraduationSummary`, `GameAssembly` come `GameService`)
-  hanno test JUnit;
+  `ErrorMessages`, `InventoryRow`, `EmptyStates`, `GameGuide`, `HowToPlay`, `OutcomeSummary`,
+  `GraduationSummary`, `GameAssembly` come `GameService`) hanno test JUnit;
   i test della UI condividono una partita di prova (`TestGames`) con timer manuale;
 - un programma eseguito a mano, fuori dal repository, ha giocato con i contenuti veri e il
   timer vero: ha controllato che il timer scendesse (30 s → 28 s dopo due secondi e mezzo),
