@@ -2,6 +2,8 @@ package it.unicam.cs.mpgc.rpg127295.ui;
 
 import static it.unicam.cs.mpgc.rpg127295.engine.TestQuestions.choice;
 
+import it.unicam.cs.mpgc.rpg127295.engine.TestQuestions;
+
 import it.unicam.cs.mpgc.rpg127295.engine.FakeRandom;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.Ability;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.BattleEffects;
@@ -15,7 +17,12 @@ import it.unicam.cs.mpgc.rpg127295.engine.effect.FiftyFiftyEffect;
 import it.unicam.cs.mpgc.rpg127295.engine.effect.HintEffect;
 import it.unicam.cs.mpgc.rpg127295.engine.game.Game;
 import it.unicam.cs.mpgc.rpg127295.engine.game.Reward;
+import it.unicam.cs.mpgc.rpg127295.engine.game.RewardPolicy;
 import it.unicam.cs.mpgc.rpg127295.engine.game.StandardProgressionRules;
+import it.unicam.cs.mpgc.rpg127295.engine.game.StarterKit;
+import it.unicam.cs.mpgc.rpg127295.engine.grading.GradeCalculator;
+import it.unicam.cs.mpgc.rpg127295.engine.grading.PerformanceGradeCalculator;
+import it.unicam.cs.mpgc.rpg127295.engine.battle.BattleRules;
 import it.unicam.cs.mpgc.rpg127295.engine.strategy.OralExamStrategy;
 import it.unicam.cs.mpgc.rpg127295.engine.strategy.ProjectExamStrategy;
 import it.unicam.cs.mpgc.rpg127295.engine.strategy.WrittenExamStrategy;
@@ -24,6 +31,7 @@ import it.unicam.cs.mpgc.rpg127295.model.exam.Exam;
 import it.unicam.cs.mpgc.rpg127295.model.exam.ExamSession;
 import it.unicam.cs.mpgc.rpg127295.model.exam.ExamType;
 import it.unicam.cs.mpgc.rpg127295.model.exam.Grade;
+import it.unicam.cs.mpgc.rpg127295.model.question.Difficulty;
 import it.unicam.cs.mpgc.rpg127295.model.item.Item;
 import it.unicam.cs.mpgc.rpg127295.model.student.Stats;
 import it.unicam.cs.mpgc.rpg127295.model.student.Student;
@@ -43,15 +51,39 @@ final class TestGames {
     static final Ability QUICK_REVIEW = new Ability("Ripasso lampo", 2, new HintEffect());
     static final Ability STROKE_OF_GENIUS = new Ability("Colpo di genio", 3, new DoubleDamageEffect());
 
+    static final Exam NETWORKS = new Exam("RETI1", new it.unicam.cs.mpgc.rpg127295.model.exam.Subject("RETI", "Reti"),
+            ExamType.ORAL, 6, Difficulty.EASY);
+    static final Exam PROJECT = new Exam("MDP1", TestQuestions.SUBJECT, ExamType.PROJECT, 12, Difficulty.HARD);
+    static final StudentProfile NERD = new StudentProfile("nerd", "Secchione", "Studia sempre", Stats.initial(8, 7, 4));
+    /** One item from 24, as the standard policy; experience = credits x grade. */
+    static final RewardPolicy REWARDS = (exam, grade) -> new Reward(exam.credits() * grade.value(),
+            grade.value() >= 24 ? Map.of(COFFEE, 1) : Map.of());
+
     private TestGames() {
+    }
+
+    /** @return the guide of a session of two exams (the project is the boss) with the standard rules */
+    static GameGuide guide() {
+        return guide(new StandardBattleRules(), new PerformanceGradeCalculator());
+    }
+
+    static GameGuide guide(BattleRules rules, GradeCalculator grades) {
+        return new GameGuide(new ExamSession(List.of(NETWORKS, PROJECT)), List.of(NERD),
+                new StarterKit(Map.of(COFFEE, 1, NOTES, 1)), rules, strategies(),
+                List.of(QUICK_REVIEW, STROKE_OF_GENIUS), List.of(COFFEE, NOTES), new StandardProgressionRules(),
+                REWARDS, grades);
+    }
+
+    private static Map<ExamType, ExamStrategy> strategies() {
+        return Map.of(
+                ExamType.WRITTEN, new WrittenExamStrategy(),
+                ExamType.ORAL, new OralExamStrategy(),
+                ExamType.PROJECT, new ProjectExamStrategy());
     }
 
     /** @return a game of the student "Andrea", with concentration 4, facing the exams in order */
     static Game game(Exam... exams) {
-        Map<ExamType, ExamStrategy> strategies = Map.of(
-                ExamType.WRITTEN, new WrittenExamStrategy(),
-                ExamType.ORAL, new OralExamStrategy(),
-                ExamType.PROJECT, new ProjectExamStrategy());
+        Map<ExamType, ExamStrategy> strategies = strategies();
         BattleEffects effects = new BattleEffects(
                 Map.of(COFFEE, new ExtraTimeEffect(), NOTES, new FiftyFiftyEffect()),
                 List.of(QUICK_REVIEW, STROKE_OF_GENIUS));

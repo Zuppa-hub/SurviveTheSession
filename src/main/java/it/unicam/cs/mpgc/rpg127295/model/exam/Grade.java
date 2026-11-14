@@ -1,5 +1,8 @@
 package it.unicam.cs.mpgc.rpg127295.model.exam;
 
+import java.util.List;
+import java.util.stream.IntStream;
+
 /**
  * An exam grade in the Italian university scale: from 18 to 30, where 31 stands for
  * "30 e lode" (30 with honors).
@@ -36,6 +39,18 @@ public final class Grade implements Comparable<Grade> {
     }
 
     /** @return the raw value, from 18 to 31 */
+    /**
+     * Lets the rules be asked about every grade, for example to find the lowest one that gives
+     * a reward, without writing the range again.
+     *
+     * @return every grade, from 18 to 30 with honors, in order
+     */
+    public static List<Grade> all() {
+        return IntStream.rangeClosed(MIN_VALUE, HONORS_VALUE)
+                .mapToObj(Grade::new)
+                .toList();
+    }
+
     public int value() {
         return value;
     }
