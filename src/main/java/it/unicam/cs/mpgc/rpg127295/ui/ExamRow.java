@@ -62,9 +62,14 @@ public record ExamRow(Exam exam, Status status, Optional<Grade> grade) {
         return typeLabelOf(exam.type());
     }
 
-    /** @return the type of exam in Italian, as shown on every screen */
+    /**
+     * @return the type of exam in Italian, as shown on every screen
+     * @throws IllegalStateException if a new type of exam has no label yet
+     */
     public static String typeLabelOf(ExamType type) {
-        return TYPE_LABELS.get(Objects.requireNonNull(type, "Exam type must not be null"));
+        Objects.requireNonNull(type, "Exam type must not be null");
+        return Optional.ofNullable(TYPE_LABELS.get(type))
+                .orElseThrow(() -> new IllegalStateException("No label for exam type " + type));
     }
 
     public String statusLabel() {

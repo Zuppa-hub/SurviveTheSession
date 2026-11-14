@@ -7,7 +7,9 @@ import java.util.OptionalInt;
  * engine calls the listeners and never the other way round.
  * <p>
  * Every method does nothing by default, so a listener implements only the notifications it
- * needs (ISP): the game, for example, only listens to the end of the battle.
+ * needs: the game, for example, only listens to the end of the battle. This is a compromise on
+ * ISP (every listener still depends on all the methods), accepted because there are only two
+ * clients.
  */
 public interface BattleListener {
 
