@@ -3,7 +3,9 @@ package it.unicam.cs.mpgc.rpg127295.ui;
 import it.unicam.cs.mpgc.rpg127295.engine.repository.SaveGameException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.util.Locale;
 import javafx.scene.control.Alert;
+import javafx.scene.control.DialogPane;
 
 /**
  * The dialogs of the game. To be called on the JavaFX Application Thread. They show the
@@ -22,7 +24,7 @@ public final class Alerts {
      */
     public static void saveFailed(SaveGameException failure) {
         LOG.log(Level.WARNING, "Automatic save failed", failure);
-        alert(Alert.AlertType.WARNING, "Salvataggio non riuscito", ErrorMessages.saveFailed()).show();
+        dialog(Alert.AlertType.WARNING, "Salvataggio non riuscito", ErrorMessages.saveFailed()).show();
     }
 
     public static void loadFailed(String slot, SaveGameException failure) {
@@ -37,14 +39,19 @@ public final class Alerts {
     }
 
     public static void error(ErrorMessages message) {
-        alert(Alert.AlertType.ERROR, "Errore", message).showAndWait();
+        dialog(Alert.AlertType.ERROR, "Errore", message).showAndWait();
     }
 
-    private static Alert alert(Alert.AlertType type, String title, ErrorMessages message) {
+    /** A dialog with the stylesheet of the game; the type sets the color of the header. */
+    static Alert dialog(Alert.AlertType type, String title, ErrorMessages message) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(message.header());
         alert.setContentText(message.text());
+        alert.setGraphic(null);
+        DialogPane pane = alert.getDialogPane();
+        pane.getStylesheets().add(Alerts.class.getResource(ViewNavigator.STYLESHEET).toExternalForm());
+        pane.getStyleClass().add(type.name().toLowerCase(Locale.ROOT));
         return alert;
     }
 }

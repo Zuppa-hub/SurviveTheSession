@@ -13,12 +13,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Tooltip;
 
 /** The session: exams, stats, inventory and transcript of the student, and the exam to take. */
 public final class SessionController {
 
     private final ViewNavigator navigator;
     private final Game game;
+    private final GameGuide guide;
 
     @FXML
     private Label studentLabel;
@@ -37,7 +39,7 @@ public final class SessionController {
     @FXML
     private ListView<ExamRow> exams;
     @FXML
-    private ListView<String> inventory;
+    private ListView<InventoryRow> inventory;
     @FXML
     private Label averageLabel;
     @FXML
@@ -47,9 +49,10 @@ public final class SessionController {
     @FXML
     private Button examButton;
 
-    SessionController(ViewNavigator navigator, Game game) {
+    SessionController(ViewNavigator navigator, Game game, GameGuide guide) {
         this.navigator = Objects.requireNonNull(navigator, "Navigator must not be null");
         this.game = Objects.requireNonNull(game, "Game must not be null");
+        this.guide = Objects.requireNonNull(guide, "Guide must not be null");
     }
 
     @FXML
@@ -57,6 +60,8 @@ public final class SessionController {
         showStudent(game.student());
         showTranscript(game.student().transcript());
         exams.setCellFactory(list -> new ExamCell());
+        inventory.setCellFactory(list -> new InventoryCell());
+        inventory.setPlaceholder(MenuController.placeholder(EmptyStates.inventory(guide)));
         exams.getItems().setAll(ExamRow.of(game));
         examButton.disableProperty().bind(Bindings.createBooleanBinding(
                 () -> !isAvailable(exams.getSelectionModel().getSelectedItem()),
@@ -66,6 +71,11 @@ public final class SessionController {
     @FXML
     private void onTakeExam() {
         navigator.showExam(game, exams.getSelectionModel().getSelectedItem().exam());
+    }
+
+    @FXML
+    private void onHowToPlay() {
+        navigator.showHowToPlay(() -> navigator.showSession(game), "Torna alla sessione");
     }
 
     @FXML
@@ -86,10 +96,7 @@ public final class SessionController {
         energyLabel.setText("Energia " + stats.energy() + " / " + stats.maxEnergy());
         concentrationBar.setProgress((double) stats.concentration() / stats.maxConcentration());
         concentrationLabel.setText("Concentrazione " + stats.concentration() + " / " + stats.maxConcentration());
-        inventory.getItems().setAll(student.inventory().items().entrySet().stream()
-                .map(entry -> entry.getKey().name() + " × " + entry.getValue())
-                .sorted()
-                .toList());
+        inventory.getItems().setAll(InventoryRow.of(student.inventory()));
     }
 
     private void showTranscript(Transcript transcript) {
@@ -118,6 +125,22 @@ public final class SessionController {
             setText(row.exam().subject().name() + "\n" + row.typeLabel() + " · " + row.exam().credits()
                     + " CFU · " + row.statusLabel());
             getStyleClass().add("exam-" + row.status().name().toLowerCase(Locale.ROOT));
+        }
+    }
+
+    /** An item with its quantity; the description is the tooltip. */
+    private static final class InventoryCell extends ListCell<InventoryRow> {
+
+        @Override
+        protected void updateItem(InventoryRow row, boolean empty) {
+            super.updateItem(row, empty);
+            if (empty || row == null) {
+                setText(null);
+                setTooltip(null);
+                return;
+            }
+            setText(row.label());
+            setTooltip(new Tooltip(row.description()));
         }
     }
 }
