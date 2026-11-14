@@ -31,16 +31,16 @@ scritta o aggiornata quando si chiude la issue corrispondente.
 
 | Pagina | Contenuto | Stato |
 |---|---|---|
-| [Funzionalità](Funzionalita) | cosa si può fare nel gioco | prevista |
-| [Architettura e responsabilità](Architettura-e-responsabilita) | package, dipendenze, composition root | prevista |
+| [Funzionalità](Funzionalita) | cosa si può fare nel gioco | **scritta** |
+| [Architettura e responsabilità](Architettura-e-responsabilita) | package, dipendenze, composition root | **scritta** |
 | [Classi e interfacce](Classi-e-interfacce) | le classi principali e le scelte motivate | **bozza (model, voto, scontro, effetti, partita)** |
-| [Principi SOLID](Principi-SOLID) | tutti e cinque, con esempi dal codice | prevista |
-| [Clean Code](Clean-Code) | nomi, metodi piccoli, niente duplicazione | prevista |
-| [Strutture dati, equals e Stream](Strutture-dati-equals-e-Stream) | List, HashSet, HashMap, identità, Stream API | prevista |
+| [Principi SOLID](Principi-SOLID) | tutti e cinque, con esempi dal codice | **scritta** |
+| [Clean Code](Clean-Code) | nomi, metodi piccoli, niente duplicazione | **scritta** |
+| [Strutture dati, equals e Stream](Strutture-dati-equals-e-Stream) | List, HashSet, HashMap, identità, Stream API | **scritta** |
 | [Modelli di esecuzione](Modelli-di-esecuzione) | GUI event-driven, timer su thread separato, race condition evitata | **scritta** |
 | [Persistenza](Persistenza) | contenuti XML con XSD e XPath, salvataggi JSON | **bozza (salvataggi, annotation dei parser)** |
 | [Interfaccia grafica](Interfaccia-grafica) | JavaFX, FXML, CSS, controller sottili | **scritta** |
-| [Testing](Testing) | JUnit, test di contratto, test deterministici | prevista |
-| [Estendibilità](Estendibilita) | nuova materia, domanda, esame, oggetto, salvataggio: guide passo passo | prevista |
-| [Strumenti e metodologie](Strumenti-e-metodologie) | Gradle, Git, Issues, workflow Scrum leggero | prevista |
+| [Testing](Testing) | JUnit, test di contratto, test deterministici | **scritta** |
+| [Estendibilità](Estendibilita) | nuova materia, domanda, esame, oggetto, salvataggio: guide passo passo | **scritta** |
+| [Strumenti e metodologie](Strumenti-e-metodologie) | Gradle, Git, Issues, workflow Scrum leggero | **scritta** |
 | [Uso dell'AI](Uso-dell-AI) | per strumento, con esempi e intervento personale | prevista |
