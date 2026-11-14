@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -41,6 +42,11 @@ class CodeOutputQuestionTest extends ChoiceQuestionContractTest {
         assertAll(
                 () -> assertEquals(CODE, question.code()),
                 () -> assertEquals("Cosa stampa questo codice?", question.prompt()));
+    }
+
+    @Test
+    void offersTheCodeAsTheSnippetToShowWithThePrompt() {
+        assertEquals(Optional.of(CODE), createQuestion("Q-1", "Cosa stampa?").codeSnippet());
     }
 
     @ParameterizedTest

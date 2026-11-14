@@ -28,12 +28,4 @@ public final class Alerts {
         alert.setContentText(message);
         alert.showAndWait();
     }
-
-    public static void info(String header, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Sopravvivi alla Sessione");
-        alert.setHeaderText(header);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
 }

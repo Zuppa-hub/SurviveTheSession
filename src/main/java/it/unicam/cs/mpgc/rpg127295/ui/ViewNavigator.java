@@ -1,5 +1,6 @@
 package it.unicam.cs.mpgc.rpg127295.ui;
 
+import it.unicam.cs.mpgc.rpg127295.engine.game.ExamReport;
 import it.unicam.cs.mpgc.rpg127295.engine.game.Game;
 import it.unicam.cs.mpgc.rpg127295.model.exam.Exam;
 import java.io.IOException;
@@ -38,13 +39,32 @@ public final class ViewNavigator {
         show("new-game", new NewGameController(this, games));
     }
 
+    /**
+     * Shows a new or loaded game, after registering the listener that shows the outcome of each
+     * exam. Called once per game, so the listener is registered once.
+     */
+    public void openGame(Game game) {
+        game.addListener(report -> showOutcome(game, report));
+        showSession(game);
+    }
+
     public void showSession(Game game) {
         show("session", new SessionController(this, game));
     }
 
-    /** The exam screen arrives with issue #11. */
+    /** Loads the exam screen and then starts the exam, whose first question arrives at once. */
     public void showExam(Game game, Exam exam) {
-        Alerts.info("Esame " + exam.subject().name(), "La schermata d'esame arriva con la issue #11.");
+        ExamController controller = new ExamController(game, exam);
+        show("exam", controller);
+        controller.start();
+    }
+
+    public void showOutcome(Game game, ExamReport report) {
+        show("outcome", new OutcomeController(this, game, report));
+    }
+
+    public void showGraduation(Game game) {
+        show("graduation", new GraduationController(this, game));
     }
 
     private void show(String view, Object controller) {

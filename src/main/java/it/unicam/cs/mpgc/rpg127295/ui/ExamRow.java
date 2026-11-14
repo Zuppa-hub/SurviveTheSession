@@ -59,7 +59,12 @@ public record ExamRow(Exam exam, Status status, Optional<Grade> grade) {
     }
 
     public String typeLabel() {
-        return TYPE_LABELS.get(exam.type());
+        return typeLabelOf(exam.type());
+    }
+
+    /** @return the type of exam in Italian, as shown on every screen */
+    public static String typeLabelOf(ExamType type) {
+        return TYPE_LABELS.get(Objects.requireNonNull(type, "Exam type must not be null"));
     }
 
     public String statusLabel() {

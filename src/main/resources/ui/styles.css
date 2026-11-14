@@ -92,3 +92,69 @@
 .progress-bar.concentration > .bar {
     -fx-background-color: #5b7fd6;
 }
+
+.progress-bar.resistance > .bar {
+    -fx-background-color: #8e5bd6;
+}
+
+.timer {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -accent;
+}
+
+.timer-low {
+    -fx-text-fill: #c62828;
+}
+
+.prompt {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+}
+
+.code {
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 13px;
+    -fx-background-color: #f5f7fa;
+    -fx-border-color: #d9dee5;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-padding: 10;
+}
+
+.hint {
+    -fx-text-fill: #8a6d1f;
+    -fx-font-style: italic;
+}
+
+.button.option {
+    -fx-alignment: center-left;
+    -fx-background-color: #eef2f7;
+    -fx-text-fill: -text;
+}
+
+.button.option:hover {
+    -fx-background-color: #dde5ef;
+}
+
+.feedback-correct {
+    -fx-text-fill: #2e7d32;
+    -fx-font-weight: bold;
+}
+
+.feedback-wrong {
+    -fx-text-fill: #c62828;
+    -fx-font-weight: bold;
+}
+
+.grade {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+.scroll-pane.plain,
+.scroll-pane.plain > .viewport {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}

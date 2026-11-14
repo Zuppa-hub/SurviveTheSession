@@ -181,8 +181,8 @@ partita caricata continua a salvarsi nello stesso slot.
 **Un salvataggio fallito non ferma la partita.** Se il disco è pieno o la cartella non è
 scrivibile, `AutoSave` cattura la `SaveGameException` e la passa a un callback
 (`Consumer<SaveGameException>`) ricevuto da `GameAssembly`. La partita prosegue e gli altri
-listener ricevono comunque l'esito dell'esame. Oggi `Main` scrive l'avviso sull'errore
-standard; con la GUI (#10) il callback mostrerà un messaggio al giocatore. Senza questa scelta
+listener ricevono comunque l'esito dell'esame. Nella GUI il callback è `Alerts::saveFailed`,
+che mostra un avviso senza bloccare il gioco (vedi [Interfaccia grafica](Interfaccia-grafica)). Senza questa scelta
 l'eccezione risalirebbe dalla notifica di fine esame fino alla UI e interromperebbe il gioco
 per un problema che non riguarda le regole.
 

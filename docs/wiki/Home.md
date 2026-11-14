@@ -37,9 +37,9 @@ scritta o aggiornata quando si chiude la issue corrispondente.
 | [Principi SOLID](Principi-SOLID) | tutti e cinque, con esempi dal codice | prevista |
 | [Clean Code](Clean-Code) | nomi, metodi piccoli, niente duplicazione | prevista |
 | [Strutture dati, equals e Stream](Strutture-dati-equals-e-Stream) | List, HashSet, HashMap, identità, Stream API | prevista |
-| [Modelli di esecuzione](Modelli-di-esecuzione) | GUI event-driven, timer su thread separato, race condition evitata | **bozza (timer)** |
+| [Modelli di esecuzione](Modelli-di-esecuzione) | GUI event-driven, timer su thread separato, race condition evitata | **scritta** |
 | [Persistenza](Persistenza) | contenuti XML con XSD e XPath, salvataggi JSON | **bozza (salvataggi, annotation dei parser)** |
-| [Interfaccia grafica](Interfaccia-grafica) | JavaFX, FXML, CSS, controller sottili | **bozza (menu, nuova partita, sessione)** |
+| [Interfaccia grafica](Interfaccia-grafica) | JavaFX, FXML, CSS, controller sottili | **scritta** |
 | [Testing](Testing) | JUnit, test di contratto, test deterministici | prevista |
 | [Estendibilità](Estendibilita) | nuova materia, domanda, esame, oggetto, salvataggio: guide passo passo | prevista |
 | [Strumenti e metodologie](Strumenti-e-metodologie) | Gradle, Git, Issues, workflow Scrum leggero | prevista |

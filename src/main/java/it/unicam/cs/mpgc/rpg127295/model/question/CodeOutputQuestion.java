@@ -3,6 +3,7 @@ package it.unicam.cs.mpgc.rpg127295.model.question;
 import static it.unicam.cs.mpgc.rpg127295.model.Preconditions.requireNonBlank;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * A code snippet with four possible outputs, one of which is correct.
@@ -32,5 +33,10 @@ public final class CodeOutputQuestion extends AbstractChoiceQuestion {
     /** @return the snippet to analyse, formatted as in the content file */
     public String code() {
         return code;
+    }
+
+    @Override
+    public Optional<String> codeSnippet() {
+        return Optional.of(code);
     }
 }

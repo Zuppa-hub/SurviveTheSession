@@ -1,8 +1,5 @@
 # Modelli di esecuzione
 
-> Bozza: copre il timer degli esami scritti (issue #23). La parte sull'interfaccia grafica si
-> completa con le issue #10 e #11.
-
 Nel gioco convivono due modelli di esecuzione: l'interfaccia grafica, **guidata dagli
 eventi**, e il **timer** delle domande, che gira su un thread separato. Questa pagina spiega
 come comunicano senza che i dati condivisi si corrompano.
@@ -35,8 +32,8 @@ Rispetto a un `Thread` scritto a mano con `sleep(1000)` in un ciclo:
 - il compito si annulla con `ScheduledFuture.cancel`, senza interrompere thread;
 - il thread lo gestisce l'executor, e si chiude con `shutdownNow()`.
 
-Lo scheduler lo crea l'applicazione e lo chiude chi lo crea: `Application.stop()` chiamerà
-`scheduler.shutdownNow()` (issue #11). Il suo thread è *daemon*, quindi uno scheduler
+Lo scheduler lo crea l'applicazione e lo chiude chi lo crea: `GameApplication.stop()` chiama
+`scheduler.shutdownNow()`. Il suo thread è *daemon*, quindi uno scheduler
 dimenticato aperto non impedisce alla JVM di terminare.
 
 ## Dal thread del timer a quello dell'interfaccia
@@ -48,7 +45,9 @@ passa da un `Executor` ricevuto nel costruttore:
 - nei test è un esecutore diretto oppure una coda gestita dal test.
 
 Così `ExamBattle` viene toccato da **un solo thread**, quello dell'interfaccia (*thread
-confinement*). Non ha bisogno di lock e la sua Javadoc dichiara che non è thread-safe: è una
+confinement*). Anche `ExamController`, che riceve i tick e aggiorna l'etichetta del timer, gira
+solo su quel thread: JavaFX vuole che la scena si modifichi solo dal suo thread, e la stessa
+scelta soddisfa entrambi i vincoli. Non ha bisogno di lock e la sua Javadoc dichiara che non è thread-safe: è una
 scelta, non una dimenticanza.
 
 ## Il dato condiviso: i secondi rimasti
