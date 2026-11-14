@@ -1,5 +1,6 @@
 plugins {
     application
+    id("org.openjfx.javafxplugin") version "0.1.0"
 }
 
 group = "it.unicam.cs.mpgc"
@@ -15,8 +16,15 @@ java {
     }
 }
 
+javafx {
+    version = "25"
+    modules("javafx.controls", "javafx.fxml")
+}
+
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.13.4"))
+    implementation("com.google.code.gson:gson:2.13.2")
+
+    testImplementation(platform("org.junit:junit-bom:6.1.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
@@ -31,4 +39,7 @@ tasks.named<JavaExec>("run") {
 
 tasks.test {
     useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
 }

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Algoritmi e Strutture Dati: 5 scelta multipla, 3 vero/falso, 3 output del codice, 4 completamento. -->
+<questions subject="ASD">
+
+    <multipleChoice id="ASD-01" difficulty="EASY">
+        <prompt>Quale struttura dati restituisce per primo l'ultimo elemento inserito (politica LIFO)?</prompt>
+        <hint>Pensa all'operazione "annulla" di un editor di testo.</hint>
+        <correct>Pila (stack)</correct>
+        <wrong>Coda (queue)</wrong>
+        <wrong>Coda con priorità</wrong>
+        <wrong>Albero binario di ricerca</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="ASD-02" difficulty="MEDIUM">
+        <prompt>Qual è la complessità nel caso peggiore della ricerca binaria su un array ordinato di n elementi?</prompt>
+        <correct>O(log n)</correct>
+        <wrong>O(n)</wrong>
+        <wrong>O(n log n)</wrong>
+        <wrong>O(1)</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="ASD-03" difficulty="MEDIUM">
+        <prompt>Qual è la complessità nel caso peggiore del quicksort che sceglie sempre il primo elemento come pivot?</prompt>
+        <hint>Prova a immaginare l'input già ordinato.</hint>
+        <correct>O(n²)</correct>
+        <wrong>O(n log n)</wrong>
+        <wrong>O(n)</wrong>
+        <wrong>O(log n)</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="ASD-04" difficulty="HARD">
+        <prompt>In un albero binario di ricerca, quale visita restituisce le chiavi in ordine crescente?</prompt>
+        <hint>Le chiavi minori di un nodo stanno nel suo sottoalbero sinistro.</hint>
+        <correct>Visita simmetrica (in-order)</correct>
+        <wrong>Visita anticipata (pre-order)</wrong>
+        <wrong>Visita posticipata (post-order)</wrong>
+        <wrong>Visita per livelli (in ampiezza)</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="ASD-05" difficulty="MEDIUM">
+        <prompt>Quale algoritmo calcola i cammini minimi da una sorgente in un grafo con pesi non negativi?</prompt>
+        <hint>Estrae ogni volta il nodo con la distanza provvisoria più piccola.</hint>
+        <correct>Algoritmo di Dijkstra</correct>
+        <wrong>Algoritmo di Kruskal</wrong>
+        <wrong>Algoritmo di Prim</wrong>
+        <wrong>Visita in profondità (DFS)</wrong>
+    </multipleChoice>
+
+    <trueFalse id="ASD-06" difficulty="EASY" answer="true">
+        <prompt>Una coda (queue) restituisce gli elementi nello stesso ordine in cui sono stati inseriti.</prompt>
+    </trueFalse>
+
+    <trueFalse id="ASD-07" difficulty="MEDIUM" answer="false">
+        <prompt>Il merge sort ha complessità O(n²) nel caso peggiore.</prompt>
+        <hint>Divide sempre l'array a metà, qualunque sia l'input.</hint>
+    </trueFalse>
+
+    <trueFalse id="ASD-08" difficulty="HARD" answer="true">
+        <prompt>In una tabella hash con una buona funzione di hash e un fattore di carico limitato, la ricerca di una chiave costa in media O(1).</prompt>
+    </trueFalse>
+
+    <codeOutput id="ASD-09" difficulty="EASY">
+        <prompt>Cosa stampa questo codice?</prompt>
+        <hint>push e pop lavorano sulla stessa estremità della pila.</hint>
+        <code><![CDATA[
+            Deque<Integer> stack = new ArrayDeque<>();
+            stack.push(1);
+            stack.push(2);
+            stack.push(3);
+            stack.pop();
+            System.out.println(stack.peek());
+        ]]></code>
+        <correct>2</correct>
+        <wrong>1</wrong>
+        <wrong>3</wrong>
+        <wrong>null</wrong>
+    </codeOutput>
+
+    <codeOutput id="ASD-10" difficulty="MEDIUM">
+        <prompt>Cosa stampa questo codice, che conta i passi di una ricerca binaria?</prompt>
+        <code><![CDATA[
+            int[] a = {1, 3, 5, 7, 9, 11, 13};
+            int low = 0;
+            int high = a.length - 1;
+            int steps = 0;
+            while (low <= high) {
+                int mid = (low + high) / 2;
+                steps++;
+                if (a[mid] == 11) {
+                    break;
+                }
+                if (a[mid] < 11) {
+                    low = mid + 1;
+                } else {
+                    high = mid - 1;
+                }
+            }
+            System.out.println(steps);
+        ]]></code>
+        <correct>2</correct>
+        <wrong>1</wrong>
+        <wrong>3</wrong>
+        <wrong>6</wrong>
+    </codeOutput>
+
+    <codeOutput id="ASD-11" difficulty="HARD">
+        <prompt>Cosa stampa questo codice, che conta gli scambi del bubble sort?</prompt>
+        <hint>Segui l'array passo per passo: dopo il primo scambio diventa {1, 3, 2}.</hint>
+        <code><![CDATA[
+            int[] a = {3, 1, 2};
+            int swaps = 0;
+            for (int i = 0; i < a.length - 1; i++) {
+                for (int j = 0; j < a.length - 1 - i; j++) {
+                    if (a[j] > a[j + 1]) {
+                        int tmp = a[j];
+                        a[j] = a[j + 1];
+                        a[j + 1] = tmp;
+                        swaps++;
+                    }
+                }
+            }
+            System.out.println(swaps);
+        ]]></code>
+        <correct>2</correct>
+        <wrong>1</wrong>
+        <wrong>3</wrong>
+        <wrong>0</wrong>
+    </codeOutput>
+
+    <fillIn id="ASD-12" difficulty="EASY">
+        <prompt>Come si chiama la tecnica in cui una funzione richiama sé stessa?</prompt>
+        <answer>ricorsione</answer>
+        <answer>recursion</answer>
+    </fillIn>
+
+    <fillIn id="ASD-13" difficulty="MEDIUM">
+        <prompt>Come si chiama la visita di un grafo che esplora prima tutti i vicini del nodo di partenza, poi i vicini dei vicini, e così via?</prompt>
+        <hint>Usa una coda per ricordare i nodi da visitare.</hint>
+        <answer>BFS</answer>
+        <answer>visita in ampiezza</answer>
+        <answer>in ampiezza</answer>
+        <answer>ampiezza</answer>
+        <answer>breadth-first search</answer>
+        <answer>breadth first search</answer>
+    </fillIn>
+
+    <fillIn id="ASD-14" difficulty="MEDIUM">
+        <prompt>Come si chiama l'albero binario in cui la chiave di ogni nodo è maggiore di quelle del sottoalbero sinistro e minore di quelle del sottoalbero destro?</prompt>
+        <answer>albero binario di ricerca</answer>
+        <answer>BST</answer>
+        <answer>ABR</answer>
+        <answer>binary search tree</answer>
+    </fillIn>
+
+    <fillIn id="ASD-15" difficulty="HARD">
+        <prompt>Quale struttura dati, basata su un albero binario quasi completo, si usa per realizzare in modo efficiente una coda con priorità?</prompt>
+        <hint>Il padre è sempre minore (o sempre maggiore) dei figli.</hint>
+        <answer>heap</answer>
+        <answer>heap binario</answer>
+        <answer>binary heap</answer>
+        <answer>min-heap</answer>
+        <answer>max-heap</answer>
+    </fillIn>
+</questions>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Subjects and exams of the session, in session order.
+    Subject ids and exam codes are unique; every exam refers to an existing subject.
+    The questions of a subject are in questions/<subject id in lower case>.xml.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:include schemaLocation="common.xsd"/>
+
+    <xs:simpleType name="examType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="WRITTEN"/>
+            <xs:enumeration value="ORAL"/>
+            <xs:enumeration value="PROJECT"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:element name="exams">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="subject" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="name" type="nonBlankText"/>
+                        </xs:sequence>
+                        <xs:attribute name="id" type="identifier" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="exam" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:attribute name="code" type="identifier" use="required"/>
+                        <xs:attribute name="subject" type="identifier" use="required"/>
+                        <xs:attribute name="type" type="examType" use="required"/>
+                        <xs:attribute name="credits" type="positiveValue" use="required"/>
+                        <xs:attribute name="difficulty" type="difficulty" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+        <xs:key name="subjectId">
+            <xs:selector xpath="subject"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="examCode">
+            <xs:selector xpath="exam"/>
+            <xs:field xpath="@code"/>
+        </xs:key>
+        <xs:keyref name="examSubject" refer="subjectId">
+            <xs:selector xpath="exam"/>
+            <xs:field xpath="@subject"/>
+        </xs:keyref>
+    </xs:element>
+</xs:schema>

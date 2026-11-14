@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Reti di Calcolatori: 5 scelta multipla, 3 vero/falso, 3 output del codice, 4 completamento. -->
+<questions subject="RETI">
+
+    <multipleChoice id="RETI-01" difficulty="EASY">
+        <prompt>Quale protocollo traduce un nome di dominio, come unicam.it, in un indirizzo IP?</prompt>
+        <correct>DNS</correct>
+        <wrong>DHCP</wrong>
+        <wrong>ARP</wrong>
+        <wrong>SMTP</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="RETI-02" difficulty="EASY">
+        <prompt>Su quale porta TCP ascolta di norma un server HTTPS?</prompt>
+        <hint>Non è la stessa porta di HTTP senza cifratura.</hint>
+        <correct>443</correct>
+        <wrong>80</wrong>
+        <wrong>22</wrong>
+        <wrong>25</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="RETI-03" difficulty="MEDIUM">
+        <prompt>A quale livello del modello TCP/IP appartiene il protocollo IP?</prompt>
+        <hint>Si occupa di instradare i pacchetti fra reti diverse.</hint>
+        <correct>Rete (Internet)</correct>
+        <wrong>Trasporto</wrong>
+        <wrong>Collegamento</wrong>
+        <wrong>Applicazione</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="RETI-04" difficulty="MEDIUM">
+        <prompt>Quale protocollo assegna automaticamente un indirizzo IP a un host che si collega a una rete locale?</prompt>
+        <correct>DHCP</correct>
+        <wrong>DNS</wrong>
+        <wrong>ICMP</wrong>
+        <wrong>FTP</wrong>
+    </multipleChoice>
+
+    <multipleChoice id="RETI-05" difficulty="HARD">
+        <prompt>Quanti indirizzi assegnabili agli host ha una sottorete IPv4 /26?</prompt>
+        <hint>Gli indirizzi di rete e di broadcast non si assegnano agli host.</hint>
+        <correct>62</correct>
+        <wrong>64</wrong>
+        <wrong>30</wrong>
+        <wrong>126</wrong>
+    </multipleChoice>
+
+    <trueFalse id="RETI-06" difficulty="EASY" answer="false">
+        <prompt>UDP garantisce che i pacchetti arrivino a destinazione nell'ordine in cui sono stati inviati.</prompt>
+    </trueFalse>
+
+    <trueFalse id="RETI-07" difficulty="MEDIUM" answer="true">
+        <prompt>TCP apre una connessione con uno scambio di tre segmenti: SYN, SYN-ACK, ACK.</prompt>
+    </trueFalse>
+
+    <trueFalse id="RETI-08" difficulty="HARD" answer="false">
+        <prompt>I router usano l'indirizzo MAC di destinazione per instradare un pacchetto attraverso reti diverse fino all'host finale.</prompt>
+        <hint>L'indirizzo MAC ha senso solo all'interno della stessa rete locale.</hint>
+    </trueFalse>
+
+    <codeOutput id="RETI-09" difficulty="EASY">
+        <prompt>Cosa stampa questo codice?</prompt>
+        <code><![CDATA[
+            String ip = "192.168.1.20";
+            String[] parts = ip.split("\\.");
+            System.out.println(parts.length);
+        ]]></code>
+        <correct>4</correct>
+        <wrong>3</wrong>
+        <wrong>1</wrong>
+        <wrong>12</wrong>
+    </codeOutput>
+
+    <codeOutput id="RETI-10" difficulty="MEDIUM">
+        <prompt>Cosa stampa questo codice, che calcola gli host di una sottorete?</prompt>
+        <hint>1 &lt;&lt; k vale 2 elevato alla k.</hint>
+        <code><![CDATA[
+            int prefix = 24;
+            int hostBits = 32 - prefix;
+            System.out.println((1 << hostBits) - 2);
+        ]]></code>
+        <correct>254</correct>
+        <wrong>256</wrong>
+        <wrong>255</wrong>
+        <wrong>8</wrong>
+    </codeOutput>
+
+    <codeOutput id="RETI-11" difficulty="HARD">
+        <prompt>Cosa stampa questo codice, che ricava l'indirizzo di rete con la maschera?</prompt>
+        <hint>77 in binario è 01001101, 192 è 11000000.</hint>
+        <code><![CDATA[
+            int[] ip = {192, 168, 10, 77};
+            int[] mask = {255, 255, 255, 192};
+            StringBuilder network = new StringBuilder();
+            for (int i = 0; i < 4; i++) {
+                network.append(ip[i] & mask[i]);
+                if (i < 3) {
+                    network.append('.');
+                }
+            }
+            System.out.println(network);
+        ]]></code>
+        <correct>192.168.10.64</correct>
+        <wrong>192.168.10.0</wrong>
+        <wrong>192.168.10.77</wrong>
+        <wrong>192.168.10.192</wrong>
+    </codeOutput>
+
+    <fillIn id="RETI-12" difficulty="EASY">
+        <prompt>Quale protocollo di trasporto, orientato alla connessione e affidabile, usa HTTP/1.1?</prompt>
+        <answer>TCP</answer>
+    </fillIn>
+
+    <fillIn id="RETI-13" difficulty="MEDIUM">
+        <prompt>Quale comando da terminale invia richieste ICMP Echo per verificare se un host è raggiungibile?</prompt>
+        <answer>ping</answer>
+    </fillIn>
+
+    <fillIn id="RETI-14" difficulty="MEDIUM">
+        <prompt>Quale protocollo ricava l'indirizzo MAC corrispondente a un indirizzo IPv4 della stessa rete locale?</prompt>
+        <hint>Manda la domanda in broadcast a tutta la rete locale.</hint>
+        <answer>ARP</answer>
+        <answer>Address Resolution Protocol</answer>
+    </fillIn>
+
+    <fillIn id="RETI-15" difficulty="HARD">
+        <prompt>Quanti bit è lungo un indirizzo IPv6?</prompt>
+        <hint>Si scrive in 8 gruppi separati da due punti.</hint>
+        <answer>128</answer>
+    </fillIn>
+</questions>

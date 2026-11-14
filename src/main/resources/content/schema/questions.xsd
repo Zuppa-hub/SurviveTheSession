@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Questions of one subject. Question ids are unique in the file (uniqueness across
+    subjects is checked by the program, since it spans several files).
+    Choice questions have exactly one <correct> and three <wrong> options, all distinct.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:include schemaLocation="common.xsd"/>
+
+    <xs:complexType name="question">
+        <xs:sequence>
+            <xs:element name="prompt" type="nonBlankText"/>
+            <xs:element name="hint" type="nonBlankText" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="identifier" use="required"/>
+        <xs:attribute name="difficulty" type="difficulty" use="required"/>
+    </xs:complexType>
+
+    <xs:group name="fourOptions">
+        <xs:sequence>
+            <xs:element name="correct" type="nonBlankText"/>
+            <xs:element name="wrong" type="nonBlankText" minOccurs="3" maxOccurs="3"/>
+        </xs:sequence>
+    </xs:group>
+
+    <xs:complexType name="multipleChoice">
+        <xs:complexContent>
+            <xs:extension base="question">
+                <xs:group ref="fourOptions"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="codeOutput">
+        <xs:complexContent>
+            <xs:extension base="question">
+                <xs:sequence>
+                    <xs:element name="code" type="codeText"/>
+                    <xs:group ref="fourOptions"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:simpleType name="truthValue">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="true"/>
+            <xs:enumeration value="false"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="trueFalse">
+        <xs:complexContent>
+            <xs:extension base="question">
+                <xs:attribute name="answer" type="truthValue" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="fillIn">
+        <xs:complexContent>
+            <xs:extension base="question">
+                <xs:sequence>
+                    <xs:element name="answer" type="nonBlankText" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:element name="questions">
+        <xs:complexType>
+            <xs:choice maxOccurs="unbounded">
+                <xs:element name="multipleChoice" type="multipleChoice">
+                    <xs:unique name="distinctMultipleChoiceOptions">
+                        <xs:selector xpath="correct|wrong"/>
+                        <xs:field xpath="."/>
+                    </xs:unique>
+                </xs:element>
+                <xs:element name="codeOutput" type="codeOutput">
+                    <xs:unique name="distinctCodeOutputOptions">
+                        <xs:selector xpath="correct|wrong"/>
+                        <xs:field xpath="."/>
+                    </xs:unique>
+                </xs:element>
+                <xs:element name="trueFalse" type="trueFalse"/>
+                <xs:element name="fillIn" type="fillIn">
+                    <xs:unique name="distinctFillInAnswers">
+                        <xs:selector xpath="answer"/>
+                        <xs:field xpath="."/>
+                    </xs:unique>
+                </xs:element>
+            </xs:choice>
+            <xs:attribute name="subject" type="identifier" use="required"/>
+        </xs:complexType>
+        <xs:key name="questionId">
+            <xs:selector xpath="*"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+    </xs:element>
+</xs:schema>

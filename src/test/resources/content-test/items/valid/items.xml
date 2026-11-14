@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<items>
+    <item id="coffee">
+        <name>Caffè</name>
+        <description>+15 secondi alla domanda corrente</description>
+    </item>
+    <item id="energy-drink">
+        <name>Energy drink</name>
+        <description>Recupera energia</description>
+    </item>
+</items>

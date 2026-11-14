@@ -1,11 +1,4 @@
-# Registro uso AI
-
-Registro delle sessioni di lavoro con strumenti di AI. Per ogni sessione:
-data, richiesta fatta all'AI, cosa ha prodotto, cosa ho modificato o verificato io.
-
----
-
-## 2026-10-23 — Scheletro del progetto
+# 2026-10-23 — Scheletro del progetto
 
 **Strumento:** Claude Code (Claude Opus 5.5)
 
@@ -24,4 +17,4 @@ sviluppo; questo registro; inizializzazione git con branch `main` e `develop`.
 - repository git con commit iniziale su `main` e branch `develop`
 
 **Modificato / verificato da me:**
-- [ ] _da completare_
+- Verificato che `./gradlew run` stampa "RPG avviato".

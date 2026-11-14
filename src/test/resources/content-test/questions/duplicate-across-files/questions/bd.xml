@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<questions subject="BD">
+    <trueFalse id="SHARED-01" difficulty="EASY" answer="false">
+        <prompt>Altra domanda</prompt>
+    </trueFalse>
+</questions>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<exams>
+    <subject id="PROG">
+        <name>Programmazione</name>
+    </subject>
+    <subject id="BD">
+        <name>Basi di Dati</name>
+    </subject>
+    <exam code="PROG1" subject="PROG" type="WRITTEN" credits="12" difficulty="MEDIUM"/>
+    <exam code="BD1" subject="BD" type="ORAL" credits="9" difficulty="HARD"/>
+</exams>

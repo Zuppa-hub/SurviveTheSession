@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profiles>
+    <profile id="nerd" knowledge="8" energy="6" concentration="4">
+        <name>Secchione</name>
+        <description>Sa tutto, ma si stanca presto</description>
+    </profile>
+    <profile id="commuter" knowledge="3" energy="12" concentration="4">
+        <name>Pendolare</name>
+        <description>Resiste a tutto</description>
+    </profile>
+</profiles>

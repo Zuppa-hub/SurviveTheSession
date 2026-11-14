@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<questions subject="PROG">
+    <essay id="PROG-01" difficulty="EASY">
+        <prompt>Scrivi un tema</prompt>
+    </essay>
+</questions>

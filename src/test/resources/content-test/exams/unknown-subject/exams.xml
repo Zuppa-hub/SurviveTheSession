@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<exams>
+    <subject id="PROG">
+        <name>Programmazione</name>
+    </subject>
+    <exam code="RETI1" subject="RETI" type="ORAL" credits="6" difficulty="MEDIUM"/>
+</exams>

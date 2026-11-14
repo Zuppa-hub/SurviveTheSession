@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Items the student can own. Ids are unique. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:include schemaLocation="common.xsd"/>
+
+    <xs:element name="items">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="item" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="name" type="nonBlankText"/>
+                            <xs:element name="description" type="nonBlankText"/>
+                        </xs:sequence>
+                        <xs:attribute name="id" type="identifier" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+        <xs:key name="itemId">
+            <xs:selector xpath="item"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+    </xs:element>
+</xs:schema>
