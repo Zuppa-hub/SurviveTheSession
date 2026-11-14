@@ -114,12 +114,21 @@
 
 .code {
     -fx-font-family: "Monospaced";
-    -fx-font-size: 13px;
+    -fx-font-size: 12px;
     -fx-background-color: #f5f7fa;
     -fx-border-color: #d9dee5;
     -fx-background-radius: 6;
     -fx-border-radius: 6;
     -fx-padding: 10;
+}
+
+.chip {
+    -fx-background-color: #eef2f7;
+    -fx-background-radius: 10;
+    -fx-padding: 2 10;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -muted;
 }
 
 .hint {

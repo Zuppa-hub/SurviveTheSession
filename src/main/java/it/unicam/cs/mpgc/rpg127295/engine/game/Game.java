@@ -21,6 +21,9 @@ import java.util.Optional;
  *       caller's listener and begins it, all in one call: a battle created but not begun cannot
  *       exist, because no order of calls is left to the caller. Every exam starts rested, so
  *       failing never pays off as a way to recover.</li>
+ *   <li>The energy is restored also as soon as an exam ends, before the listeners hear of it:
+ *       the session screen and the saved game show the energy of the next exam. The restore
+ *       at the start stays for the games saved before this rule.</li>
  *   <li>When the battle ends the game applies the outcome: a passed exam goes in the
  *       transcript and gives its reward (items, experience, maybe new levels); a failed or
  *       abandoned one stays in the session.</li>
@@ -144,6 +147,7 @@ public final class Game {
                 .map(grade -> pass(exam, grade))
                 .orElse(Reward.none());
         int levelsGained = gainExperience(reward.experience());
+        student.updateStats(Stats::restoreFullEnergy);
         ExamReport report = new ExamReport(exam, outcome, reward, levelsGained);
         listeners.forEach(listener -> listener.onExamConcluded(report));
     }

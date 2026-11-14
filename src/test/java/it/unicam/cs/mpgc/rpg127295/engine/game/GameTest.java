@@ -97,6 +97,19 @@ class GameTest {
     }
 
     @Test
+    void theEnergyIsRestoredWhenAnExamEnds() {
+        Game game = game(FIRST);
+        List<Integer> energyWhenReported = new ArrayList<>();
+        game.addListener(report -> energyWhenReported.add(student.stats().energy()));
+        ExamBattle battle = game.startExam(FIRST, NO_LISTENER);
+
+        battle.answer(TestQuestions.WRONG);
+        battle.retire();
+
+        assertEquals(List.of(6), energyWhenReported);
+    }
+
+    @Test
     void startingAnExamBeginsItWithTheListenerOfTheCaller() {
         Game game = game(FIRST);
         List<PresentedQuestion> presented = new ArrayList<>();
