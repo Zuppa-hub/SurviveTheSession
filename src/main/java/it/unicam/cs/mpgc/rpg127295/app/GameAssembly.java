@@ -1,14 +1,18 @@
 package it.unicam.cs.mpgc.rpg127295.app;
 
+import it.unicam.cs.mpgc.rpg127295.engine.battle.BattleEffects;
+import it.unicam.cs.mpgc.rpg127295.engine.battle.BattleRules;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.BattleServices;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamBattleFactory;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamStrategy;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.StandardBattleRules;
 import it.unicam.cs.mpgc.rpg127295.engine.game.Game;
+import it.unicam.cs.mpgc.rpg127295.engine.game.ProgressionRules;
 import it.unicam.cs.mpgc.rpg127295.engine.game.RewardPolicy;
 import it.unicam.cs.mpgc.rpg127295.engine.game.StandardProgressionRules;
 import it.unicam.cs.mpgc.rpg127295.engine.game.StandardRewardPolicy;
 import it.unicam.cs.mpgc.rpg127295.engine.game.StarterKit;
+import it.unicam.cs.mpgc.rpg127295.engine.grading.GradeCalculator;
 import it.unicam.cs.mpgc.rpg127295.engine.grading.PerformanceGradeCalculator;
 import it.unicam.cs.mpgc.rpg127295.engine.repository.ItemCatalog;
 import it.unicam.cs.mpgc.rpg127295.engine.repository.SaveGameException;
@@ -24,6 +28,7 @@ import it.unicam.cs.mpgc.rpg127295.model.item.Item;
 import it.unicam.cs.mpgc.rpg127295.model.student.Student;
 import it.unicam.cs.mpgc.rpg127295.model.student.StudentProfile;
 import it.unicam.cs.mpgc.rpg127295.persistence.content.ContentException;
+import it.unicam.cs.mpgc.rpg127295.ui.GameGuide;
 import it.unicam.cs.mpgc.rpg127295.ui.GameService;
 import java.util.EnumMap;
 import java.util.List;
@@ -53,8 +58,10 @@ public final class GameAssembly implements GameService {
     private final GameContent content;
     private final ExamBattleFactory battles;
     private final ExamSession session;
+    private final ProgressionRules progression = new StandardProgressionRules();
     private final RewardPolicy rewards;
     private final StarterKit starterKit;
+    private final GameGuide guide;
     private final SaveGameRepository saves;
     private final SaveMapper mapper;
     private final Consumer<SaveGameException> saveFailures;
@@ -74,12 +81,18 @@ public final class GameAssembly implements GameService {
         Objects.requireNonNull(scheduler, "Scheduler must not be null");
         Objects.requireNonNull(uiExecutor, "UI executor must not be null");
         Objects.requireNonNull(random, "Random generator must not be null");
-        BattleServices services = new BattleServices(new StandardBattleRules(), new PerformanceGradeCalculator(),
-                new ScheduledQuestionTimer(scheduler, uiExecutor), random, GameEffects.of(content.items()));
-        this.battles = new ExamBattleFactory(strategies(), content.questions(), services);
+        BattleRules rules = new StandardBattleRules();
+        GradeCalculator grades = new PerformanceGradeCalculator();
+        BattleEffects effects = GameEffects.of(content.items());
+        Map<ExamType, ExamStrategy> strategies = strategies();
+        BattleServices services = new BattleServices(rules, grades,
+                new ScheduledQuestionTimer(scheduler, uiExecutor), random, effects);
+        this.battles = new ExamBattleFactory(strategies, content.questions(), services);
         this.session = new ExamSession(content.exams().all());
         this.rewards = new StandardRewardPolicy(content.items(), random);
         this.starterKit = starterKitOf(content.items());
+        this.guide = new GameGuide(session, content.profiles().all(), starterKit, rules, strategies,
+                effects.abilities(), content.items().all(), progression, rewards, grades);
         this.saves = Objects.requireNonNull(saves, "Save repository must not be null");
         this.mapper = new SaveMapper(content.profiles(), content.items(), content.exams());
         this.saveFailures = Objects.requireNonNull(saveFailures, "Save failure callback must not be null");
@@ -123,8 +136,14 @@ public final class GameAssembly implements GameService {
         return saves.listSlots();
     }
 
+    /** @return the rules and content of the games, the same objects the games use */
+    @Override
+    public GameGuide guide() {
+        return guide;
+    }
+
     private Game gameOf(Student student, String slot) {
-        Game game = new Game(student, session, battles, new StandardProgressionRules(), rewards);
+        Game game = new Game(student, session, battles, progression, rewards);
         game.addListener(new AutoSave(saves, mapper, slot, student, saveFailures));
         return game;
     }
