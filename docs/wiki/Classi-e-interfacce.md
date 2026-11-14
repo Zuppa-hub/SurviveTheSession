@@ -23,7 +23,7 @@ vuoto, numero positivo o non negativo) stanno in un solo punto, `model.Precondit
 | `engine.grading` | `Performance`, `GradeCalculator`, `PerformanceGradeCalculator` |
 | `engine.battle` | `ExamBattle`, `ExamBattleFactory`, `BattleServices`, `ExamStrategy`, `BattleEffect`, `BattleControls`, `BattleEffects`, `Ability`, `BattleState`, `BattleOutcome`, `BattleResult`, `BattleListener`, `QuestionPool`, `PresentedQuestion`, `AnswerResult`, `BattleRules`, `StandardBattleRules` |
 | `engine.strategy` | `WrittenExamStrategy`, `OralExamStrategy`, `ProjectExamStrategy` |
-| `engine.game` | `Game`, `GameListener`, `ExamReport`, `ProgressionRules`, `StandardProgressionRules`, `RewardPolicy`, `StandardRewardPolicy`, `Reward`, `Graduation` |
+| `engine.game` | `Game`, `GameListener`, `ExamReport`, `ProgressionRules`, `StandardProgressionRules`, `RewardPolicy`, `StandardRewardPolicy`, `Reward`, `StarterKit`, `Graduation` |
 | `app` | `GameAssembly`, `AutoSave`, `GameEffects`, `GameContent`, `Main` |
 | `engine.effect` | `ExtraTimeEffect`, `FiftyFiftyEffect`, `HintEffect`, `EnergyRestoreEffect`, `DoubleDamageEffect` |
 | `engine.timer` | `QuestionTimer`, `TimerListener`, `ScheduledQuestionTimer` |
@@ -490,8 +490,12 @@ poi quello della UI, e **avvia lo scontro**: la UI riceve subito la prima domand
   mai iniziato avrebbe lasciato la partita "occupata" per sempre. Facendo tutto in un'unica
   chiamata, quello stato non può più esistere. Se lo scontro finisce appena iniziato (ad
   esempio senza domande), la partita applica subito l'esito e torna libera.
-- **Energia a ogni esame.** L'Energia si ricarica all'inizio di **ogni** esame, non solo dopo
-  una bocciatura. Se si ricaricasse solo dopo una bocciatura, uno studente che supera un esame
+- **Energia a ogni esame.** L'Energia si ricarica alla fine di **ogni** esame (superato,
+  bocciato o ritirato), prima di avvisare i listener: così il salvataggio e la schermata della
+  sessione mostrano l'Energia con cui si affronterà il prossimo esame. Prima si ricaricava solo
+  all'inizio, e la sessione mostrava ad esempio 1/9 per un'Energia che sarebbe tornata piena:
+  il comportamento era giusto, ma sembrava un errore. La ricarica all'inizio resta per le
+  partite salvate con la v0.1. Non si ricarica solo dopo una bocciatura. Se si ricaricasse solo dopo una bocciatura, uno studente che supera un esame
   con poca Energia avrebbe convenienza a farsi bocciare apposta nel successivo per
   ricaricarsi: la regola premierebbe il comportamento sbagliato. La Concentrazione invece
   passa da un esame all'altro: è la risorsa delle abilità.
@@ -527,6 +531,18 @@ Un ciclo e non un `if`, perché un esame con molta esperienza può far salire di
 `Reward` (esperienza e oggetti). `StandardRewardPolicy` dà CFU × (voto − 15) di esperienza (la
 lode vale 30) e da zero a tre oggetti secondo il voto, scelti tra quelli del catalogo con il
 `RandomGenerator` iniettato, così nei test la scelta è deterministica.
+
+### Kit iniziale
+Con i valori della #12 chi risponde giusto al 70% prende 18-21, e gli oggetti come ricompensa
+arrivano solo dal 24: senza un kit molti giocatori non avrebbero mai visto un oggetto.
+`StarterKit` (engine) è un record con gli oggetti e le quantità, e `giveTo(inventory)` li
+aggiunge. Quali oggetti (1 Caffè, 1 Appunti, 1 Energy drink) lo decide `GameAssembly`, in
+`app`, con gli id del catalogo, come fa `GameEffects` per gli effetti: un id che manca in
+`items.xml` ferma il gioco all'avvio. L'engine non conosce né gli id né il file.
+
+Il kit si dà solo in `newGame`: `loadGame` ricostruisce lo studente dal salvataggio, con il suo
+inventario. Per questo non serve cambiare il formato dei salvataggi, e una partita caricata
+non riceve un secondo kit. `BalanceTest` non usa oggetti, quindi resta valido.
 
 ### Bilanciamento verificato da un test (#12)
 I numeri di `StandardBattleRules`, `StandardProgressionRules` e dei profili non sono scelti a

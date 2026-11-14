@@ -29,7 +29,7 @@ Il profilo determina le statistiche iniziali. Tre profili, definiti in un file d
 
 ### 2.2 Statistiche
 - **Conoscenza**: aumenta i "punti" tolti all'esame con una risposta corretta e la probabilità di ricevere un indizio gratuito.
-- **Energia** (vita): diminuisce a ogni risposta sbagliata o tempo scaduto. A zero lo studente viene bocciato in quell'esame. Si ricarica del tutto all'inizio di ogni esame: ricaricarla solo dopo una bocciatura incentiverebbe a farsi bocciare per ricaricarsi.
+- **Energia** (vita): diminuisce a ogni risposta sbagliata o tempo scaduto. A zero lo studente viene bocciato in quell'esame. Si ricarica del tutto alla fine di ogni esame (superato, bocciato o ritirato), prima del salvataggio, così la sessione mostra l'Energia con cui si affronterà il prossimo esame; ricaricarla solo dopo una bocciatura incentiverebbe a farsi bocciare per ricaricarsi. Si ricarica anche all'inizio dell'esame, per le partite salvate dalla v0.1 con l'Energia ancora bassa.
 - **Concentrazione** (risorsa): si spende per le abilità; si recupera di 1 a ogni risposta corretta.
 - **Livello ed esperienza**: superare un esame dà esperienza (CFU × (voto − 15), la lode vale 30); salire di livello costa 50 × livello attuale e aumenta Conoscenza (+1), Energia massima (+3) e Concentrazione massima (+1). Un esame può far salire di più livelli. È la progressione RPG. Valori bilanciati nella #12 (§2.8).
 
@@ -40,7 +40,7 @@ Il profilo determina le statistiche iniziali. Tre profili, definiti in un file d
 - La prova termina quando la resistenza arriva a zero **oppure** quando le domande finiscono. In entrambi i casi decide il **voto** (18-30, 31 = 30 e lode), calcolato dalla prestazione (percentuale di risposte corrette, eventuali penalità): con un voto l'esame è superato, senza voto è una bocciatura.
 - Energia a zero: bocciatura, senza calcolare il voto.
 - Azioni del turno: **Rispondi**, **Usa oggetto**, **Usa abilità**, **Ritirati** (l'esame resta da sostenere, nessun voto).
-- Bocciatura o ritiro: l'esame resta nella sessione e si può ritentare; l'Energia si ricarica all'inizio del nuovo tentativo, come di ogni esame.
+- Bocciatura o ritiro: l'esame resta nella sessione e si può ritentare; l'Energia si è già ricaricata alla fine dell'esame, come dopo ogni esame.
 - Superamento: voto nel libretto, esperienza e oggetti come ricompensa (18-23 nessuno, 24-27 uno, 28-30 due, lode tre, scelti a caso tra quelli del catalogo).
 - L'ultimo esame della sessione è il **boss finale**: si può sostenere solo quando tutti gli altri sono superati.
 - Laurea: quando tutti gli esami della sessione sono superati. Voto di laurea = media ponderata × 110 / 30, arrotondato (media 30 → 110, media 18 → 66); punti bonus e lode di laurea dipendono dai regolamenti dei corsi e sono esclusi.
@@ -75,7 +75,7 @@ Il profilo determina le statistiche iniziali. Tre profili, definiti in un file d
 
 Un indizio conta come penalità nel voto una sola volta per domanda, da qualunque fonte arrivi. Oggetti e abilità si usano solo mentre una domanda attende risposta; un oggetto o un'abilità non applicabile non viene consumato.
 
-Oggetti ottenuti come ricompensa a fine esame (in base al voto).
+Oggetti ottenuti come ricompensa a fine esame (in base al voto). **Kit iniziale**: ogni nuovo studente parte con 1 Caffè, 1 Appunti e 1 Energy drink, perché con i valori della #12 chi risponde giusto al 70% prende 18-21 e non riceverebbe mai oggetti. Il kit è un `StarterKit` (engine, solo `Item` e quantità); quali oggetti contiene lo decide `GameAssembly` in `app`, come gli effetti, e lo dà solo a una partita nuova: una partita caricata tiene l'inventario salvato, quindi i salvataggi esistenti non cambiano.
 
 ### 2.7 Materie e contenuti
 Cinque materie reali del corso di Informatica, ognuna con un file XML di domande (15-20 domande ciascuna, scritte originali e **verificate a mano da Andrea**):
@@ -331,7 +331,7 @@ Schermate (FXML + controller):
 1. **Menu**: nuova partita, carica, esci.
 2. **Nuova partita**: nome e profilo.
 3. **Sessione**: elenco esami (superati, da sostenere), statistiche, inventario, libretto, pulsante "Sostieni esame".
-4. **Esame**: domanda, opzioni o campo di testo, timer, barre di Energia, Concentrazione e resistenza dell'esame, pulsanti oggetti e abilità.
+4. **Esame**: difficoltà e domanda, snippet di codice accanto alle opzioni (tutto visibile senza scroll a 960 × 640), opzioni o campo di testo, timer, barre di Energia, Concentrazione e resistenza dell'esame, pulsanti oggetti e abilità; l'esito della risposta precedente è scritto come "Domanda precedente: ...", perché la domanda successiva compare subito.
 5. **Esito**: voto o bocciatura, ricompense, livello.
 6. **Laurea**: riepilogo finale con media ponderata e CFU.
 
@@ -343,6 +343,7 @@ Struttura (#10, #11):
 - `ui.ViewNavigator` carica gli FXML (senza `fx:controller`) e passa a ogni controller le sue dipendenze nel costruttore; un unico `styles.css`.
 - Classi di supporto senza JavaFX, testate con JUnit: `ExamRow` (stato di ogni esame: superato, disponibile, bloccato) e `SlotNames` (nome del salvataggio ricavato dal nome del giocatore).
 - Un salvataggio automatico fallito mostra un avviso (callback della #9) e la partita prosegue.
+- I dialoghi mostrano solo testi italiani (`ErrorMessages`); le eccezioni restano in inglese nel codice e il loro messaggio va nel log (`System.Logger`), non al giocatore. Le etichette italiane degli enum (tipo d'esame, difficoltà) stanno in `Labels`.
 - Esame (#11): `ExamController` è il `BattleListener` passato a `Game.startExam`; lo scontro in corso lo legge da `Game.currentBattle()`. Le notifiche del timer arrivano sul thread di JavaFX (`Platform::runLater`). Oggetti e abilità sono pulsanti costruiti da `BattleAction` (abilitati con `ExamBattle.canUse`); il tempo scaduto si distingue da una risposta sbagliata in `AnswerFeedback`, perché lo scontro li tratta allo stesso modo. Lo snippet delle domande sull'output del codice viene da `Question.codeSnippet()`.
 - Esito e laurea (#11): `ViewNavigator.openGame` registra sulla partita, una volta sola, il `GameListener` che mostra l'esito (`ExamReport` → `OutcomeSummary`); dall'esito si torna alla sessione o, se la sessione è completa, si va alla laurea (`GraduationSummary`).
 

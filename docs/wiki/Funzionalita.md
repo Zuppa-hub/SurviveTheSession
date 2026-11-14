@@ -18,7 +18,10 @@ profilo decide le statistiche iniziali (`profiles.xml`):
 | Pendolare | 3 | 12 | 4 | Studia poco, ma dopo ore di treno regge qualunque esame. |
 | Nottambulo | 5 | 9 | 6 | Preparato il giusto, lucidissimo quando serve. |
 
-Lo studente parte dal livello 1, con l'inventario e il libretto vuoti. Il nome del salvataggio
+Lo studente parte dal livello 1, con il libretto vuoto e un **kit iniziale**: 1 Caffè, 1 Appunti
+e 1 Energy drink, così prova gli oggetti fin dal primo esame (con il 70% di risposte giuste si
+prende 18-21, e gli oggetti come ricompensa arrivano solo dal 24). Una partita caricata tiene
+l'inventario salvato, senza ricevere un altro kit. Il nome del salvataggio
 si ricava dal nome del giocatore (`SlotNames`): se esiste già una partita con quel nome, il gioco
 chiede di sceglierne un altro invece di sovrascriverla.
 
@@ -26,7 +29,8 @@ chiede di sceglierne un altro invece di sovrascriverla.
 
 - **Conoscenza**: aumenta il danno di ogni risposta corretta (7 + Conoscenza / 2).
 - **Energia**: è la vita. Ogni risposta sbagliata la riduce; a zero l'esame è bocciato. Si
-  ricarica del tutto all'inizio di **ogni** esame, così farsi bocciare non conviene mai.
+  ricarica del tutto alla fine di **ogni** esame, superato o no, così farsi bocciare non conviene
+  mai e la sessione mostra già l'Energia piena per il prossimo esame.
 - **Concentrazione**: si spende per le abilità e si recupera di 1 a ogni risposta corretta.
   Passa da un esame all'altro.
 

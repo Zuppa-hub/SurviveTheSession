@@ -40,7 +40,14 @@ JUnit:
   con etichetta, descrizione e stato. Se si può usare lo decide lo scontro con
   `ExamBattle.canUse`: la schermata non sa che il Caffè serve solo con il timer o che gli
   Appunti vogliono almeno tre opzioni sbagliate.
-- **`AnswerFeedback`**: il messaggio dopo una risposta (giusta, sbagliata, tempo scaduto).
+- **`AnswerFeedback`**: il messaggio dopo una risposta (giusta, sbagliata, tempo scaduto). La
+  domanda successiva compare subito, quindi il messaggio dice "Domanda precedente: ..." e sta in
+  alto nella scheda, accanto alla difficoltà, non sotto le opzioni della nuova domanda.
+- **`Labels`**: i nomi italiani degli enum mostrati (tipo d'esame, difficoltà della domanda),
+  in `EnumMap`; un valore senza etichetta lancia un'eccezione invece di restituire `null`.
+- **`ErrorMessages`**: i testi italiani dei dialoghi d'errore (caricamento, salvataggio,
+  contenuti non validi). Le eccezioni restano in inglese nel codice: il loro messaggio va nel
+  log, mai al giocatore.
 - **`OutcomeSummary`**: titolo, voto e righe dell'esito, ricavati dall'`ExamReport`; i titoli
   per `BattleResult` stanno in una `EnumMap`.
 - **`GraduationSummary`**: righe del libretto, media, CFU e voto di laurea, tutti calcolati
@@ -73,7 +80,10 @@ perché la prima domanda arriva subito, dentro `startExam`.
   testo nel secondo. Dopo gli Appunti le opzioni sono due di meno, e la vista le ridisegna.
 - **Lo snippet di codice.** `Question.codeSnippet()` è vuoto di default e
   `CodeOutputQuestion` lo ridefinisce. La schermata lo mostra se c'è, senza chiedere il tipo
-  concreto della domanda (stesso principio del `QuestionVisitor`).
+  concreto della domanda (stesso principio del `QuestionVisitor`). Lo snippet sta a sinistra
+  e le opzioni a destra: in colonna, con lo snippet più lungo (17 righe), la quarta opzione
+  restava fuori dalla finestra. Un programma eseguito a mano ha misurato tutte le 78 domande a
+  960 × 640: nessuna richiede lo scroll.
 - **Tempo scaduto.** Per lo scontro il tempo scaduto è una risposta sbagliata, ed è giusto
   così per il voto. Al giocatore però va detto: il controller alza un flag mentre passa la
   risposta allo scontro, quindi una risposta sbagliata arrivata senza il flag è una scadenza.
@@ -114,13 +124,15 @@ configurazioni dei moduli.
 ## Salvataggio fallito: un avviso, non un errore
 Se un salvataggio automatico fallisce (disco pieno, cartella non scrivibile), il callback della
 #9 mostra un avviso con `Alert.show()`, che non blocca: il giocatore legge il messaggio e la
-partita continua.
+partita continua. L'avviso dice cosa controllare (spazio sul disco, cartella scrivibile) e che
+il gioco riproverà alla fine del prossimo esame; il dettaglio tecnico va nel log.
 
 ## Come è stato verificato
 I controller non hanno test automatici: un test dell'interfaccia grafica richiederebbe una
 libreria apposita e un display. Sono verificati in due modi:
-- le classi con logica (`ExamRow`, `SlotNames`, `BattleAction`, `AnswerFeedback`,
-  `OutcomeSummary`, `GraduationSummary`, `GameAssembly` come `GameService`) hanno test JUnit;
+- le classi con logica (`ExamRow`, `SlotNames`, `BattleAction`, `AnswerFeedback`, `Labels`,
+  `ErrorMessages`, `OutcomeSummary`, `GraduationSummary`, `GameAssembly` come `GameService`)
+  hanno test JUnit;
   i test della UI condividono una partita di prova (`TestGames`) con timer manuale;
 - un programma eseguito a mano, fuori dal repository, ha giocato con i contenuti veri e il
   timer vero: ha controllato che il timer scendesse (30 s → 28 s dopo due secondi e mezzo),
