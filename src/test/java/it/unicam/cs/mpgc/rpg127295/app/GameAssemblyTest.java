@@ -70,6 +70,28 @@ class GameAssemblyTest {
     }
 
     @Test
+    void aNewStudentStartsWithACoffeeSomeNotesAndAnEnergyDrink() {
+        Game game = assembly().newGame("Andrea", "nerd", "andrea");
+
+        assertEquals(Map.of(item("coffee"), 1, item("notes"), 1, item("energy-drink"), 1),
+                game.student().inventory().items());
+    }
+
+    @Test
+    void aLoadedGameKeepsTheSavedInventoryWithoutANewKit() {
+        Student saved = new Student("Andrea", content.profiles().findById("nerd").orElseThrow());
+        saves.save("andrea", new SaveMapper(content.profiles(), content.items(), content.exams()).toData(saved));
+
+        Game loaded = assembly().loadGame("andrea").orElseThrow();
+
+        assertEquals(Map.of(), loaded.student().inventory().items());
+    }
+
+    private static Item item(String id) {
+        return content.items().findById(id).orElseThrow();
+    }
+
+    @Test
     void anExamUsesTheRealTimerAndTheAbilitiesOfTheGame() {
         Game game = assembly().newGame("Andrea", "commuter", "andrea");
         Exam programming = content.exams().findByCode("PROG1").orElseThrow();
