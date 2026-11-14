@@ -1,110 +1,313 @@
-/* Sopravvivi alla Sessione: one stylesheet for every screen, simple and clean. */
+/*
+ * Sopravvivi alla Sessione: the only stylesheet, for every screen and dialog.
+ *
+ * Colors are variables (looked-up colors on .root): change one here and every screen follows.
+ * JavaFX CSS has no variables for sizes, so spacing and padding are set once in the layout
+ * classes below (.screen, .page, .header, .card, .stack, .row, .actions, .tight, .wide, .options,
+ * .gap-top, .gap-bottom, .compact) and never in the FXML.
+ *
+ * Buttons, the same way on every screen:
+ *   .primary   the main action of the screen, at most one (Nuova partita, Sostieni esame...)
+ *   .secondary any other action, items and abilities included (Carica partita, Avanti...)
+ *   .link      navigation that leaves the screen (Menu, Esci, Indietro, Ritirati...)
+ *   .option    an answer to the current question
+ */
 
 .root {
     -fx-font-family: "System";
     -fx-font-size: 14px;
-    -accent: #2f5d8a;
-    -accent-dark: #234766;
-    -text: #1f2933;
-    -muted: #616e7c;
-    -surface: #ffffff;
-    -background: #f2f4f7;
-    -fx-text-fill: -text;
+
+    -color-accent: #2f5d8a;
+    -color-accent-dark: #234766;
+    -color-accent-soft: #e3ecf5;
+    -color-text: #1f2933;
+    -color-muted: #616e7c;
+    -color-disabled: #9aa5b1;
+    -color-border: #d9dee5;
+    -color-surface: #ffffff;
+    -color-background: #f2f4f7;
+    -color-subtle: #eef2f7;
+    -color-subtle-hover: #dde5ef;
+    -color-success: #2e7d32;
+    -color-danger: #c62828;
+    -color-warning: #8a6d1f;
+    -color-energy: #e5734a;
+    -color-concentration: #5b7fd6;
+    -color-resistance: #8e5bd6;
+
+    -fx-background-color: -color-background;
+    -fx-text-fill: -color-text;
 }
 
+.label {
+    -fx-text-fill: -color-text;
+}
+
+/* Layout ------------------------------------------------------------------------------- */
+
+/* A full-window screen with a header on top: session and exam. */
 .screen {
-    -fx-background-color: -background;
+    -fx-background-color: -color-background;
+    -fx-padding: 16 28 16 28;
+}
+
+/* A centered column: menu, new game, how to play, outcome, graduation. */
+.page {
+    -fx-background-color: -color-background;
+    -fx-padding: 32 40 32 40;
+    -fx-spacing: 16;
+    -fx-alignment: top-center;
+}
+
+.page > .card {
+    -fx-max-width: 560;
+    -fx-pref-width: 560;
+}
+
+.header {
+    -fx-spacing: 16;
+    -fx-alignment: center-left;
+    -fx-padding: 0 0 8 0;
+}
+
+.headline {
+    -fx-alignment: top-center;
+    -fx-spacing: 4;
 }
 
 .card {
-    -fx-background-color: -surface;
+    -fx-background-color: -color-surface;
     -fx-background-radius: 10;
-    -fx-padding: 16;
+    -fx-padding: 14;
+    -fx-spacing: 10;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 8, 0, 0, 2);
 }
+
+.stack {
+    -fx-spacing: 10;
+}
+
+.row {
+    -fx-spacing: 10;
+    -fx-alignment: center-left;
+}
+
+.actions {
+    -fx-spacing: 10;
+    -fx-alignment: center-right;
+}
+
+.tight {
+    -fx-spacing: 4;
+}
+
+.wide {
+    -fx-spacing: 16;
+}
+
+.options {
+    -fx-spacing: 8;
+}
+
+.side {
+    -fx-spacing: 12;
+    -fx-padding: 0 0 0 16;
+}
+
+.gap-top {
+    -fx-padding: 10 0 0 0;
+}
+
+.gap-bottom {
+    -fx-padding: 0 0 10 0;
+}
+
+/* Text --------------------------------------------------------------------------------- */
 
 .title {
     -fx-font-size: 26px;
     -fx-font-weight: bold;
-    -fx-text-fill: -text;
 }
 
 .subtitle {
-    -fx-text-fill: -muted;
+    -fx-text-fill: -color-muted;
+}
+
+.heading {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
 }
 
 .section {
     -fx-font-size: 13px;
     -fx-font-weight: bold;
-    -fx-text-fill: -muted;
+    -fx-text-fill: -color-muted;
 }
 
+.body {
+    -fx-line-spacing: 3;
+}
+
+.muted {
+    -fx-text-fill: -color-muted;
+}
+
+.error {
+    -fx-text-fill: -color-danger;
+}
+
+.success {
+    -fx-text-fill: -color-success;
+    -fx-font-weight: bold;
+}
+
+.grade {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+.chip {
+    -fx-background-color: -color-subtle;
+    -fx-background-radius: 10;
+    -fx-padding: 2 10;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-muted;
+}
+
+/* Buttons ------------------------------------------------------------------------------ */
+
 .button {
+    -fx-background-color: -color-surface;
     -fx-background-radius: 6;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 6;
+    -fx-text-fill: -color-text;
     -fx-padding: 8 16;
     -fx-cursor: hand;
 }
 
+.button:hover {
+    -fx-background-color: -color-subtle;
+}
+
+.button:focused {
+    -fx-border-color: -color-accent;
+}
+
+.button:disabled {
+    -fx-opacity: 0.45;
+}
+
 .button.primary {
-    -fx-background-color: -accent;
+    -fx-background-color: -color-accent;
+    -fx-border-color: -color-accent;
     -fx-text-fill: white;
     -fx-font-weight: bold;
 }
 
 .button.primary:hover {
-    -fx-background-color: -accent-dark;
+    -fx-background-color: -color-accent-dark;
+}
+
+.compact .button {
+    -fx-padding: 6 12;
+    -fx-font-size: 13px;
 }
 
 .button.link {
     -fx-background-color: transparent;
-    -fx-text-fill: -accent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -color-accent;
+    -fx-padding: 8 6;
 }
 
+.button.link:hover {
+    -fx-underline: true;
+}
+
+.button.option {
+    -fx-alignment: center-left;
+    -fx-background-color: -color-subtle;
+    -fx-border-color: transparent;
+}
+
+.button.option:hover {
+    -fx-background-color: -color-subtle-hover;
+}
+
+/* Lists: no stripes, no empty rows drawn ----------------------------------------------- */
+
 .list-view {
+    -fx-background-color: -color-surface;
     -fx-background-radius: 6;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 6;
+    -fx-padding: 1;
 }
 
 .list-cell {
+    -fx-background-color: -color-surface;
+    -fx-text-fill: -color-text;
     -fx-padding: 8 10;
 }
 
-.exam-passed {
-    -fx-text-fill: #2e7d32;
+.list-cell:odd {
+    -fx-background-color: -color-surface;
 }
 
-.exam-locked {
-    -fx-text-fill: #9aa5b1;
+.list-cell:filled:hover {
+    -fx-background-color: -color-subtle;
 }
 
-.error {
-    -fx-text-fill: #c62828;
+.list-cell:filled:selected,
+.list-view:focused > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected {
+    -fx-background-color: -color-accent-soft;
+    -fx-text-fill: -color-text;
 }
 
-.success {
-    -fx-text-fill: #2e7d32;
-    -fx-font-weight: bold;
+.list-cell:empty,
+.list-cell:empty:hover {
+    -fx-background-color: transparent;
 }
+
+.list-view .placeholder .label {
+    -fx-text-fill: -color-muted;
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+    -fx-padding: 12;
+}
+
+.list-cell.exam-passed {
+    -fx-text-fill: -color-success;
+}
+
+.list-cell.exam-locked {
+    -fx-text-fill: -color-disabled;
+}
+
+/* Exam --------------------------------------------------------------------------------- */
 
 .progress-bar.energy > .bar {
-    -fx-background-color: #e5734a;
+    -fx-background-color: -color-energy;
 }
 
 .progress-bar.concentration > .bar {
-    -fx-background-color: #5b7fd6;
+    -fx-background-color: -color-concentration;
 }
 
 .progress-bar.resistance > .bar {
-    -fx-background-color: #8e5bd6;
+    -fx-background-color: -color-resistance;
 }
 
 .timer {
     -fx-font-size: 22px;
     -fx-font-weight: bold;
-    -fx-text-fill: -accent;
+    -fx-text-fill: -color-accent;
 }
 
 .timer-low {
-    -fx-text-fill: #c62828;
+    -fx-text-fill: -color-danger;
 }
 
 .prompt {
@@ -115,49 +318,25 @@
 .code {
     -fx-font-family: "Monospaced";
     -fx-font-size: 12px;
-    -fx-background-color: #f5f7fa;
-    -fx-border-color: #d9dee5;
+    -fx-background-color: -color-subtle;
+    -fx-border-color: -color-border;
     -fx-background-radius: 6;
     -fx-border-radius: 6;
     -fx-padding: 10;
 }
 
-.chip {
-    -fx-background-color: #eef2f7;
-    -fx-background-radius: 10;
-    -fx-padding: 2 10;
-    -fx-font-size: 12px;
-    -fx-font-weight: bold;
-    -fx-text-fill: -muted;
-}
-
 .hint {
-    -fx-text-fill: #8a6d1f;
+    -fx-text-fill: -color-warning;
     -fx-font-style: italic;
 }
 
-.button.option {
-    -fx-alignment: center-left;
-    -fx-background-color: #eef2f7;
-    -fx-text-fill: -text;
-}
-
-.button.option:hover {
-    -fx-background-color: #dde5ef;
-}
-
 .feedback-correct {
-    -fx-text-fill: #2e7d32;
+    -fx-text-fill: -color-success;
     -fx-font-weight: bold;
 }
 
 .feedback-wrong {
-    -fx-text-fill: #c62828;
-    -fx-font-weight: bold;
-}
-
-.grade {
-    -fx-font-size: 22px;
+    -fx-text-fill: -color-danger;
     -fx-font-weight: bold;
 }
 
@@ -166,4 +345,55 @@
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-padding: 0;
+}
+
+/* Tooltips and dialogs ----------------------------------------------------------------- */
+
+.tooltip {
+    -fx-background-color: -color-text;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-background-radius: 6;
+    -fx-padding: 6 10;
+}
+
+.dialog-pane {
+    -fx-background-color: -color-surface;
+    -fx-padding: 0;
+    -fx-pref-width: 460;
+}
+
+.dialog-pane > .header-panel {
+    -fx-background-color: -color-surface;
+    -fx-padding: 18 20 4 20;
+}
+
+.dialog-pane > .header-panel .label {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.dialog-pane.error > .header-panel .label {
+    -fx-text-fill: -color-danger;
+}
+
+.dialog-pane.warning > .header-panel .label {
+    -fx-text-fill: -color-warning;
+}
+
+.dialog-pane > .content {
+    -fx-padding: 8 20 8 20;
+    -fx-text-fill: -color-text;
+    -fx-line-spacing: 3;
+}
+
+.dialog-pane > .button-bar > .container {
+    -fx-padding: 8 20 18 20;
+}
+
+.dialog-pane .button:default {
+    -fx-background-color: -color-accent;
+    -fx-border-color: -color-accent;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
 }

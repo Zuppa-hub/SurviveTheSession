@@ -47,3 +47,4 @@ rivista da me, con il supporto di Claude in chat, prima del merge.
 | 2026-11-14 | [Bilanciamento (issue #12)](2026-11-14-03-bilanciamento.md) |
 | 2026-11-14 | [Follow-up della revisione di #39, #40 e #41](2026-11-14-04-follow-up-della-revisione.md) |
 | 2026-11-14 | [Correzioni dai test manuali della v0.1 (issue #43)](2026-11-14-05-correzioni-dai-test-manuali.md) |
+| 2026-11-14 | [Come si gioca e coerenza grafica (issue #45)](2026-11-14-06-come-si-gioca-e-stile.md) |

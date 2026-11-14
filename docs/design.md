@@ -328,7 +328,7 @@ public interface BattleListener {
 
 ### 3.8 Interfaccia grafica
 Schermate (FXML + controller):
-1. **Menu**: nuova partita, carica, esci.
+1. **Menu**: nuova partita, come si gioca, carica, esci.
 2. **Nuova partita**: nome e profilo.
 3. **Sessione**: elenco esami (superati, da sostenere), statistiche, inventario, libretto, pulsante "Sostieni esame".
 4. **Esame**: difficoltà e domanda, snippet di codice accanto alle opzioni (tutto visibile senza scroll a 960 × 640), opzioni o campo di testo, timer, barre di Energia, Concentrazione e resistenza dell'esame, pulsanti oggetti e abilità; l'esito della risposta precedente è scritto come "Domanda precedente: ...", perché la domanda successiva compare subito.
@@ -343,6 +343,8 @@ Struttura (#10, #11):
 - `ui.ViewNavigator` carica gli FXML (senza `fx:controller`) e passa a ogni controller le sue dipendenze nel costruttore; un unico `styles.css`.
 - Classi di supporto senza JavaFX, testate con JUnit: `ExamRow` (stato di ogni esame: superato, disponibile, bloccato) e `SlotNames` (nome del salvataggio ricavato dal nome del giocatore).
 - Un salvataggio automatico fallito mostra un avviso (callback della #9) e la partita prosegue.
+- **Come si gioca** (#45): pagine con Avanti/Indietro, mostrate la prima volta prima della scelta del profilo (nessuna partita salvata) e raggiungibili da menu, nuova partita e sessione. Il testo è in `ui.HowToPlay`; i numeri delle regole vengono da `ui.GameGuide`, che `GameService.guide()` costruisce con le stesse istanze delle partite (DRY: testo e bilanciamento non possono divergere). I valori non esposti dalle regole si ricavano interrogandole (`GradeCalculator`, `RewardPolicy`, con `Grade.all()`).
+- **Stile** (#45): un solo `styles.css` con i colori come variabili e le spaziature in classi di layout; varianti di pulsante `primary`/`secondary`/`link`/`option` con lo stesso significato in ogni schermata; dialoghi con il foglio dell'app; stati vuoti spiegati (`EmptyStates`); descrizione degli oggetti nel tooltip.
 - I dialoghi mostrano solo testi italiani (`ErrorMessages`); le eccezioni restano in inglese nel codice e il loro messaggio va nel log (`System.Logger`), non al giocatore. Le etichette italiane degli enum (tipo d'esame, difficoltà) stanno in `Labels`.
 - Esame (#11): `ExamController` è il `BattleListener` passato a `Game.startExam`; lo scontro in corso lo legge da `Game.currentBattle()`. Le notifiche del timer arrivano sul thread di JavaFX (`Platform::runLater`). Oggetti e abilità sono pulsanti costruiti da `BattleAction` (abilitati con `ExamBattle.canUse`); il tempo scaduto si distingue da una risposta sbagliata in `AnswerFeedback`, perché lo scontro li tratta allo stesso modo. Lo snippet delle domande sull'output del codice viene da `Question.codeSnippet()`.
 - Esito e laurea (#11): `ViewNavigator.openGame` registra sulla partita, una volta sola, il `GameListener` che mostra l'esito (`ExamReport` → `OutcomeSummary`); dall'esito si torna alla sessione o, se la sessione è completa, si va alla laurea (`GraduationSummary`).

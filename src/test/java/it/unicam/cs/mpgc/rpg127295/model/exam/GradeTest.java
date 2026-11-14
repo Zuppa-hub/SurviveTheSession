@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -69,5 +70,15 @@ class GradeTest {
         assertTrue(Grade.of(18).compareTo(Grade.of(30)) < 0);
         assertTrue(Grade.of(31).compareTo(Grade.of(30)) > 0);
         assertEquals(0, Grade.of(25).compareTo(Grade.of(25)));
+    }
+
+    @Test
+    void allGradesGoFromTheLowestToHonorsInOrder() {
+        List<Grade> all = Grade.all();
+
+        assertEquals(14, all.size());
+        assertEquals(Grade.of(18), all.getFirst());
+        assertEquals(Grade.of(31), all.getLast());
+        assertEquals(all.stream().sorted().toList(), all);
     }
 }
