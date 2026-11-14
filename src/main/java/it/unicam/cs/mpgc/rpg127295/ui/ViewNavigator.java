@@ -19,12 +19,14 @@ import javafx.stage.Stage;
 public final class ViewNavigator {
 
     private static final String VIEWS = "/ui/";
-    private static final String STYLESHEET = "/ui/styles.css";
+    /** The only stylesheet, for the screens and for the dialogs. */
+    static final String STYLESHEET = "/ui/styles.css";
     private static final double WIDTH = 960;
     private static final double HEIGHT = 640;
 
     private final Stage stage;
     private final GameService games;
+    private boolean howToPlayShown;
 
     public ViewNavigator(Stage stage, GameService games) {
         this.stage = Objects.requireNonNull(stage, "Stage must not be null");
@@ -35,8 +37,29 @@ public final class ViewNavigator {
         show("menu", new MenuController(this, games));
     }
 
+    /**
+     * Shows the new game screen. A new player (no saved game) sees "Come si gioca" first,
+     * once per run of the application.
+     */
     public void showNewGame() {
+        if (games.savedGames().isEmpty() && !howToPlayShown) {
+            showHowToPlay(this::showNewGameForm, "Scegli il profilo");
+        } else {
+            showNewGameForm();
+        }
+    }
+
+    private void showNewGameForm() {
         show("new-game", new NewGameController(this, games));
+    }
+
+    /**
+     * @param onClose    what to show when the player closes the pages
+     * @param closeLabel the text of the button on the last page
+     */
+    public void showHowToPlay(Runnable onClose, String closeLabel) {
+        howToPlayShown = true;
+        show("how-to-play", new HowToPlayController(games.guide(), onClose, closeLabel));
     }
 
     /**
@@ -49,12 +72,12 @@ public final class ViewNavigator {
     }
 
     public void showSession(Game game) {
-        show("session", new SessionController(this, game));
+        show("session", new SessionController(this, game, games.guide()));
     }
 
     /** Loads the exam screen and then starts the exam, whose first question arrives at once. */
     public void showExam(Game game, Exam exam) {
-        ExamController controller = new ExamController(game, exam);
+        ExamController controller = new ExamController(game, exam, games.guide());
         show("exam", controller);
         controller.start();
     }

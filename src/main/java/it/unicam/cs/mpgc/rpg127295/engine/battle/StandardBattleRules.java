@@ -8,11 +8,11 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * The rules of the game, with provisional values (final balancing in issue #12):
+ * The rules of the game, with the values balanced in issue #12 (checked by {@code BalanceTest}):
  * <ul>
- *   <li>resistance = credits x 2, 3 or 4 for an easy, medium or hard exam;</li>
- *   <li>damage of a correct answer = 4 + knowledge / 2;</li>
- *   <li>energy lost for a mistake = 1, 2 or 3 for an easy, medium or hard exam;</li>
+ *   <li>resistance = credits x 4, 4 or 5 for an easy, medium or hard exam;</li>
+ *   <li>damage of a correct answer = 7 + knowledge / 2;</li>
+ *   <li>energy lost for a mistake = 1, 2 or 2 for an easy, medium or hard exam;</li>
  *   <li>a correct answer recovers 1 concentration point;</li>
  *   <li>effects: 15 extra seconds, 4 energy points restored, boosted damage doubled.</li>
  * </ul>
@@ -20,7 +20,7 @@ import java.util.Objects;
  */
 public final class StandardBattleRules implements BattleRules {
 
-    private static final int BASE_DAMAGE = 4;
+    private static final int BASE_DAMAGE = 7;
     private static final int KNOWLEDGE_DIVISOR = 2;
     private static final int CONCENTRATION_PER_CORRECT_ANSWER = 1;
     private static final int EXTRA_SECONDS = 15;
@@ -28,14 +28,14 @@ public final class StandardBattleRules implements BattleRules {
     private static final int BOOSTED_DAMAGE_MULTIPLIER = 2;
 
     private final Map<Difficulty, Integer> resistancePerCredit = new EnumMap<>(Map.of(
-            Difficulty.EASY, 2,
-            Difficulty.MEDIUM, 3,
-            Difficulty.HARD, 4));
+            Difficulty.EASY, 4,
+            Difficulty.MEDIUM, 4,
+            Difficulty.HARD, 5));
 
     private final Map<Difficulty, Integer> energyLoss = new EnumMap<>(Map.of(
             Difficulty.EASY, 1,
             Difficulty.MEDIUM, 2,
-            Difficulty.HARD, 3));
+            Difficulty.HARD, 2));
 
     @Override
     public int resistanceOf(Exam exam) {

@@ -21,6 +21,7 @@ import it.unicam.cs.mpgc.rpg127295.model.item.Item;
 import it.unicam.cs.mpgc.rpg127295.model.student.Student;
 import it.unicam.cs.mpgc.rpg127295.persistence.content.ContentException;
 import it.unicam.cs.mpgc.rpg127295.persistence.content.XmlDocumentLoader;
+import it.unicam.cs.mpgc.rpg127295.ui.GameGuide;
 import it.unicam.cs.mpgc.rpg127295.ui.GameService;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +68,45 @@ class GameAssemblyTest {
                 () -> assertEquals("Andrea", game.student().name()),
                 () -> assertEquals("nerd", game.student().profile().id()),
                 () -> assertEquals(content.exams().all(), game.session().exams()));
+    }
+
+    @Test
+    void aNewStudentStartsWithACoffeeSomeNotesAndAnEnergyDrink() {
+        Game game = assembly().newGame("Andrea", "nerd", "andrea");
+
+        assertEquals(Map.of(item("coffee"), 1, item("notes"), 1, item("energy-drink"), 1),
+                game.student().inventory().items());
+    }
+
+    @Test
+    void aLoadedGameKeepsTheSavedInventoryWithoutANewKit() {
+        Student saved = new Student("Andrea", content.profiles().findById("nerd").orElseThrow());
+        saves.save("andrea", new SaveMapper(content.profiles(), content.items(), content.exams()).toData(saved));
+
+        Game loaded = assembly().loadGame("andrea").orElseThrow();
+
+        assertEquals(Map.of(), loaded.student().inventory().items());
+    }
+
+    private static Item item(String id) {
+        return content.items().findById(id).orElseThrow();
+    }
+
+    @Test
+    void theGuideDescribesTheRulesOfTheGames() {
+        GameAssembly assembly = assembly();
+        GameGuide guide = assembly.guide();
+        Game game = assembly.newGame("Andrea", "nerd", "andrea");
+
+        assertAll(
+                () -> assertEquals(game.session(), guide.session()),
+                () -> assertEquals(content.profiles().all(), guide.profiles()),
+                () -> assertEquals(game.student().inventory().items(), guide.starterKit().items()),
+                () -> assertEquals(content.items().all(), guide.items()),
+                () -> assertEquals(List.of("Ripasso lampo", "Colpo di genio"),
+                        guide.abilities().stream().map(Ability::name).toList()),
+                () -> assertEquals(60, guide.passingPercentage()),
+                () -> assertEquals(Optional.of(Grade.of(24)), guide.lowestGradeWithAnItem()));
     }
 
     @Test

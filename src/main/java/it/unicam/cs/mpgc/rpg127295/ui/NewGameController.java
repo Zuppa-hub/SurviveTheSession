@@ -51,6 +51,11 @@ public final class NewGameController {
     }
 
     @FXML
+    private void onHowToPlay() {
+        navigator.showHowToPlay(navigator::showNewGame, "Torna alla scelta del profilo");
+    }
+
+    @FXML
     private void onBack() {
         navigator.showMenu();
     }

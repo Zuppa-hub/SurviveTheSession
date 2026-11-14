@@ -2,7 +2,7 @@
 <items>
     <item id="coffee">
         <name>Caffè</name>
-        <description>Aggiunge 15 secondi alla domanda corrente. Solo negli esami a tempo.</description>
+        <description>Aggiunge tempo alla domanda corrente. Solo negli esami a tempo.</description>
     </item>
     <item id="notes">
         <name>Appunti</name>

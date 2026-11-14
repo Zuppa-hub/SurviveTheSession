@@ -23,7 +23,7 @@ vuoto, numero positivo o non negativo) stanno in un solo punto, `model.Precondit
 | `engine.grading` | `Performance`, `GradeCalculator`, `PerformanceGradeCalculator` |
 | `engine.battle` | `ExamBattle`, `ExamBattleFactory`, `BattleServices`, `ExamStrategy`, `BattleEffect`, `BattleControls`, `BattleEffects`, `Ability`, `BattleState`, `BattleOutcome`, `BattleResult`, `BattleListener`, `QuestionPool`, `PresentedQuestion`, `AnswerResult`, `BattleRules`, `StandardBattleRules` |
 | `engine.strategy` | `WrittenExamStrategy`, `OralExamStrategy`, `ProjectExamStrategy` |
-| `engine.game` | `Game`, `GameListener`, `ExamReport`, `ProgressionRules`, `StandardProgressionRules`, `RewardPolicy`, `StandardRewardPolicy`, `Reward`, `Graduation` |
+| `engine.game` | `Game`, `GameListener`, `ExamReport`, `ProgressionRules`, `StandardProgressionRules`, `RewardPolicy`, `StandardRewardPolicy`, `Reward`, `StarterKit`, `Graduation` |
 | `app` | `GameAssembly`, `AutoSave`, `GameEffects`, `GameContent`, `Main` |
 | `engine.effect` | `ExtraTimeEffect`, `FiftyFiftyEffect`, `HintEffect`, `EnergyRestoreEffect`, `DoubleDamageEffect` |
 | `engine.timer` | `QuestionTimer`, `TimerListener`, `ScheduledQuestionTimer` |
@@ -189,8 +189,9 @@ proprie regole. Non ha `equals`: non ha un'identità stabile (il nome non è uni
 `Item` è solo un dato: id, nome e descrizione, con identità sull'id. Cosa fa un oggetto
 durante un esame (ad esempio il Caffè che aggiunge 15 secondi) dipende dallo stato dello
 scontro, che è nell'engine. Se `Item` contenesse quel comportamento, il model dipenderebbe
-dall'engine. Per questo il comportamento starà in un'interfaccia dell'engine,
-`ItemEffect`, e l'associazione `Item → ItemEffect` sarà una mappa costruita all'avvio.
+dall'engine. Per questo il comportamento sta in un'interfaccia dell'engine,
+`BattleEffect`, e l'associazione `Item → BattleEffect` è una mappa costruita all'avvio, in `app`
+(`GameEffects`).
 
 ### `Inventory`
 Associa a ogni oggetto la sua quantità (`Map<Item, Integer>`). Invariante: le quantità
@@ -205,7 +206,7 @@ e calcola CFU totali e media ponderata sui CFU (con gli Stream; la lode vale 30)
 `LinkedHashMap<Exam, Grade>`, che è una `HashMap` ma conserva l'ordine di registrazione.
 
 Il libretto **non** sa se lo studente può laurearsi né calcola il voto di laurea: sono
-regole di gioco e staranno in `Game`. È la violazione di SRP vista a lezione con il metodo
+regole di gioco e stanno in `Graduation` (engine), che `Game` usa. È la violazione di SRP vista a lezione con il metodo
 `puoLaurearsi()` nella classe `Libretto`: una classe che registra i voti cambierebbe anche
 quando cambiano le regole di laurea.
 
@@ -363,15 +364,15 @@ ci sono opzioni da mescolare si usa il `QuestionVisitor`.
 
 ### `BattleRules`: i numeri in un solo punto
 Resistenza dell'esame, danno di una risposta corretta e perdita di energia sono regole di
-bilanciamento, raccolte nell'interfaccia `BattleRules`. `StandardBattleRules` ha valori
-provvisori con costanti con nome, e una `EnumMap` per i valori che dipendono dalla difficoltà
-(al posto di uno `switch`). Il bilanciamento definitivo è nella #12.
+bilanciamento, raccolte nell'interfaccia `BattleRules`. `StandardBattleRules` ha costanti con
+nome, e una `EnumMap` per i valori che dipendono dalla difficoltà (al posto di uno `switch`).
+I valori sono quelli del bilanciamento della #12 (vedi sotto).
 
-| Regola | Formula provvisoria |
+| Regola | Formula |
 |---|---|
-| resistenza | CFU × 2, 3 o 4 (facile, media, difficile): Programmazione, 12 CFU media, vale 36 |
-| danno | 4 + Conoscenza / 2: Secchione 8, Nottambulo 6, Pendolare 5 |
-| perdita di energia | 1, 2 o 3 secondo la difficoltà, × il moltiplicatore della strategia |
+| resistenza | CFU × 4, 4 o 5 (facile, media, difficile): Programmazione, 12 CFU media, vale 48 |
+| danno | 7 + Conoscenza / 2: Secchione 11, Nottambulo 9, Pendolare 8 |
+| perdita di energia | 1, 2 o 2 secondo la difficoltà, × il moltiplicatore della strategia |
 | concentrazione | +1 per risposta corretta |
 
 Lo scontro dipende dall'interfaccia (DIP). Nei test si usano regole fisse, scelte perché i
@@ -489,8 +490,12 @@ poi quello della UI, e **avvia lo scontro**: la UI riceve subito la prima domand
   mai iniziato avrebbe lasciato la partita "occupata" per sempre. Facendo tutto in un'unica
   chiamata, quello stato non può più esistere. Se lo scontro finisce appena iniziato (ad
   esempio senza domande), la partita applica subito l'esito e torna libera.
-- **Energia a ogni esame.** L'Energia si ricarica all'inizio di **ogni** esame, non solo dopo
-  una bocciatura. Se si ricaricasse solo dopo una bocciatura, uno studente che supera un esame
+- **Energia a ogni esame.** L'Energia si ricarica alla fine di **ogni** esame (superato,
+  bocciato o ritirato), prima di avvisare i listener: così il salvataggio e la schermata della
+  sessione mostrano l'Energia con cui si affronterà il prossimo esame. Prima si ricaricava solo
+  all'inizio, e la sessione mostrava ad esempio 1/9 per un'Energia che sarebbe tornata piena:
+  il comportamento era giusto, ma sembrava un errore. La ricarica all'inizio resta per le
+  partite salvate con la v0.1. Non si ricarica solo dopo una bocciatura. Se si ricaricasse solo dopo una bocciatura, uno studente che supera un esame
   con poca Energia avrebbe convenienza a farsi bocciare apposta nel successivo per
   ricaricarsi: la regola premierebbe il comportamento sbagliato. La Concentrazione invece
   passa da un esame all'altro: è la risorsa delle abilità.
@@ -508,7 +513,7 @@ poi quello della UI, e **avvia lo scontro**: la UI riceve subito la prima domand
 ### Progressione: il model sa *come*, l'engine *quando*
 `Level.levelUp(costo)` e `Stats.improve(...)` (model) sanno come cambiare livello e
 statistiche in modo valido. `ProgressionRules` (engine) decide quando e di quanto: salire dal
-livello n costa 100 × n esperienza, e ogni livello dà +1 Conoscenza, +2 Energia massima e +1
+livello n costa 50 × n esperienza, e ogni livello dà +1 Conoscenza, +3 Energia massima e +1
 Concentrazione massima. `Game` applica un ciclo:
 
 ```java
@@ -525,8 +530,59 @@ Un ciclo e non un `if`, perché un esame con molta esperienza può far salire di
 `RewardPolicy` è un'interfaccia funzionale: dato un esame superato e il voto, restituisce la
 `Reward` (esperienza e oggetti). `StandardRewardPolicy` dà CFU × (voto − 15) di esperienza (la
 lode vale 30) e da zero a tre oggetti secondo il voto, scelti tra quelli del catalogo con il
-`RandomGenerator` iniettato, così nei test la scelta è deterministica. I valori sono
-provvisori: il bilanciamento è nella #12.
+`RandomGenerator` iniettato, così nei test la scelta è deterministica.
+
+### Kit iniziale
+Con i valori della #12 chi risponde giusto al 70% prende 18-21, e gli oggetti come ricompensa
+arrivano solo dal 24: senza un kit molti giocatori non avrebbero mai visto un oggetto.
+`StarterKit` (engine) è un record con gli oggetti e le quantità, e `giveTo(inventory)` li
+aggiunge. Quali oggetti (1 Caffè, 1 Appunti, 1 Energy drink) lo decide `GameAssembly`, in
+`app`, con gli id del catalogo, come fa `GameEffects` per gli effetti: un id che manca in
+`items.xml` ferma il gioco all'avvio. L'engine non conosce né gli id né il file.
+
+Il kit si dà solo in `newGame`: `loadGame` ricostruisce lo studente dal salvataggio, con il suo
+inventario. Per questo non serve cambiare il formato dei salvataggi, e una partita caricata
+non riceve un secondo kit. `BalanceTest` non usa oggetti, quindi resta valido.
+
+### Bilanciamento verificato da un test (#12)
+I numeri di `StandardBattleRules`, `StandardProgressionRules` e dei profili non sono scelti a
+occhio: li controlla `BalanceTest`, che simula un giocatore con una percentuale fissa di
+risposte giuste.
+
+- **Cosa è vero e cosa è simulato.** Esami, profili, oggetti, regole, ricompense e
+  progressione sono quelli del gioco, costruiti da `GameAssembly`. Delle domande restano id,
+  numero e difficoltà; solo il testo è sostituito da domande con una risposta giusta nota.
+  Timer manuale e seme fisso: il risultato è sempre lo stesso.
+- **Le risposte.** Il giocatore al p% dà, dopo n risposte, n × p / 100 risposte giuste. Al
+  70% l'arrotondamento è per difetto, quindi sbaglia per primo; al 40% è per eccesso, quindi
+  indovina per primo. In entrambi i casi si prova l'ordine meno favorevole al risultato
+  atteso.
+- **Le richieste.** Al 70% ogni profilo supera ogni esame, anche come primo della sessione,
+  e arriva alla laurea. Al 40% ogni profilo viene bocciato in ogni esame, boss compreso,
+  arrivandoci dopo aver superato gli esami precedenti.
+
+**Come sono stati scelti i valori.** Prima di cambiare il codice i valori sono stati cercati
+con una simulazione delle stesse regole, provando migliaia di combinazioni. I vecchi valori
+fallivano per due motivi opposti:
+- un esame troppo lungo faceva perdere tutta l'Energia a chi sbaglia 3 domande su 10: il
+  Secchione con 6 di Energia non superava Programmazione;
+- un esame troppo corto si chiudeva con 2 risposte giuste, e con l'ordine giusto-sbagliato-giusto
+  anche il giocatore al 40% passava Reti con 2 su 3.
+
+I valori scelti fanno durare ogni esame da 3 a 7 risposte corrette. Cambiano il meno possibile
+rispetto ai precedenti, e i profili restano diversi (il Secchione colpisce più forte e si
+stanca prima).
+
+**Il test sa trovare gli errori.** Riportando per prova l'Energia persa negli esami difficili
+a 3, ASD e Metodologie non si superano più al 70%. Con un danno base di 9, o con la
+resistenza degli esami facili a 3 per CFU, Reti si supera al 40%. In tutti e tre i casi il
+test fallisce.
+
+**Il margine.** Al 70% resta un margine: con l'ordine sfavorevole ogni esame si supera già
+al 67%. Al 40% il margine non c'è: indovinando per primo, un esame che si chiude con 3 risposte
+giuste si supera già al 41% (3 su 5). È il limite di esami brevi. Allungarli farebbe finire
+l'Energia a chi è al 70%, e con le regole attuali nessuna combinazione provata soddisfa
+entrambi i lati con margine.
 
 ### Laurea fuori dal libretto (SRP)
 La regola "tutti gli esami della sessione superati" e il voto di laurea stanno in

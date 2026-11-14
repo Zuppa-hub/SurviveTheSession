@@ -18,6 +18,9 @@ public interface GameService {
     /** @return the slots with a saved game, in alphabetical order */
     List<String> savedGames();
 
+    /** @return the rules and content of the games, for the "how to play" pages and the empty states */
+    GameGuide guide();
+
     /**
      * @return a new game, saved in the slot after every exam
      * @throws IllegalArgumentException if the profile is unknown or the slot name invalid

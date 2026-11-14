@@ -2,11 +2,8 @@ package it.unicam.cs.mpgc.rpg127295.ui;
 
 import it.unicam.cs.mpgc.rpg127295.engine.game.Game;
 import it.unicam.cs.mpgc.rpg127295.model.exam.Exam;
-import it.unicam.cs.mpgc.rpg127295.model.exam.ExamType;
 import it.unicam.cs.mpgc.rpg127295.model.exam.Grade;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -19,11 +16,6 @@ import java.util.Optional;
  * @param grade  the grade, present if and only if the exam is passed
  */
 public record ExamRow(Exam exam, Status status, Optional<Grade> grade) {
-
-    private static final Map<ExamType, String> TYPE_LABELS = new EnumMap<>(Map.of(
-            ExamType.WRITTEN, "Scritto",
-            ExamType.ORAL, "Orale",
-            ExamType.PROJECT, "Progetto"));
 
     /** Whether an exam can be taken now. */
     public enum Status {
@@ -59,12 +51,7 @@ public record ExamRow(Exam exam, Status status, Optional<Grade> grade) {
     }
 
     public String typeLabel() {
-        return typeLabelOf(exam.type());
-    }
-
-    /** @return the type of exam in Italian, as shown on every screen */
-    public static String typeLabelOf(ExamType type) {
-        return TYPE_LABELS.get(Objects.requireNonNull(type, "Exam type must not be null"));
+        return Labels.of(exam.type());
     }
 
     public String statusLabel() {

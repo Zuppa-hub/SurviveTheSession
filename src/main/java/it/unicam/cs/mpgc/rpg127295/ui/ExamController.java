@@ -35,10 +35,13 @@ public final class ExamController implements BattleListener {
 
     private final Game game;
     private final Exam exam;
+    private final GameGuide guide;
     private boolean answering;
 
     @FXML
     private Label examLabel;
+    @FXML
+    private Label examDetailsLabel;
     @FXML
     private Label timerLabel;
     @FXML
@@ -53,6 +56,8 @@ public final class ExamController implements BattleListener {
     private ProgressBar concentrationBar;
     @FXML
     private Label concentrationLabel;
+    @FXML
+    private Label difficultyLabel;
     @FXML
     private Label promptLabel;
     @FXML
@@ -72,15 +77,18 @@ public final class ExamController implements BattleListener {
     @FXML
     private FlowPane actionsBox;
 
-    ExamController(Game game, Exam exam) {
+    ExamController(Game game, Exam exam, GameGuide guide) {
         this.game = Objects.requireNonNull(game, "Game must not be null");
         this.exam = Objects.requireNonNull(exam, "Exam must not be null");
+        this.guide = Objects.requireNonNull(guide, "Guide must not be null");
     }
 
     @FXML
     private void initialize() {
-        examLabel.setText(exam.subject().name() + " · " + ExamRow.typeLabelOf(exam.type()) + " · "
-                + exam.credits() + " CFU");
+        examLabel.setText(exam.subject().name());
+        examDetailsLabel.setText(Labels.of(exam.type()) + " · " + exam.credits() + " CFU");
+        boostLabel.setText("Risposta potenziata: la prossima risposta giusta toglie ×"
+                + guide.battleRules().boostedDamageMultiplier() + " di resistenza");
     }
 
     /** Starts the exam: called once the view is loaded, because the first question arrives at once. */
@@ -161,6 +169,7 @@ public final class ExamController implements BattleListener {
     }
 
     private void showQuestion(PresentedQuestion presented) {
+        difficultyLabel.setText(Labels.of(presented.question().difficulty()));
         promptLabel.setText(presented.question().prompt());
         codeLabel.setText(presented.question().codeSnippet().orElse(""));
         show(codeLabel, presented.question().codeSnippet().isPresent());
@@ -179,6 +188,7 @@ public final class ExamController implements BattleListener {
         Button button = new Button(option);
         button.getStyleClass().add("option");
         button.setMaxWidth(Double.MAX_VALUE);
+        button.setWrapText(true);
         button.setOnAction(event -> answer(option));
         return button;
     }
@@ -191,6 +201,7 @@ public final class ExamController implements BattleListener {
 
     private Button actionButton(BattleAction action) {
         Button button = new Button(action.label());
+        button.getStyleClass().add("secondary");
         button.setTooltip(new Tooltip(action.description()));
         button.setDisable(!action.enabled());
         button.setOnAction(event -> action.use().run());

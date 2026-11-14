@@ -29,9 +29,9 @@ Il profilo determina le statistiche iniziali. Tre profili, definiti in un file d
 
 ### 2.2 Statistiche
 - **Conoscenza**: aumenta i "punti" tolti all'esame con una risposta corretta e la probabilità di ricevere un indizio gratuito.
-- **Energia** (vita): diminuisce a ogni risposta sbagliata o tempo scaduto. A zero lo studente viene bocciato in quell'esame. Si ricarica del tutto all'inizio di ogni esame: ricaricarla solo dopo una bocciatura incentiverebbe a farsi bocciare per ricaricarsi.
+- **Energia** (vita): diminuisce a ogni risposta sbagliata o tempo scaduto. A zero lo studente viene bocciato in quell'esame. Si ricarica del tutto alla fine di ogni esame (superato, bocciato o ritirato), prima del salvataggio, così la sessione mostra l'Energia con cui si affronterà il prossimo esame; ricaricarla solo dopo una bocciatura incentiverebbe a farsi bocciare per ricaricarsi. Si ricarica anche all'inizio dell'esame, per le partite salvate dalla v0.1 con l'Energia ancora bassa.
 - **Concentrazione** (risorsa): si spende per le abilità; si recupera di 1 a ogni risposta corretta.
-- **Livello ed esperienza**: superare un esame dà esperienza (CFU × (voto − 15), la lode vale 30); salire di livello costa 100 × livello attuale e aumenta Conoscenza (+1), Energia massima (+2) e Concentrazione massima (+1). Un esame può far salire di più livelli. È la progressione RPG. Valori provvisori, bilanciamento nella #12.
+- **Livello ed esperienza**: superare un esame dà esperienza (CFU × (voto − 15), la lode vale 30); salire di livello costa 50 × livello attuale e aumenta Conoscenza (+1), Energia massima (+3) e Concentrazione massima (+1). Un esame può far salire di più livelli. È la progressione RPG. Valori bilanciati nella #12 (§2.8).
 
 ### 2.3 Lo scontro (esame)
 - L'esame ha una **resistenza** (punti esame). Ogni risposta corretta la riduce di un danno che cresce con la Conoscenza. La resistenza non è un dato di `Exam`: è una regola di bilanciamento e la calcola l'engine da CFU e difficoltà.
@@ -40,8 +40,8 @@ Il profilo determina le statistiche iniziali. Tre profili, definiti in un file d
 - La prova termina quando la resistenza arriva a zero **oppure** quando le domande finiscono. In entrambi i casi decide il **voto** (18-30, 31 = 30 e lode), calcolato dalla prestazione (percentuale di risposte corrette, eventuali penalità): con un voto l'esame è superato, senza voto è una bocciatura.
 - Energia a zero: bocciatura, senza calcolare il voto.
 - Azioni del turno: **Rispondi**, **Usa oggetto**, **Usa abilità**, **Ritirati** (l'esame resta da sostenere, nessun voto).
-- Bocciatura o ritiro: l'esame resta nella sessione e si può ritentare; l'Energia si ricarica all'inizio del nuovo tentativo, come di ogni esame.
-- Superamento: voto nel libretto, esperienza e oggetti come ricompensa (18-23 nessuno, 24-27 uno, 28-30 due, lode tre, scelti a caso tra quelli del catalogo; provvisorio).
+- Bocciatura o ritiro: l'esame resta nella sessione e si può ritentare; l'Energia si è già ricaricata alla fine dell'esame, come dopo ogni esame.
+- Superamento: voto nel libretto, esperienza e oggetti come ricompensa (18-23 nessuno, 24-27 uno, 28-30 due, lode tre, scelti a caso tra quelli del catalogo).
 - L'ultimo esame della sessione è il **boss finale**: si può sostenere solo quando tutti gli altri sono superati.
 - Laurea: quando tutti gli esami della sessione sono superati. Voto di laurea = media ponderata × 110 / 30, arrotondato (media 30 → 110, media 18 → 66); punti bonus e lode di laurea dipendono dai regolamenti dei corsi e sono esclusi.
 
@@ -75,7 +75,7 @@ Il profilo determina le statistiche iniziali. Tre profili, definiti in un file d
 
 Un indizio conta come penalità nel voto una sola volta per domanda, da qualunque fonte arrivi. Oggetti e abilità si usano solo mentre una domanda attende risposta; un oggetto o un'abilità non applicabile non viene consumato.
 
-Oggetti ottenuti come ricompensa a fine esame (in base al voto).
+Oggetti ottenuti come ricompensa a fine esame (in base al voto). **Kit iniziale**: ogni nuovo studente parte con 1 Caffè, 1 Appunti e 1 Energy drink, perché con i valori della #12 chi risponde giusto al 70% prende 18-21 e non riceverebbe mai oggetti. Il kit è un `StarterKit` (engine, solo `Item` e quantità); quali oggetti contiene lo decide `GameAssembly` in `app`, come gli effetti, e lo dà solo a una partita nuova: una partita caricata tiene l'inventario salvato, quindi i salvataggi esistenti non cambiano.
 
 ### 2.7 Materie e contenuti
 Cinque materie reali del corso di Informatica, ognuna con un file XML di domande (15-20 domande ciascuna, scritte originali e **verificate a mano da Andrea**):
@@ -86,6 +86,19 @@ Cinque materie reali del corso di Informatica, ognuna con un file XML di domande
 5. Metodologie di Programmazione (progetto, boss finale, ultimo esame della sessione: disponibile solo dopo aver superato gli altri): domande su SOLID, Clean Code, Git, collezioni, equals/hashCode, Stream API, modelli di esecuzione.
 
 ---
+
+### 2.8 Bilanciamento (#12)
+Obiettivo: chi risponde bene al 70% delle domande supera ogni esame con qualunque profilo, anche come primo esame della sessione, e arriva alla laurea; chi risponde bene al 40% viene bocciato in ogni esame, boss compreso. Lo verifica un test deterministico (`BalanceTest`) con contenuti, regole, ricompense e progressione veri, timer manuale e seme fisso. Il giocatore simulato non usa oggetti né abilità. Al 70% sbaglia per primo (l'ordine più sfavorevole), al 40% indovina per primo (il più favorevole).
+
+| Regola | Valore |
+|---|---|
+| resistenza dell'esame | CFU × 4, 4 o 5 (facile, media, difficile) |
+| danno di una risposta corretta | 7 + Conoscenza / 2 |
+| Energia persa per un errore | 1, 2 o 2 (facile, media, difficile), × il moltiplicatore della strategia (progetto ×2) |
+| salita di livello | 50 × livello attuale; +1 Conoscenza, +3 Energia massima, +1 Concentrazione massima |
+| profili (Conoscenza / Energia / Concentrazione) | Secchione 8 / 7 / 4, Pendolare 3 / 12 / 4, Nottambulo 5 / 9 / 6 |
+
+Ogni passo di difficoltà cambia qualcosa: da facile a media cresce l'Energia persa, da media a difficile la resistenza. Con questi valori un esame richiede da 3 a 7 risposte corrette: abbastanza per distinguere il 70% dal 40%, ma non tante da far finire l'Energia a chi sbaglia 3 domande su 10. Il voto a 70% è tra 18 e 21: il 30 richiede risposte quasi tutte giuste.
 
 ## 3. Architettura
 
@@ -192,7 +205,7 @@ public interface ExamStrategy {
 // QuestionPool: domande della materia per uno scontro; HashSet delle domande già poste,
 // drawAny() e drawClosestTo(Difficulty) con il RandomGenerator iniettato.
 
-/** Regole numeriche dello scontro, in un solo punto (valori provvisori, bilanciamento in #12). */
+/** Regole numeriche dello scontro, in un solo punto (valori bilanciati nella #12, §2.8). */
 public interface BattleRules {
     int resistanceOf(Exam exam);            // CFU x fattore della difficoltà
     int damageOf(Stats stats);              // danno base + bonus della Conoscenza
@@ -276,7 +289,7 @@ public interface BattleListener {
 | Package | struttura per responsabilità (3.2) |
 | List | domande della sessione, ordine degli esami |
 | HashSet + equals/hashCode | esami superati; domande già poste nello scontro (`QuestionPool`, per non ripeterle); identità per `id` |
-| HashMap | libretto `Map<Exam, Grade>`; inventario `Map<Item, Integer>` (quantità); effetti `Map<Item, BattleEffect>` costruita in `app` |
+| HashMap | libretto `Map<Exam, Grade>` (una `LinkedHashMap`, che conserva l'ordine di registrazione); inventario `Map<Item, Integer>` (quantità); effetti `Map<Item, BattleEffect>` costruita in `app` |
 | Stream API | media ponderata, CFU totali, filtri domande per difficoltà, statistiche; catene lunghe spezzate in metodi con nome |
 | Modelli di esecuzione | GUI event-driven; timer della domanda su thread separato (ScheduledExecutorService) con passaggio al thread JavaFX via `Platform.runLater`; stato condiviso protetto |
 | Gradle | build, run, test, dipendenze, plugin JavaFX |
@@ -315,10 +328,10 @@ public interface BattleListener {
 
 ### 3.8 Interfaccia grafica
 Schermate (FXML + controller):
-1. **Menu**: nuova partita, carica, esci.
+1. **Menu**: nuova partita, come si gioca, carica, esci.
 2. **Nuova partita**: nome e profilo.
 3. **Sessione**: elenco esami (superati, da sostenere), statistiche, inventario, libretto, pulsante "Sostieni esame".
-4. **Esame**: domanda, opzioni o campo di testo, timer, barre di Energia, Concentrazione e resistenza dell'esame, pulsanti oggetti e abilità.
+4. **Esame**: difficoltà e domanda, snippet di codice accanto alle opzioni (tutto visibile senza scroll a 960 × 640), opzioni o campo di testo, timer, barre di Energia, Concentrazione e resistenza dell'esame, pulsanti oggetti e abilità; l'esito della risposta precedente è scritto come "Domanda precedente: ...", perché la domanda successiva compare subito.
 5. **Esito**: voto o bocciatura, ricompense, livello.
 6. **Laurea**: riepilogo finale con media ponderata e CFU.
 
@@ -330,6 +343,9 @@ Struttura (#10, #11):
 - `ui.ViewNavigator` carica gli FXML (senza `fx:controller`) e passa a ogni controller le sue dipendenze nel costruttore; un unico `styles.css`.
 - Classi di supporto senza JavaFX, testate con JUnit: `ExamRow` (stato di ogni esame: superato, disponibile, bloccato) e `SlotNames` (nome del salvataggio ricavato dal nome del giocatore).
 - Un salvataggio automatico fallito mostra un avviso (callback della #9) e la partita prosegue.
+- **Come si gioca** (#45): pagine con Avanti/Indietro, mostrate la prima volta prima della scelta del profilo (nessuna partita salvata) e raggiungibili da menu, nuova partita e sessione. Il testo è in `ui.HowToPlay`; i numeri delle regole vengono da `ui.GameGuide`, che `GameService.guide()` costruisce con le stesse istanze delle partite (DRY: testo e bilanciamento non possono divergere). I valori non esposti dalle regole si ricavano interrogandole (`GradeCalculator`, `RewardPolicy`, con `Grade.all()`).
+- **Stile** (#45): un solo `styles.css` con i colori come variabili e le spaziature in classi di layout; varianti di pulsante `primary`/`secondary`/`link`/`option` con lo stesso significato in ogni schermata; dialoghi con il foglio dell'app; stati vuoti spiegati (`EmptyStates`); descrizione degli oggetti nel tooltip.
+- I dialoghi mostrano solo testi italiani (`ErrorMessages`); le eccezioni restano in inglese nel codice e il loro messaggio va nel log (`System.Logger`), non al giocatore. Le etichette italiane degli enum (tipo d'esame, difficoltà) stanno in `Labels`.
 - Esame (#11): `ExamController` è il `BattleListener` passato a `Game.startExam`; lo scontro in corso lo legge da `Game.currentBattle()`. Le notifiche del timer arrivano sul thread di JavaFX (`Platform::runLater`). Oggetti e abilità sono pulsanti costruiti da `BattleAction` (abilitati con `ExamBattle.canUse`); il tempo scaduto si distingue da una risposta sbagliata in `AnswerFeedback`, perché lo scontro li tratta allo stesso modo. Lo snippet delle domande sull'output del codice viene da `Question.codeSnippet()`.
 - Esito e laurea (#11): `ViewNavigator.openGame` registra sulla partita, una volta sola, il `GameListener` che mostra l'esito (`ExamReport` → `OutcomeSummary`); dall'esito si torna alla sessione o, se la sessione è completa, si va alla laurea (`GraduationSummary`).
 

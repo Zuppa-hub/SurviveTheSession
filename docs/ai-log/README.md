@@ -42,3 +42,10 @@ rivista da me, con il supporto di Claude in chat, prima del merge.
 | 2026-11-13 | [Annotation dei parser delle domande (issue #29)](2026-11-13-02-annotation-dei-parser.md) |
 | 2026-11-13 | [GUI: menu, nuova partita e sessione (issue #10)](2026-11-13-03-gui-menu-e-sessione.md) |
 | 2026-11-13 | [GUI: esame, esito e laurea (issue #11)](2026-11-13-04-gui-esame-esito-laurea.md) |
+| 2026-11-14 | [Pagine della Wiki](2026-11-14-01-pagine-della-wiki.md) |
+| 2026-11-14 | [Screenshot della GUI e chiusura della v0.1](2026-11-14-02-screenshot-della-gui.md) |
+| 2026-11-14 | [Bilanciamento (issue #12)](2026-11-14-03-bilanciamento.md) |
+| 2026-11-14 | [Follow-up della revisione di #39, #40 e #41](2026-11-14-04-follow-up-della-revisione.md) |
+| 2026-11-14 | [Correzioni dai test manuali della v0.1 (issue #43)](2026-11-14-05-correzioni-dai-test-manuali.md) |
+| 2026-11-14 | [Come si gioca e coerenza grafica (issue #45)](2026-11-14-06-come-si-gioca-e-stile.md) |
+| 2026-11-14 | [Screenshot della v0.2 e release](2026-11-14-07-screenshot-della-v0.2.md) |

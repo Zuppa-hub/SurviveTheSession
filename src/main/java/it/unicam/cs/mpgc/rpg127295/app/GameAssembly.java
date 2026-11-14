@@ -1,14 +1,20 @@
 package it.unicam.cs.mpgc.rpg127295.app;
 
+import it.unicam.cs.mpgc.rpg127295.engine.battle.BattleEffects;
+import it.unicam.cs.mpgc.rpg127295.engine.battle.BattleRules;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.BattleServices;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamBattleFactory;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamStrategy;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.StandardBattleRules;
 import it.unicam.cs.mpgc.rpg127295.engine.game.Game;
+import it.unicam.cs.mpgc.rpg127295.engine.game.ProgressionRules;
 import it.unicam.cs.mpgc.rpg127295.engine.game.RewardPolicy;
 import it.unicam.cs.mpgc.rpg127295.engine.game.StandardProgressionRules;
 import it.unicam.cs.mpgc.rpg127295.engine.game.StandardRewardPolicy;
+import it.unicam.cs.mpgc.rpg127295.engine.game.StarterKit;
+import it.unicam.cs.mpgc.rpg127295.engine.grading.GradeCalculator;
 import it.unicam.cs.mpgc.rpg127295.engine.grading.PerformanceGradeCalculator;
+import it.unicam.cs.mpgc.rpg127295.engine.repository.ItemCatalog;
 import it.unicam.cs.mpgc.rpg127295.engine.repository.SaveGameException;
 import it.unicam.cs.mpgc.rpg127295.engine.repository.SaveGameRepository;
 import it.unicam.cs.mpgc.rpg127295.engine.repository.SaveMapper;
@@ -18,8 +24,11 @@ import it.unicam.cs.mpgc.rpg127295.engine.strategy.WrittenExamStrategy;
 import it.unicam.cs.mpgc.rpg127295.engine.timer.ScheduledQuestionTimer;
 import it.unicam.cs.mpgc.rpg127295.model.exam.ExamSession;
 import it.unicam.cs.mpgc.rpg127295.model.exam.ExamType;
+import it.unicam.cs.mpgc.rpg127295.model.item.Item;
 import it.unicam.cs.mpgc.rpg127295.model.student.Student;
 import it.unicam.cs.mpgc.rpg127295.model.student.StudentProfile;
+import it.unicam.cs.mpgc.rpg127295.persistence.content.ContentException;
+import it.unicam.cs.mpgc.rpg127295.ui.GameGuide;
 import it.unicam.cs.mpgc.rpg127295.ui.GameService;
 import java.util.EnumMap;
 import java.util.List;
@@ -30,6 +39,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.random.RandomGenerator;
 
 /**
@@ -39,10 +49,19 @@ import java.util.random.RandomGenerator;
  */
 public final class GameAssembly implements GameService {
 
+    /** One of each item that can be used from the first exam: the summary is a reward only. */
+    private static final Map<String, Integer> STARTER_KIT_BY_ITEM_ID = Map.of(
+            "coffee", 1,
+            "notes", 1,
+            "energy-drink", 1);
+
     private final GameContent content;
     private final ExamBattleFactory battles;
     private final ExamSession session;
+    private final ProgressionRules progression = new StandardProgressionRules();
     private final RewardPolicy rewards;
+    private final StarterKit starterKit;
+    private final GameGuide guide;
     private final SaveGameRepository saves;
     private final SaveMapper mapper;
     private final Consumer<SaveGameException> saveFailures;
@@ -53,7 +72,7 @@ public final class GameAssembly implements GameService {
      * @param random       shuffles options and chooses questions and rewards
      * @param saves        where games are saved after every exam
      * @param saveFailures told of every automatic save that failed; the game goes on
-     * @throws it.unicam.cs.mpgc.rpg127295.persistence.content.ContentException if an item has no effect
+     * @throws ContentException if an item has no effect, or an item of the starter kit is missing
      */
     public GameAssembly(GameContent content, ScheduledExecutorService scheduler, Executor uiExecutor,
                         RandomGenerator random, SaveGameRepository saves,
@@ -62,11 +81,18 @@ public final class GameAssembly implements GameService {
         Objects.requireNonNull(scheduler, "Scheduler must not be null");
         Objects.requireNonNull(uiExecutor, "UI executor must not be null");
         Objects.requireNonNull(random, "Random generator must not be null");
-        BattleServices services = new BattleServices(new StandardBattleRules(), new PerformanceGradeCalculator(),
-                new ScheduledQuestionTimer(scheduler, uiExecutor), random, GameEffects.of(content.items()));
-        this.battles = new ExamBattleFactory(strategies(), content.questions(), services);
+        BattleRules rules = new StandardBattleRules();
+        GradeCalculator grades = new PerformanceGradeCalculator();
+        BattleEffects effects = GameEffects.of(content.items());
+        Map<ExamType, ExamStrategy> strategies = strategies();
+        BattleServices services = new BattleServices(rules, grades,
+                new ScheduledQuestionTimer(scheduler, uiExecutor), random, effects);
+        this.battles = new ExamBattleFactory(strategies, content.questions(), services);
         this.session = new ExamSession(content.exams().all());
         this.rewards = new StandardRewardPolicy(content.items(), random);
+        this.starterKit = starterKitOf(content.items());
+        this.guide = new GameGuide(session, content.profiles().all(), starterKit, rules, strategies,
+                effects.abilities(), content.items().all(), progression, rewards, grades);
         this.saves = Objects.requireNonNull(saves, "Save repository must not be null");
         this.mapper = new SaveMapper(content.profiles(), content.items(), content.exams());
         this.saveFailures = Objects.requireNonNull(saveFailures, "Save failure callback must not be null");
@@ -78,7 +104,8 @@ public final class GameAssembly implements GameService {
     }
 
     /**
-     * Creates a game saved in the given slot after every exam.
+     * Creates a game saved in the given slot after every exam; the student receives the
+     * starter kit.
      *
      * @param profileId one of the profiles of the content
      * @param slot      letters, digits, - and _ only
@@ -89,7 +116,9 @@ public final class GameAssembly implements GameService {
         SaveGameRepository.requireValidSlot(slot);
         StudentProfile profile = content.profiles().findById(profileId)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown profile: " + profileId));
-        return gameOf(new Student(name, profile), slot);
+        Student student = new Student(name, profile);
+        starterKit.giveTo(student.inventory());
+        return gameOf(student, slot);
     }
 
     /**
@@ -107,8 +136,14 @@ public final class GameAssembly implements GameService {
         return saves.listSlots();
     }
 
+    /** @return the rules and content of the games, the same objects the games use */
+    @Override
+    public GameGuide guide() {
+        return guide;
+    }
+
     private Game gameOf(Student student, String slot) {
-        Game game = new Game(student, session, battles, new StandardProgressionRules(), rewards);
+        Game game = new Game(student, session, battles, progression, rewards);
         game.addListener(new AutoSave(saves, mapper, slot, student, saveFailures));
         return game;
     }
@@ -120,6 +155,17 @@ public final class GameAssembly implements GameService {
             thread.setDaemon(true);
             return thread;
         });
+    }
+
+    private static StarterKit starterKitOf(ItemCatalog items) {
+        Map<Item, Integer> kit = STARTER_KIT_BY_ITEM_ID.entrySet().stream()
+                .collect(Collectors.toMap(entry -> itemOf(items, entry.getKey()), Map.Entry::getValue));
+        return new StarterKit(kit);
+    }
+
+    private static Item itemOf(ItemCatalog items, String id) {
+        return items.findById(id)
+                .orElseThrow(() -> new ContentException("Item '" + id + "' of the starter kit is not in items.xml"));
     }
 
     private static Map<ExamType, ExamStrategy> strategies() {
