@@ -3,6 +3,7 @@ package it.unicam.cs.mpgc.rpg127295.ui;
 import static it.unicam.cs.mpgc.rpg127295.engine.TestQuestions.CORRECT;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import it.unicam.cs.mpgc.rpg127295.engine.TestQuestions;
@@ -15,6 +16,8 @@ import it.unicam.cs.mpgc.rpg127295.model.question.Difficulty;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 class ExamRowTest {
 
@@ -68,5 +71,16 @@ class ExamRowTest {
                 () -> assertThrows(IllegalArgumentException.class,
                         () -> new ExamRow(FIRST, ExamRow.Status.PASSED, Optional.empty())),
                 () -> assertThrows(NullPointerException.class, () -> ExamRow.of(null)));
+    }
+
+    @ParameterizedTest
+    @EnumSource(ExamType.class)
+    void everyExamTypeHasALabel(ExamType type) {
+        assertFalse(ExamRow.typeLabelOf(type).isBlank());
+    }
+
+    @Test
+    void aMissingTypeIsRejected() {
+        assertThrows(NullPointerException.class, () -> ExamRow.typeLabelOf(null));
     }
 }
