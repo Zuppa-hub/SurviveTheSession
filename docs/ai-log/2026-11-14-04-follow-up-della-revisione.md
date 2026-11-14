@@ -28,4 +28,5 @@ numeri di Funzionalità aggiornati al bilanciamento, lezione 14 per `CatalogInde
 **Modificato / verificato da me:**
 - Ho rivisto in chat #39, #40 e #41 e ho chiesto il merge in quest'ordine.
 - Ho confermato che la lezione 14 è quella su `HashSet` e `HashMap`.
-- Ho letto la PR di follow-up prima del merge.
+- Ho chiesto a Claude di fare il merge della PR di follow-up con la build verde; la revisione
+  la faccio in chat.
