@@ -6,6 +6,15 @@ volutamente semplice: sfondo chiaro, schede bianche, un solo colore d'accento.
 
 ## Le schermate
 
+![Menu con le partite salvate](../images/menu.png)
+
+![Sessione: esami con il loro stato, statistiche, libretto e zaino](../images/sessione.png)
+
+![Esame scritto: domanda con lo snippet di codice, timer, barre, oggetti e abilità](../images/esame.png)
+
+Le immagini si rigenerano da un programma che apre le schermate con i contenuti veri e ne
+salva l'istantanea (`Scene.snapshot`), senza mostrare la finestra.
+
 | Schermata | File | Cosa fa |
 |---|---|---|
 | Menu | `menu.fxml`, `MenuController` | nuova partita, elenco delle partite salvate e caricamento, uscita |
