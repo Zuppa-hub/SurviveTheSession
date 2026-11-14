@@ -31,7 +31,7 @@ Il profilo determina le statistiche iniziali. Tre profili, definiti in un file d
 - **Conoscenza**: aumenta i "punti" tolti all'esame con una risposta corretta e la probabilità di ricevere un indizio gratuito.
 - **Energia** (vita): diminuisce a ogni risposta sbagliata o tempo scaduto. A zero lo studente viene bocciato in quell'esame. Si ricarica del tutto all'inizio di ogni esame: ricaricarla solo dopo una bocciatura incentiverebbe a farsi bocciare per ricaricarsi.
 - **Concentrazione** (risorsa): si spende per le abilità; si recupera di 1 a ogni risposta corretta.
-- **Livello ed esperienza**: superare un esame dà esperienza (CFU × (voto − 15), la lode vale 30); salire di livello costa 100 × livello attuale e aumenta Conoscenza (+1), Energia massima (+2) e Concentrazione massima (+1). Un esame può far salire di più livelli. È la progressione RPG. Valori provvisori, bilanciamento nella #12.
+- **Livello ed esperienza**: superare un esame dà esperienza (CFU × (voto − 15), la lode vale 30); salire di livello costa 50 × livello attuale e aumenta Conoscenza (+1), Energia massima (+3) e Concentrazione massima (+1). Un esame può far salire di più livelli. È la progressione RPG. Valori bilanciati nella #12 (§2.8).
 
 ### 2.3 Lo scontro (esame)
 - L'esame ha una **resistenza** (punti esame). Ogni risposta corretta la riduce di un danno che cresce con la Conoscenza. La resistenza non è un dato di `Exam`: è una regola di bilanciamento e la calcola l'engine da CFU e difficoltà.
@@ -41,7 +41,7 @@ Il profilo determina le statistiche iniziali. Tre profili, definiti in un file d
 - Energia a zero: bocciatura, senza calcolare il voto.
 - Azioni del turno: **Rispondi**, **Usa oggetto**, **Usa abilità**, **Ritirati** (l'esame resta da sostenere, nessun voto).
 - Bocciatura o ritiro: l'esame resta nella sessione e si può ritentare; l'Energia si ricarica all'inizio del nuovo tentativo, come di ogni esame.
-- Superamento: voto nel libretto, esperienza e oggetti come ricompensa (18-23 nessuno, 24-27 uno, 28-30 due, lode tre, scelti a caso tra quelli del catalogo; provvisorio).
+- Superamento: voto nel libretto, esperienza e oggetti come ricompensa (18-23 nessuno, 24-27 uno, 28-30 due, lode tre, scelti a caso tra quelli del catalogo).
 - L'ultimo esame della sessione è il **boss finale**: si può sostenere solo quando tutti gli altri sono superati.
 - Laurea: quando tutti gli esami della sessione sono superati. Voto di laurea = media ponderata × 110 / 30, arrotondato (media 30 → 110, media 18 → 66); punti bonus e lode di laurea dipendono dai regolamenti dei corsi e sono esclusi.
 
@@ -86,6 +86,19 @@ Cinque materie reali del corso di Informatica, ognuna con un file XML di domande
 5. Metodologie di Programmazione (progetto, boss finale, ultimo esame della sessione: disponibile solo dopo aver superato gli altri): domande su SOLID, Clean Code, Git, collezioni, equals/hashCode, Stream API, modelli di esecuzione.
 
 ---
+
+### 2.8 Bilanciamento (#12)
+Obiettivo: chi risponde bene al 70% delle domande supera ogni esame con qualunque profilo, anche come primo esame della sessione, e arriva alla laurea; chi risponde bene al 40% viene bocciato in ogni esame, boss compreso. Lo verifica un test deterministico (`BalanceTest`) con contenuti, regole, ricompense e progressione veri, timer manuale e seme fisso. Il giocatore simulato non usa oggetti né abilità. Al 70% sbaglia per primo (l'ordine più sfavorevole), al 40% indovina per primo (il più favorevole).
+
+| Regola | Valore |
+|---|---|
+| resistenza dell'esame | CFU × 4, 4 o 5 (facile, media, difficile) |
+| danno di una risposta corretta | 7 + Conoscenza / 2 |
+| Energia persa per un errore | 1, 2 o 2 (facile, media, difficile), × il moltiplicatore della strategia (progetto ×2) |
+| salita di livello | 50 × livello attuale; +1 Conoscenza, +3 Energia massima, +1 Concentrazione massima |
+| profili (Conoscenza / Energia / Concentrazione) | Secchione 8 / 7 / 4, Pendolare 3 / 12 / 4, Nottambulo 5 / 9 / 6 |
+
+Ogni passo di difficoltà cambia qualcosa: da facile a media cresce l'Energia persa, da media a difficile la resistenza. Con questi valori un esame richiede da 3 a 7 risposte corrette: abbastanza per distinguere il 70% dal 40%, ma non tante da far finire l'Energia a chi sbaglia 3 domande su 10. Il voto a 70% è tra 18 e 21: il 30 richiede risposte quasi tutte giuste.
 
 ## 3. Architettura
 
@@ -192,7 +205,7 @@ public interface ExamStrategy {
 // QuestionPool: domande della materia per uno scontro; HashSet delle domande già poste,
 // drawAny() e drawClosestTo(Difficulty) con il RandomGenerator iniettato.
 
-/** Regole numeriche dello scontro, in un solo punto (valori provvisori, bilanciamento in #12). */
+/** Regole numeriche dello scontro, in un solo punto (valori bilanciati nella #12, §2.8). */
 public interface BattleRules {
     int resistanceOf(Exam exam);            // CFU x fattore della difficoltà
     int damageOf(Stats stats);              // danno base + bonus della Conoscenza
