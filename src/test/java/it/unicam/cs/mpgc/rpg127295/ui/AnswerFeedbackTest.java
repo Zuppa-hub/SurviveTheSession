@@ -16,11 +16,11 @@ class AnswerFeedbackTest {
     }
 
     @Test
-    void describesTheAnswerInItalianWithAStyle() {
+    void describesTheAnswerToThePreviousQuestionInItalianWithAStyle() {
         assertAll(
-                () -> assertEquals("Risposta giusta!", AnswerFeedback.CORRECT.message()),
-                () -> assertEquals("Risposta sbagliata.", AnswerFeedback.WRONG.message()),
-                () -> assertEquals("Tempo scaduto: conta come risposta sbagliata.", AnswerFeedback.TIME_UP.message()),
+                () -> assertEquals("Domanda precedente: risposta giusta!", AnswerFeedback.CORRECT.message()),
+                () -> assertEquals("Domanda precedente: risposta sbagliata.", AnswerFeedback.WRONG.message()),
+                () -> assertEquals("Domanda precedente: tempo scaduto, conta come risposta sbagliata.", AnswerFeedback.TIME_UP.message()),
                 () -> assertEquals("feedback-correct", AnswerFeedback.CORRECT.styleClass()),
                 () -> assertEquals("feedback-wrong", AnswerFeedback.TIME_UP.styleClass()));
     }
