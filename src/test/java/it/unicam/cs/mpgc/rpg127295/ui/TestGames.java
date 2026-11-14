@@ -51,7 +51,7 @@ final class TestGames {
     static final Ability QUICK_REVIEW = new Ability("Ripasso lampo", 2, new HintEffect());
     static final Ability STROKE_OF_GENIUS = new Ability("Colpo di genio", 3, new DoubleDamageEffect());
 
-    static final Exam NETWORKS = new Exam("RETI1", new it.unicam.cs.mpgc.rpg127295.model.exam.Subject("RETI", "Reti"),
+    static final Exam NETWORKS = new Exam("RETI1", new it.unicam.cs.mpgc.rpg127295.model.question.Subject("RETI", "Reti"),
             ExamType.ORAL, 6, Difficulty.EASY);
     static final Exam PROJECT = new Exam("MDP1", TestQuestions.SUBJECT, ExamType.PROJECT, 12, Difficulty.HARD);
     static final StudentProfile NERD = new StudentProfile("nerd", "Secchione", "Studia sempre", Stats.initial(8, 7, 4));
