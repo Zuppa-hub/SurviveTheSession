@@ -58,7 +58,7 @@ class GameTest {
 
     private Optional<Grade> grade = Optional.of(Grade.of(27));
     private List<Question> questions = List.of(choice("Q-1"), choice("Q-2"));
-    private Reward reward = new Reward(150, Map.of(COFFEE, 1));
+    private Reward reward = new Reward(75, Map.of(COFFEE, 1));
     private final List<ExamReport> reports = new ArrayList<>();
     private final Student student = new Student("Andrea",
             new StudentProfile("nerd", "Secchione", "Studia sempre", Stats.initial(5, 6, 4)));
@@ -148,22 +148,22 @@ class GameTest {
         pass(game, FIRST);
 
         assertAll(
-                () -> assertEquals(new Level(2, 50), student.level()),
+                () -> assertEquals(new Level(2, 25), student.level()),
                 () -> assertEquals(6, student.stats().knowledge()),
-                () -> assertEquals(8, student.stats().maxEnergy()),
+                () -> assertEquals(9, student.stats().maxEnergy()),
                 () -> assertEquals(5, student.stats().maxConcentration()),
                 () -> assertEquals(1, reports.getFirst().levelsGained()));
     }
 
     @Test
     void oneExamCanRaiseMoreThanOneLevel() {
-        reward = new Reward(350, Map.of());
+        reward = new Reward(175, Map.of());
         Game game = game(FIRST);
 
         pass(game, FIRST);
 
         assertAll(
-                () -> assertEquals(new Level(3, 50), student.level()),
+                () -> assertEquals(new Level(3, 25), student.level()),
                 () -> assertEquals(2, reports.getFirst().levelsGained()),
                 () -> assertEquals(7, student.stats().knowledge()));
     }

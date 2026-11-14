@@ -6,6 +6,10 @@ uno scontro a turni in cui si "combatte" rispondendo a domande vere sulla materi
 statistiche, oggetti e abilità che influenzano lo scontro. Gli esami superati entrano nel
 libretto con voto e CFU; superata tutta la sessione, lo studente si laurea.
 
+| Menu | Sessione | Esame |
+|---|---|---|
+| ![Menu](docs/images/menu.png) | ![Sessione](docs/images/sessione.png) | ![Esame](docs/images/esame.png) |
+
 ---
 
 ## 🚀 Come eseguire il progetto

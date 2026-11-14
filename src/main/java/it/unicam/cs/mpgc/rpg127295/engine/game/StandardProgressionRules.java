@@ -3,14 +3,14 @@ package it.unicam.cs.mpgc.rpg127295.engine.game;
 import static it.unicam.cs.mpgc.rpg127295.model.Preconditions.requirePositive;
 
 /**
- * Provisional progression (final balancing in issue #12): leaving level n costs 100 x n
- * experience; each level gives +1 knowledge, +2 max energy and +1 max concentration.
+ * Progression balanced in issue #12: leaving level n costs 50 x n experience; each level gives
+ * +1 knowledge, +3 max energy and +1 max concentration.
  */
 public final class StandardProgressionRules implements ProgressionRules {
 
-    private static final int EXPERIENCE_PER_LEVEL = 100;
+    private static final int EXPERIENCE_PER_LEVEL = 50;
     private static final int KNOWLEDGE_BONUS = 1;
-    private static final int MAX_ENERGY_BONUS = 2;
+    private static final int MAX_ENERGY_BONUS = 3;
     private static final int MAX_CONCENTRATION_BONUS = 1;
 
     /** @throws IllegalArgumentException if the level is below 1 */
