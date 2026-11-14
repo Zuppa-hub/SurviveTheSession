@@ -189,8 +189,9 @@ proprie regole. Non ha `equals`: non ha un'identità stabile (il nome non è uni
 `Item` è solo un dato: id, nome e descrizione, con identità sull'id. Cosa fa un oggetto
 durante un esame (ad esempio il Caffè che aggiunge 15 secondi) dipende dallo stato dello
 scontro, che è nell'engine. Se `Item` contenesse quel comportamento, il model dipenderebbe
-dall'engine. Per questo il comportamento starà in un'interfaccia dell'engine,
-`ItemEffect`, e l'associazione `Item → ItemEffect` sarà una mappa costruita all'avvio.
+dall'engine. Per questo il comportamento sta in un'interfaccia dell'engine,
+`BattleEffect`, e l'associazione `Item → BattleEffect` è una mappa costruita all'avvio, in `app`
+(`GameEffects`).
 
 ### `Inventory`
 Associa a ogni oggetto la sua quantità (`Map<Item, Integer>`). Invariante: le quantità
@@ -205,7 +206,7 @@ e calcola CFU totali e media ponderata sui CFU (con gli Stream; la lode vale 30)
 `LinkedHashMap<Exam, Grade>`, che è una `HashMap` ma conserva l'ordine di registrazione.
 
 Il libretto **non** sa se lo studente può laurearsi né calcola il voto di laurea: sono
-regole di gioco e staranno in `Game`. È la violazione di SRP vista a lezione con il metodo
+regole di gioco e stanno in `Graduation` (engine), che `Game` usa. È la violazione di SRP vista a lezione con il metodo
 `puoLaurearsi()` nella classe `Libretto`: una classe che registra i voti cambierebbe anche
 quando cambiano le regole di laurea.
 

@@ -4,8 +4,8 @@ Questa pagina descrive il gioco dal punto di vista del giocatore. Le classi che 
 regola sono nella pagina [Classi e interfacce](Classi-e-interfacce); le schermate nella pagina
 [Interfaccia grafica](Interfaccia-grafica).
 
-I valori numerici (statistiche, danni, soglie) sono **provvisori**: il bilanciamento definitivo
-è la issue #12. Qui sono riportati quelli che il codice usa oggi.
+I valori numerici (statistiche, danni, soglie) sono quelli bilanciati nella issue #12 e
+verificati da `BalanceTest` (vedi [Classi e interfacce](Classi-e-interfacce)).
 
 ## Nuova partita e profili
 
@@ -14,7 +14,7 @@ profilo decide le statistiche iniziali (`profiles.xml`):
 
 | Profilo | Conoscenza | Energia | Concentrazione | Descrizione nel gioco |
 |---|---|---|---|---|
-| Secchione | 8 | 6 | 4 | Sa quasi tutto, ma si stanca presto. |
+| Secchione | 8 | 7 | 4 | Sa quasi tutto, ma si stanca presto. |
 | Pendolare | 3 | 12 | 4 | Studia poco, ma dopo ore di treno regge qualunque esame. |
 | Nottambulo | 5 | 9 | 6 | Preparato il giusto, lucidissimo quando serve. |
 
@@ -24,7 +24,7 @@ chiede di sceglierne un altro invece di sovrascriverla.
 
 ## Le statistiche
 
-- **Conoscenza**: aumenta il danno di ogni risposta corretta (4 + Conoscenza / 2).
+- **Conoscenza**: aumenta il danno di ogni risposta corretta (7 + Conoscenza / 2).
 - **Energia**: è la vita. Ogni risposta sbagliata la riduce; a zero l'esame è bocciato. Si
   ricarica del tutto all'inizio di **ogni** esame, così farsi bocciare non conviene mai.
 - **Concentrazione**: si spende per le abilità e si recupera di 1 a ogni risposta corretta.
@@ -52,12 +52,12 @@ tutti gli altri esami".
 
 ## L'esame: uno scontro a turni
 
-Ogni esame ha una **resistenza**, calcolata da CFU e difficoltà (CFU × 2, 3 o 4). Si combatte
+Ogni esame ha una **resistenza**, calcolata da CFU e difficoltà (CFU × 4 se facile o media, CFU × 5 se difficile). Si combatte
 rispondendo a domande vere sulla materia:
 
 - una **risposta corretta** abbassa la resistenza e fa recuperare Concentrazione;
-- una **risposta sbagliata** (o il tempo scaduto) toglie Energia: 1, 2 o 3 punti secondo la
-  difficoltà dell'esame, moltiplicati per il tipo d'esame;
+- una **risposta sbagliata** (o il tempo scaduto) toglie Energia: 1 punto se l'esame è facile, 2
+  se è medio o difficile, raddoppiati in un progetto;
 - nello stesso esame una domanda non viene mai riproposta.
 
 Le azioni del turno sono **Rispondi**, **usa un oggetto**, **usa un'abilità** e **Ritirati**.
@@ -130,7 +130,7 @@ Un esame superato entra nel libretto e dà:
 - **oggetti**: nessuno con 18-23, uno con 24-27, due con 28-30, tre con la lode, scelti a caso
   tra quelli del catalogo.
 
-Salire dal livello n al successivo costa 100 × n esperienza. Ogni livello dà +1 Conoscenza, +2
+Salire dal livello n al successivo costa 50 × n esperienza. Ogni livello dà +1 Conoscenza, +3
 Energia massima e +1 Concentrazione massima. Un esame con molta esperienza può far salire di più
 livelli. La schermata dell'esito mostra voto, risposte, ricompense e livelli guadagnati.
 

@@ -170,7 +170,7 @@ programmazione.
 
 ### Salvataggio automatico
 La partita viene salvata dopo ogni esame concluso. `Game` però **non sa** di essere salvata:
-il salvataggio è `AutoSave`, un `GameListener` che l'applicazione (`GameAssembly`) registra
+il salvataggio è `AutoSave`, un `GameListener` che `GameAssembly` registra
 sulla partita. Quando arriva `onExamConcluded`, `AutoSave` converte lo studente con il
 `SaveMapper` e lo salva nello slot. È lo stesso meccanismo (Observer) con cui la UI riceve
 l'esito dell'esame: `Game` non dipende né dalla persistenza né dalla UI.
@@ -180,7 +180,9 @@ partita caricata continua a salvarsi nello stesso slot.
 
 **Un salvataggio fallito non ferma la partita.** Se il disco è pieno o la cartella non è
 scrivibile, `AutoSave` cattura la `SaveGameException` e la passa a un callback
-(`Consumer<SaveGameException>`) ricevuto da `GameAssembly`. La partita prosegue e gli altri
+(`Consumer<SaveGameException>`) ricevuto da `GameAssembly`. Il repository concreto
+(`JsonSaveGameRepository`) e il callback li crea `GameApplication.start` e li passa a
+`GameAssembly`. La partita prosegue e gli altri
 listener ricevono comunque l'esito dell'esame. Nella GUI il callback è `Alerts::saveFailed`,
 che mostra un avviso senza bloccare il gioco (vedi [Interfaccia grafica](Interfaccia-grafica)). Senza questa scelta
 l'eccezione risalirebbe dalla notifica di fine esame fino alla UI e interromperebbe il gioco
@@ -196,4 +198,5 @@ verificare il salvataggio automatico e il caricamento con i contenuti veri.
 
 ## Estensione possibile
 Per salvare su un database (ad esempio `JpaSaveGameRepository` con H2) basta una nuova
-implementazione di `SaveGameRepository` collegata in `GameAssembly`: engine e UI non cambiano.
+implementazione di `SaveGameRepository`, creata in `GameApplication.start` al posto di
+`JsonSaveGameRepository`: `GameAssembly`, engine e UI non cambiano.

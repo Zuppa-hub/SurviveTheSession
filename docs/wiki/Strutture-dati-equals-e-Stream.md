@@ -69,8 +69,9 @@ if (!missing.isEmpty()) {
 ```
 
 **Perché una mappa nei cataloghi.** All'inizio i cataloghi cercavano un oggetto per id scorrendo
-la lista con uno stream, cioè in tempo lineare, come visto a lezione. `CatalogIndex` li indicizza
-una volta al caricamento.
+la lista con uno stream, cioè in tempo lineare. Come visto nella lezione 14 su `HashSet` e
+`HashMap`, una mappa trova un elemento dalla sua chiave in tempo costante: `CatalogIndex` li
+indicizza una volta al caricamento.
 
 ## Identità: `equals` e `hashCode`
 

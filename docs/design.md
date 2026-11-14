@@ -289,7 +289,7 @@ public interface BattleListener {
 | Package | struttura per responsabilità (3.2) |
 | List | domande della sessione, ordine degli esami |
 | HashSet + equals/hashCode | esami superati; domande già poste nello scontro (`QuestionPool`, per non ripeterle); identità per `id` |
-| HashMap | libretto `Map<Exam, Grade>`; inventario `Map<Item, Integer>` (quantità); effetti `Map<Item, BattleEffect>` costruita in `app` |
+| HashMap | libretto `Map<Exam, Grade>` (una `LinkedHashMap`, che conserva l'ordine di registrazione); inventario `Map<Item, Integer>` (quantità); effetti `Map<Item, BattleEffect>` costruita in `app` |
 | Stream API | media ponderata, CFU totali, filtri domande per difficoltà, statistiche; catene lunghe spezzate in metodi con nome |
 | Modelli di esecuzione | GUI event-driven; timer della domanda su thread separato (ScheduledExecutorService) con passaggio al thread JavaFX via `Platform.runLater`; stato condiviso protetto |
 | Gradle | build, run, test, dipendenze, plugin JavaFX |
