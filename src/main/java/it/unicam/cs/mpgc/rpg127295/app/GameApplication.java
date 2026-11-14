@@ -42,7 +42,7 @@ public final class GameApplication extends Application {
             new ViewNavigator(stage, games).showMenu();
             stage.show();
         } catch (ContentException error) {
-            Alerts.error("Impossibile avviare il gioco: contenuti non validi", error.getMessage());
+            Alerts.startFailed(error);
             Platform.exit();
         }
     }
