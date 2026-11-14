@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Provisional values, to be balanced in issue #12. -->
+<!-- Values balanced in issue #12 (BalanceTest): the nerd hits hardest and tires first. -->
 <profiles>
-    <profile id="nerd" knowledge="8" energy="6" concentration="4">
+    <profile id="nerd" knowledge="8" energy="7" concentration="4">
         <name>Secchione</name>
         <description>Sa quasi tutto, ma si stanca presto.</description>
     </profile>

@@ -14,11 +14,11 @@ class StandardProgressionRulesTest {
 
     @ParameterizedTest(name = "level {0} -> {1} experience")
     @CsvSource({
-        "1, 100",
-        "2, 200",
-        "5, 500"
+        "1,  50",
+        "2, 100",
+        "5, 250"
     })
-    void levellingUpCostsAHundredTimesTheCurrentLevel(int level, int expected) {
+    void levellingUpCostsFiftyTimesTheCurrentLevel(int level, int expected) {
         assertEquals(expected, rules.experienceToLevelUp(level));
     }
 
@@ -26,7 +26,7 @@ class StandardProgressionRulesTest {
     void eachLevelImprovesKnowledgeEnergyAndConcentration() {
         assertAll(
                 () -> assertEquals(1, rules.knowledgeBonus()),
-                () -> assertEquals(2, rules.maxEnergyBonus()),
+                () -> assertEquals(3, rules.maxEnergyBonus()),
                 () -> assertEquals(1, rules.maxConcentrationBonus()));
     }
 
