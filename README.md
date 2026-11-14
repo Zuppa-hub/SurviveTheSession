@@ -6,9 +6,11 @@ uno scontro a turni in cui si "combatte" rispondendo a domande vere sulla materi
 statistiche, oggetti e abilità che influenzano lo scontro. Gli esami superati entrano nel
 libretto con voto e CFU; superata tutta la sessione, lo studente si laurea.
 
-| Menu | Sessione | Esame |
+| Menu | Come si gioca | Sessione |
 |---|---|---|
-| ![Menu](docs/images/menu.png) | ![Sessione](docs/images/sessione.png) | ![Esame](docs/images/esame.png) |
+| ![Menu](docs/images/menu.png) | ![Come si gioca](docs/images/come-si-gioca.png) | ![Sessione](docs/images/sessione.png) |
+| **Esame** | **Esito** | **Laurea** |
+| ![Esame](docs/images/esame.png) | ![Esito](docs/images/esito.png) | ![Laurea](docs/images/laurea.png) |
 
 ---
 
