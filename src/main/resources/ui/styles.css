@@ -1,0 +1,94 @@
+/* Sopravvivi alla Sessione: one stylesheet for every screen, simple and clean. */
+
+.root {
+    -fx-font-family: "System";
+    -fx-font-size: 14px;
+    -accent: #2f5d8a;
+    -accent-dark: #234766;
+    -text: #1f2933;
+    -muted: #616e7c;
+    -surface: #ffffff;
+    -background: #f2f4f7;
+    -fx-text-fill: -text;
+}
+
+.screen {
+    -fx-background-color: -background;
+}
+
+.card {
+    -fx-background-color: -surface;
+    -fx-background-radius: 10;
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 8, 0, 0, 2);
+}
+
+.title {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -text;
+}
+
+.subtitle {
+    -fx-text-fill: -muted;
+}
+
+.section {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -muted;
+}
+
+.button {
+    -fx-background-radius: 6;
+    -fx-padding: 8 16;
+    -fx-cursor: hand;
+}
+
+.button.primary {
+    -fx-background-color: -accent;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.button.primary:hover {
+    -fx-background-color: -accent-dark;
+}
+
+.button.link {
+    -fx-background-color: transparent;
+    -fx-text-fill: -accent;
+}
+
+.list-view {
+    -fx-background-radius: 6;
+}
+
+.list-cell {
+    -fx-padding: 8 10;
+}
+
+.exam-passed {
+    -fx-text-fill: #2e7d32;
+}
+
+.exam-locked {
+    -fx-text-fill: #9aa5b1;
+}
+
+.error {
+    -fx-text-fill: #c62828;
+}
+
+.success {
+    -fx-text-fill: #2e7d32;
+    -fx-font-weight: bold;
+}
+
+.progress-bar.energy > .bar {
+    -fx-background-color: #e5734a;
+}
+
+.progress-bar.concentration > .bar {
+    -fx-background-color: #5b7fd6;
+}
