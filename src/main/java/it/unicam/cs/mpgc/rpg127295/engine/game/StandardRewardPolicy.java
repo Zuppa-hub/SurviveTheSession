@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.random.RandomGenerator;
 
 /**
- * Provisional rewards (final balancing in issue #12):
+ * Rewards, unchanged by the balancing of issue #12:
  * <ul>
  *   <li>experience = credits x (grade - 15), honors counting as 30;</li>
  *   <li>items: none for 18-23, one for 24-27, two for 28-30, three with honors, each chosen at

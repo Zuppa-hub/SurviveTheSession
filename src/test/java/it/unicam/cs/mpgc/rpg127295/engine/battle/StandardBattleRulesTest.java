@@ -19,10 +19,10 @@ class StandardBattleRulesTest {
 
     @ParameterizedTest(name = "{0} CFU, {1} -> {2}")
     @CsvSource({
-        "12, MEDIUM, 36",
-        " 6, EASY,   12",
-        " 9, HARD,   36",
-        " 1, EASY,    2"
+        "12, MEDIUM, 48",
+        " 6, EASY,   24",
+        " 9, HARD,   45",
+        " 1, EASY,    4"
     })
     void resistanceIsCreditsTimesTheFactorOfTheDifficulty(int credits, Difficulty difficulty, int expected) {
         Exam exam = new Exam("E1", TestQuestions.SUBJECT, ExamType.WRITTEN, credits, difficulty);
@@ -32,10 +32,10 @@ class StandardBattleRulesTest {
 
     @ParameterizedTest(name = "knowledge {0} -> {1}")
     @CsvSource({
-        "0, 4",
-        "3, 5",
-        "5, 6",
-        "8, 8"
+        "0,  7",
+        "3,  8",
+        "5,  9",
+        "8, 11"
     })
     void damageGrowsWithKnowledge(int knowledge, int expected) {
         assertEquals(expected, rules.damageOf(Stats.initial(knowledge, 10, 4)));
@@ -45,9 +45,9 @@ class StandardBattleRulesTest {
     @CsvSource({
         "EASY,   1",
         "MEDIUM, 2",
-        "HARD,   3"
+        "HARD,   2"
     })
-    void energyLossGrowsWithDifficulty(Difficulty difficulty, int expected) {
+    void energyLossDependsOnDifficulty(Difficulty difficulty, int expected) {
         assertEquals(expected, rules.baseEnergyLoss(difficulty));
     }
 

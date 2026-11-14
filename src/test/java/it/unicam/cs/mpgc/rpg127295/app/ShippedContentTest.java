@@ -63,7 +63,7 @@ class ShippedContentTest {
         assertAll(
                 () -> assertEquals(List.of("Secchione", "Pendolare", "Nottambulo"),
                         profiles.stream().map(StudentProfile::name).toList()),
-                () -> assertEquals(Stats.initial(8, 6, 4), profiles.get(0).initialStats()),
+                () -> assertEquals(Stats.initial(8, 7, 4), profiles.get(0).initialStats()),
                 () -> assertEquals(Stats.initial(3, 12, 4), profiles.get(1).initialStats()),
                 () -> assertEquals(Stats.initial(5, 9, 6), profiles.get(2).initialStats()));
     }

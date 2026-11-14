@@ -43,3 +43,4 @@ rivista da me, con il supporto di Claude in chat, prima del merge.
 | 2026-11-13 | [GUI: menu, nuova partita e sessione (issue #10)](2026-11-13-03-gui-menu-e-sessione.md) |
 | 2026-11-13 | [GUI: esame, esito e laurea (issue #11)](2026-11-13-04-gui-esame-esito-laurea.md) |
 | 2026-11-14 | [Screenshot della GUI e chiusura della v0.1](2026-11-14-02-screenshot-della-gui.md) |
+| 2026-11-14 | [Bilanciamento (issue #12)](2026-11-14-03-bilanciamento.md) |
