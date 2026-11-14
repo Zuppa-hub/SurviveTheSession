@@ -8,9 +8,15 @@ volutamente semplice: sfondo chiaro, schede bianche, un solo colore d'accento.
 
 ![Menu con le partite salvate](../images/menu.png)
 
+![Come si gioca: la prima delle sette pagine](../images/come-si-gioca.png)
+
 ![Sessione: esami con il loro stato, statistiche, libretto e zaino](../images/sessione.png)
 
-![Esame scritto: domanda con lo snippet di codice, timer, barre, oggetti e abilità](../images/esame.png)
+![Esame scritto: difficoltà, domanda con lo snippet di codice accanto alle opzioni, timer, barre, oggetti e abilità](../images/esame.png)
+
+![Esito di un esame superato](../images/esito.png)
+
+![Laurea: libretto, media ponderata e voto di laurea](../images/laurea.png)
 
 Le immagini si rigenerano da un programma che apre le schermate con i contenuti veri e ne
 salva l'istantanea (`Scene.snapshot`), senza mostrare la finestra.
