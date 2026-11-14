@@ -14,12 +14,12 @@
 
 <BorderPane styleClass="screen" xmlns:fx="http://javafx.com/fxml">
     <padding>
-        <Insets top="20" right="28" bottom="20" left="28"/>
+        <Insets top="16" right="28" bottom="16" left="28"/>
     </padding>
     <top>
-        <VBox spacing="12">
+        <VBox spacing="10">
             <padding>
-                <Insets bottom="14"/>
+                <Insets bottom="10"/>
             </padding>
             <HBox spacing="16" alignment="CENTER_LEFT">
                 <Label fx:id="examLabel" styleClass="title"/>
@@ -45,24 +45,32 @@
     </top>
     <center>
         <ScrollPane fitToWidth="true" styleClass="plain">
-            <VBox spacing="12" styleClass="card">
-                <Label fx:id="promptLabel" styleClass="prompt" wrapText="true"/>
-                <Label fx:id="codeLabel" styleClass="code" maxWidth="Infinity"/>
-                <Label fx:id="hintLabel" styleClass="hint" wrapText="true"/>
-                <VBox fx:id="optionsBox" spacing="8"/>
-                <HBox fx:id="answerBox" spacing="10">
-                    <TextField fx:id="answerField" promptText="Scrivi la risposta" onAction="#onSubmit"
-                               HBox.hgrow="ALWAYS"/>
-                    <Button text="Rispondi" onAction="#onSubmit" styleClass="primary"/>
+            <VBox spacing="10" styleClass="card">
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <Label fx:id="difficultyLabel" styleClass="chip"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="feedbackLabel" wrapText="true"/>
                 </HBox>
-                <Label fx:id="feedbackLabel" wrapText="true"/>
+                <Label fx:id="promptLabel" styleClass="prompt" wrapText="true"/>
+                <HBox spacing="16">
+                    <Label fx:id="codeLabel" styleClass="code" minWidth="-Infinity"/>
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label fx:id="hintLabel" styleClass="hint" wrapText="true"/>
+                        <VBox fx:id="optionsBox" spacing="8"/>
+                        <HBox fx:id="answerBox" spacing="10">
+                            <TextField fx:id="answerField" promptText="Scrivi la risposta" onAction="#onSubmit"
+                                       HBox.hgrow="ALWAYS"/>
+                            <Button text="Rispondi" onAction="#onSubmit" styleClass="primary"/>
+                        </HBox>
+                    </VBox>
+                </HBox>
             </VBox>
         </ScrollPane>
     </center>
     <bottom>
         <VBox spacing="8" styleClass="card">
             <BorderPane.margin>
-                <Insets top="14"/>
+                <Insets top="10"/>
             </BorderPane.margin>
             <HBox spacing="12" alignment="CENTER_LEFT">
                 <Label text="Zaino e abilità" styleClass="section"/>

@@ -1,10 +1,13 @@
 package it.unicam.cs.mpgc.rpg127295.ui;
 
-/** What the exam screen says after an answer, and the style it uses. */
+/**
+ * What the exam screen says after an answer, and the style it uses. The next question is shown
+ * at once, so the message names the question it refers to: the previous one.
+ */
 public enum AnswerFeedback {
-    CORRECT("Risposta giusta!", "feedback-correct"),
-    WRONG("Risposta sbagliata.", "feedback-wrong"),
-    TIME_UP("Tempo scaduto: conta come risposta sbagliata.", "feedback-wrong");
+    CORRECT("Domanda precedente: risposta giusta!", "feedback-correct"),
+    WRONG("Domanda precedente: risposta sbagliata.", "feedback-wrong"),
+    TIME_UP("Domanda precedente: tempo scaduto, conta come risposta sbagliata.", "feedback-wrong");
 
     private final String message;
     private final String styleClass;

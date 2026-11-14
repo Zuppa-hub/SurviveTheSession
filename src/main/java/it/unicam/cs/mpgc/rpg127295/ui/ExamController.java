@@ -54,6 +54,8 @@ public final class ExamController implements BattleListener {
     @FXML
     private Label concentrationLabel;
     @FXML
+    private Label difficultyLabel;
+    @FXML
     private Label promptLabel;
     @FXML
     private Label codeLabel;
@@ -79,7 +81,7 @@ public final class ExamController implements BattleListener {
 
     @FXML
     private void initialize() {
-        examLabel.setText(exam.subject().name() + " · " + ExamRow.typeLabelOf(exam.type()) + " · "
+        examLabel.setText(exam.subject().name() + " · " + Labels.of(exam.type()) + " · "
                 + exam.credits() + " CFU");
     }
 
@@ -161,6 +163,7 @@ public final class ExamController implements BattleListener {
     }
 
     private void showQuestion(PresentedQuestion presented) {
+        difficultyLabel.setText(Labels.of(presented.question().difficulty()));
         promptLabel.setText(presented.question().prompt());
         codeLabel.setText(presented.question().codeSnippet().orElse(""));
         show(codeLabel, presented.question().codeSnippet().isPresent());
@@ -179,6 +182,7 @@ public final class ExamController implements BattleListener {
         Button button = new Button(option);
         button.getStyleClass().add("option");
         button.setMaxWidth(Double.MAX_VALUE);
+        button.setWrapText(true);
         button.setOnAction(event -> answer(option));
         return button;
     }
