@@ -18,7 +18,7 @@ interamente mie le verifiche di build ed esecuzione, la lettura delle PR prima d
 risoluzione del conflitto della PR #21. La revisione delle domande di Programmazione è stata
 fatta insieme a Claude in chat. Dal 12/11, per i tempi di consegna, Claude Code ha deciso e
 implementato le soluzioni senza approvazione preventiva della proposta; ogni PR è stata
-rivista da me, con il supporto di Claude in chat, prima del merge.
+rivista da me, con il supporto di Claude in chat.
 
 | Data | Sessione |
 |------|----------|
