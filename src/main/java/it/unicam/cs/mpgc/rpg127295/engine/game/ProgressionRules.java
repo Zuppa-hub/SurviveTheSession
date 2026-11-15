@@ -14,9 +14,12 @@ public interface ProgressionRules {
      */
     int experienceToLevelUp(int levelNumber);
 
+    /** @return the knowledge gained with each level */
     int knowledgeBonus();
 
+    /** @return the maximum energy gained with each level */
     int maxEnergyBonus();
 
+    /** @return the maximum concentration gained with each level */
     int maxConcentrationBonus();
 }
