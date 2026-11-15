@@ -7,6 +7,7 @@ import it.unicam.cs.mpgc.rpg127295.engine.battle.PresentedQuestion;
 import it.unicam.cs.mpgc.rpg127295.engine.game.Game;
 import it.unicam.cs.mpgc.rpg127295.model.exam.Exam;
 import it.unicam.cs.mpgc.rpg127295.model.student.Stats;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.function.Consumer;
@@ -107,7 +108,7 @@ public final class ExamController implements BattleListener {
     @Override
     public void onAnswerEvaluated(boolean correct, BattleState state) {
         AnswerFeedback feedback = AnswerFeedback.of(correct, answering);
-        feedbackLabel.getStyleClass().removeAll(AnswerFeedback.CORRECT.styleClass(), AnswerFeedback.WRONG.styleClass());
+        Arrays.stream(AnswerFeedback.values()).forEach(each -> feedbackLabel.getStyleClass().remove(each.styleClass()));
         feedbackLabel.getStyleClass().add(feedback.styleClass());
         feedbackLabel.setText(feedback.message());
     }

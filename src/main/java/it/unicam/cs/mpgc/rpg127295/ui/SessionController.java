@@ -61,7 +61,7 @@ public final class SessionController {
         showTranscript(game.student().transcript());
         exams.setCellFactory(list -> new ExamCell());
         inventory.setCellFactory(list -> new InventoryCell());
-        inventory.setPlaceholder(MenuController.placeholder(EmptyStates.inventory(guide)));
+        inventory.setPlaceholder(Placeholders.of(EmptyStates.inventory(guide)));
         exams.getItems().setAll(ExamRow.of(game));
         examButton.disableProperty().bind(Bindings.createBooleanBinding(
                 () -> !isAvailable(exams.getSelectionModel().getSelectedItem()),
