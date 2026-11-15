@@ -5,7 +5,6 @@ import java.util.Objects;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 
 /** Main menu: new game, load a saved game, exit. */
@@ -27,7 +26,7 @@ public final class MenuController {
     @FXML
     private void initialize() {
         savedGames.getItems().setAll(games.savedGames());
-        savedGames.setPlaceholder(placeholder(EmptyStates.savedGames()));
+        savedGames.setPlaceholder(Placeholders.of(EmptyStates.savedGames()));
         loadButton.disableProperty().bind(savedGames.getSelectionModel().selectedItemProperty().isNull());
     }
 
@@ -55,11 +54,5 @@ public final class MenuController {
     @FXML
     private void onExit() {
         Platform.exit();
-    }
-
-    static Label placeholder(String text) {
-        Label label = new Label(text);
-        label.setWrapText(true);
-        return label;
     }
 }

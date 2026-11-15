@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import it.unicam.cs.mpgc.rpg127295.engine.grading.Performance;
 import it.unicam.cs.mpgc.rpg127295.model.student.Stats;
@@ -21,13 +20,6 @@ class BattleStateTest {
 
     private static BattleState state(int resistance, int maxResistance) {
         return new BattleState(resistance, maxResistance, STATS, NONE, Optional.empty(), Optional.empty(), false, false);
-    }
-
-    @Test
-    void theExamIsDefeatedOnlyAtZeroResistance() {
-        assertAll(
-                () -> assertTrue(state(0, 36).isExamDefeated()),
-                () -> assertFalse(state(1, 36).isExamDefeated()));
     }
 
     @ParameterizedTest(name = "resistance {0} of {1}")

@@ -49,3 +49,4 @@ rivista da me, con il supporto di Claude in chat.
 | 2026-11-14 | [Correzioni dai test manuali della v0.1 (issue #43)](2026-11-14-05-correzioni-dai-test-manuali.md) |
 | 2026-11-14 | [Come si gioca e coerenza grafica (issue #45)](2026-11-14-06-come-si-gioca-e-stile.md) |
 | 2026-11-14 | [Screenshot della v0.2 e release](2026-11-14-07-screenshot-della-v0.2.md) |
+| 2026-11-15 | [Revisione finale del codice (issue #13)](2026-11-15-01-revisione-finale.md) |

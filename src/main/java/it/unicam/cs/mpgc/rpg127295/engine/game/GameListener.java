@@ -7,5 +7,9 @@ package it.unicam.cs.mpgc.rpg127295.engine.game;
 @FunctionalInterface
 public interface GameListener {
 
+    /**
+     * Called once for every exam that ends, passed or not, after transcript, reward, levels
+     * and energy have been updated; listeners are called in the order they were added.
+     */
     void onExamConcluded(ExamReport report);
 }

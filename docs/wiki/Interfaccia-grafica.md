@@ -92,6 +92,9 @@ JUnit:
 - **`AnswerFeedback`**: il messaggio dopo una risposta (giusta, sbagliata, tempo scaduto). La
   domanda successiva compare subito, quindi il messaggio dice "Domanda precedente: ..." e sta in
   alto nella scheda, accanto alla difficoltà, non sotto le opzioni della nuova domanda.
+- **`StatTexts`**: i testi mostrati in più schermate (Energia e Concentrazione come
+  "valore / massimo", resistenza, media ponderata, CFU, voto di laurea su
+  `Graduation.GRADUATION_SCALE`) e la frazione per le barre, scritti una volta sola.
 - **`Labels`**: i nomi italiani degli enum mostrati (tipo d'esame, difficoltà della domanda),
   in `EnumMap`; un valore senza etichetta lancia un'eccezione invece di restituire `null`.
 - **`ErrorMessages`**: i testi italiani dei dialoghi d'errore (caricamento, salvataggio,
@@ -180,7 +183,7 @@ il gioco riproverà alla fine del prossimo esame; il dettaglio tecnico va nel lo
 I controller non hanno test automatici: un test dell'interfaccia grafica richiederebbe una
 libreria apposita e un display. Sono verificati in due modi:
 - le classi con logica (`ExamRow`, `SlotNames`, `BattleAction`, `AnswerFeedback`, `Labels`,
-  `ErrorMessages`, `InventoryRow`, `EmptyStates`, `GameGuide`, `HowToPlay`, `OutcomeSummary`,
+  `ErrorMessages`, `InventoryRow`, `EmptyStates`, `StatTexts`, `GameGuide`, `HowToPlay`, `OutcomeSummary`,
   `GraduationSummary`, `GameAssembly` come `GameService`) hanno test JUnit;
   i test della UI condividono una partita di prova (`TestGames`) con timer manuale;
 - un programma eseguito a mano, fuori dal repository, ha giocato con i contenuti veri e il

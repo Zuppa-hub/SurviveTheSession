@@ -1,7 +1,6 @@
 package it.unicam.cs.mpgc.rpg127295.engine.battle;
 
 import it.unicam.cs.mpgc.rpg127295.engine.grading.Performance;
-import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamStrategy;
 import it.unicam.cs.mpgc.rpg127295.engine.timer.TimerListener;
 import it.unicam.cs.mpgc.rpg127295.model.exam.Exam;
 import it.unicam.cs.mpgc.rpg127295.model.item.Item;

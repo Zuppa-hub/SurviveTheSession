@@ -242,7 +242,7 @@ class GameTest {
         assertAll(
                 () -> assertFalse(graduatedHalfway),
                 () -> assertEquals(Optional.empty(), gradeHalfway),
-                () -> assertTrue(game.isSessionComplete()),
+                () -> assertEquals(List.of(), game.remainingExams()),
                 () -> assertTrue(game.canGraduate()),
                 () -> assertEquals(Optional.of(99), game.graduationGrade()));
     }
