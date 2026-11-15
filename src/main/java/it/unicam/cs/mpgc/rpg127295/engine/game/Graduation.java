@@ -16,7 +16,8 @@ import java.util.Objects;
 public final class Graduation {
 
     private static final int GRADE_SCALE = 30;
-    private static final int GRADUATION_SCALE = 110;
+    /** The final grade is out of this value. */
+    public static final int GRADUATION_SCALE = 110;
 
     /** @return true if every exam of the session is in the transcript */
     public boolean canGraduate(ExamSession session, Transcript transcript) {

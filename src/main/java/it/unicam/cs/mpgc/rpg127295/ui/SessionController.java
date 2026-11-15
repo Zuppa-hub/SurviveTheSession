@@ -92,22 +92,18 @@ public final class SessionController {
         studentLabel.setText(student.name() + " · " + student.profile().name());
         levelLabel.setText("Livello " + student.level().number() + " · " + student.level().experience() + " XP");
         knowledgeLabel.setText("Conoscenza " + stats.knowledge());
-        energyBar.setProgress((double) stats.energy() / stats.maxEnergy());
-        energyLabel.setText("Energia " + stats.energy() + " / " + stats.maxEnergy());
-        concentrationBar.setProgress((double) stats.concentration() / stats.maxConcentration());
-        concentrationLabel.setText("Concentrazione " + stats.concentration() + " / " + stats.maxConcentration());
+        energyBar.setProgress(StatTexts.share(stats.energy(), stats.maxEnergy()));
+        energyLabel.setText(StatTexts.energy(stats));
+        concentrationBar.setProgress(StatTexts.share(stats.concentration(), stats.maxConcentration()));
+        concentrationLabel.setText(StatTexts.concentration(stats));
         inventory.getItems().setAll(InventoryRow.of(student.inventory()));
     }
 
     private void showTranscript(Transcript transcript) {
-        averageLabel.setText(transcript.weightedAverage()
-                .stream()
-                .mapToObj(average -> String.format(Locale.ITALY, "Media ponderata %.2f", average))
-                .findFirst()
-                .orElse("Nessun esame superato"));
-        creditsLabel.setText(transcript.totalCredits() + " CFU");
+        averageLabel.setText(StatTexts.average(transcript.weightedAverage()));
+        creditsLabel.setText(StatTexts.credits(transcript.totalCredits()));
         graduationLabel.setText(game.graduationGrade()
-                .map(grade -> "Sessione completata: voto di laurea " + grade + "/110")
+                .map(grade -> "Sessione completata · " + StatTexts.graduationGrade(grade))
                 .orElse(""));
     }
 
@@ -122,8 +118,8 @@ public final class SessionController {
                 setText(null);
                 return;
             }
-            setText(row.exam().subject().name() + "\n" + row.typeLabel() + " · " + row.exam().credits()
-                    + " CFU · " + row.statusLabel());
+            setText(row.exam().subject().name() + "\n" + row.typeLabel() + " · "
+                    + StatTexts.credits(row.exam().credits()) + " · " + row.statusLabel());
             getStyleClass().add("exam-" + row.status().name().toLowerCase(Locale.ROOT));
         }
     }
