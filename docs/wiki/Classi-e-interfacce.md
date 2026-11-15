@@ -619,7 +619,9 @@ persistenza. I dettagli (versione del formato, scrittura atomica, errori) sono n
 
 `GameService` (interfaccia definita nella UI, implementata da `GameAssembly`), `ViewNavigator`
 (carica gli FXML e crea i controller con le loro dipendenze), i controller `MenuController`,
-`NewGameController`, `SessionController`, `ExamController`, `OutcomeController`,
-`GraduationController`, le classi di supporto testate `ExamRow`, `SlotNames`, `BattleAction`,
-`AnswerFeedback`, `OutcomeSummary`, `GraduationSummary`, e `Alerts`. In `app`, `GameApplication` avvia e chiude JavaFX. I dettagli sono nella pagina
+`NewGameController`, `HowToPlayController`, `SessionController`, `ExamController`,
+`OutcomeController`, `GraduationController`, le classi di supporto testate `ExamRow`,
+`SlotNames`, `BattleAction`, `AnswerFeedback`, `Labels`, `ErrorMessages`, `InventoryRow`,
+`EmptyStates`, `StatTexts`, `GameGuide`, `HowToPlay`, `OutcomeSummary`, `GraduationSummary`, e
+`Alerts` e `Placeholders`. In `app`, `GameApplication` avvia e chiude JavaFX. I dettagli sono nella pagina
 [Interfaccia grafica](Interfaccia-grafica).

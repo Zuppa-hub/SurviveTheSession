@@ -26,21 +26,26 @@ Serve Java 25; Gradle non va installato perché il progetto include il wrapper.
 
 ## Indice
 
-Le pagine seguono il piano del documento di design (`docs/design.md`, §6). Ognuna viene
-scritta o aggiornata quando si chiude la issue corrispondente.
+| Pagina | Contenuto |
+|---|---|
+| [Funzionalità](Funzionalita) | cosa si può fare nel gioco, dal punto di vista del giocatore |
+| [Architettura e responsabilità](Architettura-e-responsabilita) | package, dipendenze, composition root |
+| [Classi e interfacce](Classi-e-interfacce) | le classi principali e le scelte motivate |
+| [Principi SOLID](Principi-SOLID) | tutti e cinque, con esempi dal codice |
+| [Clean Code](Clean-Code) | nomi, metodi piccoli, niente duplicazione, revisione finale |
+| [Strutture dati, equals e Stream](Strutture-dati-equals-e-Stream) | List, HashSet, HashMap, identità, Stream API |
+| [Modelli di esecuzione](Modelli-di-esecuzione) | GUI event-driven, timer su thread separato, race condition evitata |
+| [Persistenza](Persistenza) | contenuti XML con XSD e XPath, annotation dei parser, salvataggi JSON |
+| [Interfaccia grafica](Interfaccia-grafica) | JavaFX, FXML, CSS, Come si gioca, controller sottili |
+| [Testing](Testing) | JUnit, TDD, test di contratto, test deterministici |
+| [Estendibilità](Estendibilita) | nuova materia, domanda, esame, oggetto, salvataggio: guide passo passo |
+| [Strumenti e metodologie](Strumenti-e-metodologie) | Gradle, Git, Issues, workflow Scrum leggero |
+| [Uso dell'AI](Uso-dell-AI) | strumenti usati, con esempi e intervento personale |
 
-| Pagina | Contenuto | Stato |
-|---|---|---|
-| [Funzionalità](Funzionalita) | cosa si può fare nel gioco | **scritta** |
-| [Architettura e responsabilità](Architettura-e-responsabilita) | package, dipendenze, composition root | **scritta** |
-| [Classi e interfacce](Classi-e-interfacce) | le classi principali e le scelte motivate | **bozza (model, voto, scontro, effetti, partita)** |
-| [Principi SOLID](Principi-SOLID) | tutti e cinque, con esempi dal codice | **scritta** |
-| [Clean Code](Clean-Code) | nomi, metodi piccoli, niente duplicazione | **scritta** |
-| [Strutture dati, equals e Stream](Strutture-dati-equals-e-Stream) | List, HashSet, HashMap, identità, Stream API | **scritta** |
-| [Modelli di esecuzione](Modelli-di-esecuzione) | GUI event-driven, timer su thread separato, race condition evitata | **scritta** |
-| [Persistenza](Persistenza) | contenuti XML con XSD e XPath, salvataggi JSON | **bozza (salvataggi, annotation dei parser)** |
-| [Interfaccia grafica](Interfaccia-grafica) | JavaFX, FXML, CSS, controller sottili | **scritta** |
-| [Testing](Testing) | JUnit, test di contratto, test deterministici | **scritta** |
-| [Estendibilità](Estendibilita) | nuova materia, domanda, esame, oggetto, salvataggio: guide passo passo | **scritta** |
-| [Strumenti e metodologie](Strumenti-e-metodologie) | Gradle, Git, Issues, workflow Scrum leggero | **scritta** |
-| [Uso dell'AI](Uso-dell-AI) | per strumento, con esempi e intervento personale | prevista |
+## Documenti nel repository
+- [Documento di design](https://github.com/Zuppa-hub/SurviveTheSession/blob/main/docs/design.md): la fonte
+  di verità delle scelte, da cui sono nate queste pagine.
+- [Registro dell'uso dell'AI](https://github.com/Zuppa-hub/SurviveTheSession/blob/main/docs/ai-log/README.md):
+  una voce per ogni sessione di lavoro con Claude Code.
+- [README](https://github.com/Zuppa-hub/SurviveTheSession/blob/main/README.md): requisiti, compilazione,
+  esecuzione.
