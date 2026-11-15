@@ -91,10 +91,11 @@ I contenuti (esami, domande, profili, oggetti) sono file XML in
 ## 🤖 Uso di strumenti di AI
 
 Il progetto è sviluppato con il supporto di **Claude Code** (Anthropic), che ha scritto
-codice, test e documentazione, e di **Claude in chat**, usato per rivedere progettazione e
-pull request. Il documento di design, la scelta di cosa accettare, i test a mano e la
-revisione di ogni PR sono miei; dal 12/11, per i tempi di consegna, le soluzioni delle singole
-issue le ha decise e implementate Claude Code, nel rispetto del design.
+codice, test e documentazione, e di **Claude in chat**, con cui ho progettato il documento di
+design e rivisto proposte e pull request. Le decisioni del design, la scelta di cosa
+accettare, i test a mano e la revisione di ogni PR sono miei; dal 12/11, per i tempi di
+consegna, le soluzioni delle singole issue le ha decise e implementate Claude Code, nel
+rispetto del design.
 
 Il dettaglio è nella pagina
 [Uso dell'AI](https://github.com/Zuppa-hub/SurviveTheSession/wiki/Uso-dell-AI) della Wiki e,
