@@ -11,7 +11,9 @@ package it.unicam.cs.mpgc.rpg127295.model.question;
  */
 public interface QuestionVisitor<R> {
 
+    /** Called for a question answered by choosing an option. */
     R visitChoice(ChoiceQuestion question);
 
+    /** Called for a question answered by writing the answer. */
     R visitFillIn(FillInQuestion question);
 }

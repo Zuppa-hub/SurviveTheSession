@@ -7,6 +7,7 @@ import it.unicam.cs.mpgc.rpg127295.engine.battle.PresentedQuestion;
 import it.unicam.cs.mpgc.rpg127295.engine.game.Game;
 import it.unicam.cs.mpgc.rpg127295.model.exam.Exam;
 import it.unicam.cs.mpgc.rpg127295.model.student.Stats;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.function.Consumer;
@@ -86,7 +87,7 @@ public final class ExamController implements BattleListener {
     @FXML
     private void initialize() {
         examLabel.setText(exam.subject().name());
-        examDetailsLabel.setText(Labels.of(exam.type()) + " · " + exam.credits() + " CFU");
+        examDetailsLabel.setText(Labels.of(exam.type()) + " · " + StatTexts.credits(exam.credits()));
         boostLabel.setText("Risposta potenziata: la prossima risposta giusta toglie ×"
                 + guide.battleRules().boostedDamageMultiplier() + " di resistenza");
     }
@@ -107,7 +108,7 @@ public final class ExamController implements BattleListener {
     @Override
     public void onAnswerEvaluated(boolean correct, BattleState state) {
         AnswerFeedback feedback = AnswerFeedback.of(correct, answering);
-        feedbackLabel.getStyleClass().removeAll(AnswerFeedback.CORRECT.styleClass(), AnswerFeedback.WRONG.styleClass());
+        Arrays.stream(AnswerFeedback.values()).forEach(each -> feedbackLabel.getStyleClass().remove(each.styleClass()));
         feedbackLabel.getStyleClass().add(feedback.styleClass());
         feedbackLabel.setText(feedback.message());
     }
@@ -160,12 +161,12 @@ public final class ExamController implements BattleListener {
 
     private void showBars(BattleState state) {
         Stats stats = state.stats();
-        resistanceBar.setProgress((double) state.resistance() / state.maxResistance());
-        resistanceLabel.setText("Resistenza dell'esame " + state.resistance() + " / " + state.maxResistance());
-        energyBar.setProgress((double) stats.energy() / stats.maxEnergy());
-        energyLabel.setText("Energia " + stats.energy() + " / " + stats.maxEnergy());
-        concentrationBar.setProgress((double) stats.concentration() / stats.maxConcentration());
-        concentrationLabel.setText("Concentrazione " + stats.concentration() + " / " + stats.maxConcentration());
+        resistanceBar.setProgress(StatTexts.share(state.resistance(), state.maxResistance()));
+        resistanceLabel.setText(StatTexts.resistance(state.resistance(), state.maxResistance()));
+        energyBar.setProgress(StatTexts.share(stats.energy(), stats.maxEnergy()));
+        energyLabel.setText(StatTexts.energy(stats));
+        concentrationBar.setProgress(StatTexts.share(stats.concentration(), stats.maxConcentration()));
+        concentrationLabel.setText(StatTexts.concentration(stats));
     }
 
     private void showQuestion(PresentedQuestion presented) {

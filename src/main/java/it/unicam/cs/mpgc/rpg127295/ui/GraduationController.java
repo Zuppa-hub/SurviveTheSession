@@ -32,9 +32,9 @@ public final class GraduationController {
     private void initialize() {
         GraduationSummary summary = GraduationSummary.of(game);
         congratulationsLabel.setText("Congratulazioni, " + summary.studentName() + "!");
-        finalGradeLabel.setText("Voto di laurea " + summary.finalGrade() + "/110");
+        finalGradeLabel.setText(StatTexts.graduationGrade(summary.finalGrade()));
         averageLabel.setText("Media ponderata " + summary.averageLabel());
-        creditsLabel.setText(summary.credits() + " CFU");
+        creditsLabel.setText(StatTexts.credits(summary.credits()));
         exams.getItems().setAll(summary.exams());
     }
 

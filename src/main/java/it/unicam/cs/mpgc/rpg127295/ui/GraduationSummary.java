@@ -4,7 +4,6 @@ import it.unicam.cs.mpgc.rpg127295.engine.game.Game;
 import it.unicam.cs.mpgc.rpg127295.model.transcript.Transcript;
 import it.unicam.cs.mpgc.rpg127295.model.transcript.TranscriptEntry;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -37,7 +36,7 @@ public record GraduationSummary(String studentName, List<String> exams, double a
 
     /** @return the average with two decimals, in Italian format */
     public String averageLabel() {
-        return String.format(Locale.ITALY, "%.2f", average);
+        return StatTexts.average(average);
     }
 
     private static List<String> examLines(Transcript transcript) {
@@ -47,6 +46,7 @@ public record GraduationSummary(String studentName, List<String> exams, double a
     }
 
     private static String examLine(TranscriptEntry entry) {
-        return entry.exam().subject().name() + " · " + entry.exam().credits() + " CFU · " + entry.grade().label();
+        return entry.exam().subject().name() + " · " + StatTexts.credits(entry.exam().credits()) + " · "
+                + entry.grade().label();
     }
 }

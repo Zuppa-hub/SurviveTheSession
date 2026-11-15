@@ -116,10 +116,6 @@ public final class Game {
                 .toList();
     }
 
-    public boolean isSessionComplete() {
-        return remainingExams().isEmpty();
-    }
-
     public boolean canGraduate() {
         return graduation.canGraduate(session, student.transcript());
     }
