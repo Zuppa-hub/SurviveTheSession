@@ -35,6 +35,16 @@ class ErrorMessagesTest {
     }
 
     @Test
+    void unreadableSavesTellThatANewGameIsStillPossible() {
+        ErrorMessages message = ErrorMessages.savesUnreadable();
+
+        assertAll(
+                () -> assertEquals("Impossibile leggere le partite salvate", message.header()),
+                () -> assertEquals("La cartella dei salvataggi non è leggibile: controlla i permessi. Puoi "
+                        + "iniziare una nuova partita, ma potrebbe non essere salvata.", message.text()));
+    }
+
+    @Test
     void invalidContentStopsTheGame() {
         assertEquals("I file dei contenuti del gioco (esami, domande, oggetti) non sono validi: il gioco "
                 + "verrà chiuso.", ErrorMessages.contentInvalid().text());

@@ -1,8 +1,5 @@
 # Persistenza
 
-> Bozza: copre i salvataggi JSON (issue #9) e l'annotation dei parser (issue #29). La parte
-> sui contenuti XML (issue #5) è riassunta.
-
 Il gioco legge e scrive due tipi di dati, con esigenze diverse:
 
 | | Contenuti | Salvataggi |
@@ -18,10 +15,69 @@ In entrambi i casi l'engine non conosce il formato: usa interfacce definite in
 `persistence` contiene solo le implementazioni. La dipendenza va da `persistence` verso
 `engine`, mai il contrario (DIP).
 
-## Contenuti XML (in breve)
-I file sono letti con `getResourceAsStream`, validati con XSD (tipi condivisi in `common.xsd`
-con `xs:include`) e interrogati con XPath. Ogni errore diventa una `ContentException` con file,
-riga e colonna, e il gioco si ferma all'avvio con un messaggio chiaro.
+## Contenuti XML
+Esami, domande, profili e oggetti sono dati, non codice: aggiungere una domanda o una materia
+non richiede di ricompilare la logica (vedi [Estendibilità](Estendibilita)).
+
+| File | Contenuto | Schema |
+|---|---|---|
+| `exams.xml` | materie ed esami, nell'ordine della sessione (l'ultimo è il boss) | `exams.xsd` |
+| `questions/<materia>.xml` | le domande di una materia, un file per materia | `questions.xsd` |
+| `profiles.xml` | i profili dello studente con le statistiche iniziali | `profiles.xsd` |
+| `items.xml` | gli oggetti, con nome e descrizione | `items.xsd` |
+
+Un esempio di domanda:
+
+```xml
+<multipleChoice id="ASD-01" difficulty="EASY">
+    <prompt>Quale struttura dati restituisce per primo l'ultimo elemento inserito (politica LIFO)?</prompt>
+    <hint>Pensa all'operazione "annulla" di un editor di testo.</hint>
+    <correct>Pila (stack)</correct>
+    <wrong>Coda (queue)</wrong>
+    ...
+</multipleChoice>
+```
+
+### Lettura e validazione
+- **`XmlDocumentLoader`** legge i file dal class path con `getResourceAsStream` (funziona
+  sia dalle cartelle della build sia dentro il JAR) e li valida con lo schema. Gli schemi si
+  caricano dal loro URL, così gli `xs:include` relativi si risolvono anche nel JAR.
+- **Gli schemi controllano la struttura, non solo i tipi.** I tipi comuni (identificativi,
+  difficoltà, testi non vuoti) stanno in `common.xsd`, incluso dagli altri. In `exams.xsd`
+  `xs:key` e `xs:keyref` garantiscono che codici e id siano unici e che ogni esame si riferisca
+  a una materia esistente: un errore di battitura in `exams.xml` ferma il gioco all'avvio, non
+  a metà partita.
+- **`XmlReader`** legge i valori con XPath: `"wrong"` seleziona solo i figli diretti con quel
+  nome (con il DOM `getElementsByTagName` cercherebbe a ogni profondità) e un elemento
+  facoltativo, come l'indizio, è un'espressione che può non trovare niente. Ogni espressione è
+  compilata una volta sola.
+- **I controlli che lo schema non può fare** stanno nel codice: id delle domande unici fra
+  tutte le materie (due domande con lo stesso id sono uguali, quindi un `HashSet` trova i
+  doppioni), ogni oggetto con un effetto (`GameEffects`), gli oggetti del kit iniziale presenti
+  nel catalogo (`GameAssembly`).
+
+### Cataloghi
+`XmlExamCatalog`, `XmlProfileCatalog` e `XmlItemCatalog` implementano le interfacce di
+`engine.repository` e sono immutabili. La ricerca per chiave è comune a tutti e tre ed è in
+`CatalogIndex<T>`, usato per composizione: una `LinkedHashMap` costruita al caricamento trova
+un oggetto in tempo costante (lezione 14, `HashSet` e `HashMap`) e `all()` restituisce gli
+oggetti nell'ordine del file. `XmlQuestionRepository` legge un file per materia e trasforma
+ogni elemento con il parser registrato per il suo nome (sezione successiva), senza `switch`
+sul tipo di domanda.
+
+### Errori: fail fast
+Ogni problema diventa una `ContentException` (non controllata: all'avvio non c'è niente da
+recuperare) con il file e, quando si conosce, la riga, la colonna o l'id dell'elemento. In
+`GameApplication.start` la UI mostra un dialogo in italiano, il dettaglio va nel log e il gioco
+si chiude.
+
+### Test
+I test dei contenuti usano file XML propri in `src/test/resources/content-test`, un caso per
+cartella (`valid`, `duplicate-code`, `unknown-subject`, `zero-credits`, `five-options`,
+`duplicate-across-files`, ...), quindi non dipendono dai contenuti veri. `ShippedContentTest`
+controlla invece i contenuti consegnati: cinque esami con il progetto come boss, da 15 a 20
+domande per esame, ogni tipo di domanda e ogni difficoltà in ogni esame, i tre profili e i
+quattro oggetti.
 
 ## Annotation personalizzata `@QuestionElement` (lezione 03)
 
@@ -118,14 +174,31 @@ negativa), diventano una `SaveGameException`.
   "game": {
     "studentName": "Andrea",
     "profileId": "nerd",
-    "stats": { "knowledge": 6, "energy": 4, "maxEnergy": 8, "concentration": 3, "maxConcentration": 5 },
-    "level": 2,
-    "experience": 50,
-    "inventory": { "coffee": 2 },
-    "transcript": { "RETI1": 31, "PROG1": 27 }
+    "stats": {
+      "knowledge": 10,
+      "energy": 13,
+      "maxEnergy": 13,
+      "concentration": 6,
+      "maxConcentration": 6
+    },
+    "level": 3,
+    "experience": 84,
+    "inventory": {
+      "coffee": 2,
+      "notes": 1,
+      "summary": 1
+    },
+    "transcript": {
+      "RETI1": 31,
+      "PROG1": 27
+    }
   }
 }
 ```
+
+È un file scritto davvero da `JsonSaveGameRepository`: un Secchione che ha superato Reti con
+30 e lode e Programmazione con 27 ed è salito due volte di livello. L'Energia è al massimo
+perché si ricarica prima di ogni salvataggio.
 
 - **Versione del formato.** `formatVersion` permette di riconoscere un file scritto da una
   versione diversa del gioco: oggi vale 1, e un file con un'altra versione viene rifiutato con
@@ -161,7 +234,8 @@ vale per qualunque implementazione.
 | lo slot non è mai stato salvato | `Optional.empty()` |
 | il file non è JSON, manca la versione o manca un campo | `SaveGameException` |
 | versione del formato sconosciuta | `SaveGameException` con la versione trovata |
-| profilo, oggetto o esame inesistente; valore non valido | `SaveGameException` |
+| profilo, oggetto o esame inesistente; valore non valido o mancante (una quantità o un voto `null`) | `SaveGameException` |
+| la cartella dei salvataggi non si può leggere | `SaveGameException` da `listSlots()`: la UI mostra un avviso in italiano e prosegue senza partite salvate |
 | nome dello slot non valido | `IllegalArgumentException` |
 
 `SaveGameException` è un'eccezione dedicata, definita nell'engine accanto all'interfaccia:
@@ -169,7 +243,9 @@ chi usa il repository (la UI) può distinguere "salvataggio illeggibile" da un e
 programmazione.
 
 ### Salvataggio automatico
-La partita viene salvata dopo ogni esame concluso. `Game` però **non sa** di essere salvata:
+La partita viene salvata appena creata e dopo ogni esame concluso. Salvarla subito occupa il
+nome (due partite non possono finire nello stesso file) e chi chiude il gioco prima del primo
+esame la ritrova. `Game` però **non sa** di essere salvata:
 il salvataggio è `AutoSave`, un `GameListener` che `GameAssembly` registra
 sulla partita. Quando arriva `onExamConcluded`, `AutoSave` converte lo studente con il
 `SaveMapper` e lo salva nello slot. È lo stesso meccanismo (Observer) con cui la UI riceve

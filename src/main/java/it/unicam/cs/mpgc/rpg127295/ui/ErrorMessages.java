@@ -31,6 +31,12 @@ public record ErrorMessages(String header, String text) {
                         + "che la cartella dei salvataggi sia scrivibile.");
     }
 
+    public static ErrorMessages savesUnreadable() {
+        return new ErrorMessages("Impossibile leggere le partite salvate",
+                "La cartella dei salvataggi non è leggibile: controlla i permessi. Puoi iniziare una nuova "
+                        + "partita, ma potrebbe non essere salvata.");
+    }
+
     public static ErrorMessages contentInvalid() {
         return new ErrorMessages("Impossibile avviare il gioco",
                 "I file dei contenuti del gioco (esami, domande, oggetti) non sono validi: il gioco verrà chiuso.");

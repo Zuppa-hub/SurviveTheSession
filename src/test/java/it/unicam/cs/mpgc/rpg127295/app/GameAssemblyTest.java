@@ -2,7 +2,6 @@ package it.unicam.cs.mpgc.rpg127295.app;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import it.unicam.cs.mpgc.rpg127295.engine.FakeRandom;
@@ -123,17 +122,24 @@ class GameAssemblyTest {
     }
 
     @Test
+    void aNewGameIsSavedAtOnceWithItsStarterKit() {
+        assembly().newGame("Andrea", "nerd", "andrea");
+
+        assertAll(
+                () -> assertEquals(List.of("andrea"), assembly().savedGames()),
+                () -> assertEquals(Map.of("coffee", 1, "energy-drink", 1, "notes", 1),
+                        saves.load("andrea").orElseThrow().inventory()));
+    }
+
+    @Test
     void theGameIsSavedAfterEveryExam() {
         Game game = assembly().newGame("Andrea", "nerd", "andrea");
         Exam programming = content.exams().findByCode("PROG1").orElseThrow();
-        boolean savedBeforeTheExam = saves.load("andrea").isPresent();
+        game.student().inventory().add(item("coffee"), 1);
 
         game.startExam(programming, NO_LISTENER).retire();
 
-        assertAll(
-                () -> assertFalse(savedBeforeTheExam),
-                () -> assertEquals("Andrea", saves.load("andrea").orElseThrow().studentName()),
-                () -> assertEquals(List.of("andrea"), assembly().savedGames()));
+        assertEquals(2, saves.load("andrea").orElseThrow().inventory().get("coffee"));
     }
 
     @Test
@@ -153,7 +159,7 @@ class GameAssemblyTest {
     }
 
     @Test
-    void aFailedAutomaticSaveIsReportedAndTheGameGoesOn() {
+    void aFailedSaveAtCreationOrAfterAnExamIsReportedAndTheGameGoesOn() {
         SaveGameException diskFull = new SaveGameException("Disco pieno");
         GameAssembly assembly = new GameAssembly(content, scheduler, DIRECT, RANDOM,
                 new FailingSaveGameRepository(diskFull), saveFailures::add);
@@ -166,7 +172,7 @@ class GameAssemblyTest {
         game.startExam(programming, NO_LISTENER).retire();
 
         assertAll(
-                () -> assertEquals(List.of(diskFull, diskFull), saveFailures),
+                () -> assertEquals(List.of(diskFull, diskFull, diskFull), saveFailures),
                 () -> assertEquals(2, reports.size()));
     }
 

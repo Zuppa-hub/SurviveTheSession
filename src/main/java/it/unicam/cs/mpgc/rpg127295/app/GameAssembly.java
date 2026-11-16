@@ -7,6 +7,7 @@ import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamBattleFactory;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.ExamStrategy;
 import it.unicam.cs.mpgc.rpg127295.engine.battle.StandardBattleRules;
 import it.unicam.cs.mpgc.rpg127295.engine.game.Game;
+import it.unicam.cs.mpgc.rpg127295.engine.game.Graduation;
 import it.unicam.cs.mpgc.rpg127295.engine.game.ProgressionRules;
 import it.unicam.cs.mpgc.rpg127295.engine.game.RewardPolicy;
 import it.unicam.cs.mpgc.rpg127295.engine.game.StandardProgressionRules;
@@ -60,6 +61,7 @@ public final class GameAssembly implements GameService {
     private final ExamSession session;
     private final ProgressionRules progression = new StandardProgressionRules();
     private final RewardPolicy rewards;
+    private final Graduation graduation = new Graduation();
     private final StarterKit starterKit;
     private final GameGuide guide;
     private final SaveGameRepository saves;
@@ -70,8 +72,8 @@ public final class GameAssembly implements GameService {
      * @param scheduler    runs the countdown of timed questions; owned by the caller, who shuts it down
      * @param uiExecutor   delivers the timer notifications on the user interface thread
      * @param random       shuffles options and chooses questions and rewards
-     * @param saves        where games are saved after every exam
-     * @param saveFailures told of every automatic save that failed; the game goes on
+     * @param saves        where games are saved when created and after every exam
+     * @param saveFailures told of every save that failed; the game goes on
      * @throws ContentException if an item has no effect, or an item of the starter kit is missing
      */
     public GameAssembly(GameContent content, ScheduledExecutorService scheduler, Executor uiExecutor,
@@ -104,8 +106,8 @@ public final class GameAssembly implements GameService {
     }
 
     /**
-     * Creates a game saved in the given slot after every exam; the student receives the
-     * starter kit.
+     * Creates a game saved in the given slot at once and after every exam; the student receives
+     * the starter kit. A failed save goes to the callback and the game is created anyway.
      *
      * @param profileId one of the profiles of the content
      * @param slot      letters, digits, - and _ only
@@ -118,7 +120,9 @@ public final class GameAssembly implements GameService {
                 .orElseThrow(() -> new IllegalArgumentException("Unknown profile: " + profileId));
         Student student = new Student(name, profile);
         starterKit.giveTo(student.inventory());
-        return gameOf(student, slot);
+        AutoSave autoSave = autoSaveOf(student, slot);
+        autoSave.save();
+        return gameOf(student, autoSave);
     }
 
     /**
@@ -127,7 +131,9 @@ public final class GameAssembly implements GameService {
      */
     @Override
     public Optional<Game> loadGame(String slot) {
-        return saves.load(slot).map(data -> gameOf(mapper.toStudent(data), slot));
+        return saves.load(slot)
+                .map(mapper::toStudent)
+                .map(student -> gameOf(student, autoSaveOf(student, slot)));
     }
 
     /** @return the slots with a saved game, in alphabetical order */
@@ -142,10 +148,14 @@ public final class GameAssembly implements GameService {
         return guide;
     }
 
-    private Game gameOf(Student student, String slot) {
-        Game game = new Game(student, session, battles, progression, rewards);
-        game.addListener(new AutoSave(saves, mapper, slot, student, saveFailures));
+    private Game gameOf(Student student, AutoSave autoSave) {
+        Game game = new Game(student, session, battles, progression, rewards, graduation);
+        game.addListener(autoSave);
         return game;
+    }
+
+    private AutoSave autoSaveOf(Student student, String slot) {
+        return new AutoSave(saves, mapper, slot, student, saveFailures);
     }
 
     /** @return a scheduler with a single daemon thread, so it never keeps the application alive */

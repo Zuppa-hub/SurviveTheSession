@@ -140,17 +140,6 @@ class JsonSaveGameRepositoryTest {
                 () -> assertEquals(List.of(), new JsonSaveGameRepository(directory.resolve("missing")).listSlots()));
     }
 
-    @Test
-    void deletesASlot() {
-        JsonSaveGameRepository repository = repository();
-        repository.save("andrea", sample("Andrea"));
-
-        repository.delete("andrea");
-        repository.delete("andrea");
-
-        assertFalse(repository.load("andrea").isPresent());
-    }
-
     @ParameterizedTest
     @ValueSource(strings = {"{ not json", "[]", "{\"formatVersion\": 1}", "{\"game\": {}}",
             "{\"formatVersion\": 1, \"game\": {\"studentName\": \"Andrea\"}}"})
@@ -178,8 +167,7 @@ class JsonSaveGameRepositoryTest {
 
         assertAll(
                 () -> assertThrows(IllegalArgumentException.class, () -> repository.save(slot, sample("A"))),
-                () -> assertThrows(IllegalArgumentException.class, () -> repository.load(slot)),
-                () -> assertThrows(IllegalArgumentException.class, () -> repository.delete(slot)));
+                () -> assertThrows(IllegalArgumentException.class, () -> repository.load(slot)));
     }
 
     @Test

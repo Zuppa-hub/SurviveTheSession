@@ -211,6 +211,9 @@ public interface BattleRules {
     int damageOf(Stats stats);              // danno base + bonus della Conoscenza
     int baseEnergyLoss(Difficulty difficulty);
     int concentrationPerCorrectAnswer();
+    int extraSeconds();                     // secondi aggiunti dal Caffè
+    int energyRestored();                   // Energia recuperata con l'Energy drink
+    int boostedDamageMultiplier();          // fattore del Colpo di genio
 }
 
 /** Calcola il voto da una prestazione.
@@ -261,15 +264,17 @@ public interface ItemCatalog    { List<Item> all(); Optional<Item> findById(Stri
 public interface SaveGameRepository {           // slot: solo lettere, numeri, - e _
     void save(String slot, SaveData data);
     Optional<SaveData> load(String slot);         // vuoto se non esiste; SaveGameException se illeggibile
-    List<String> listSlots();
-    void delete(String slot);
+    List<String> listSlots();                     // SaveGameException se la cartella non si legge
 }
+// Nessun delete: nessuna schermata cancella una partita (tolto nella revisione del 16/11).
 
-/** Notifiche dall'engine alla UI (Observer, modello event-driven). */
+/** Notifiche dall'engine alla UI (Observer, modello event-driven). Ogni metodo ha
+ *  un'implementazione default vuota: un listener scrive solo le notifiche che gli servono. */
 public interface BattleListener {
     void onQuestionPresented(PresentedQuestion question, OptionalInt seconds); // opzioni già mescolate
     void onAnswerEvaluated(boolean correct, BattleState state);
     void onTimeTick(int secondsLeft);
+    void onEffectApplied(BattleState state);   // dopo un oggetto o un'abilità
     void onBattleEnded(BattleOutcome outcome);
 }
 ```
@@ -280,15 +285,15 @@ public interface BattleListener {
 | Incapsulamento, validazione nei costruttori | Stats, Grade, Exam, Student (fail fast, `IllegalArgumentException`) |
 | Ereditarietà, classi astratte | `AbstractQuestion` (campi comuni di tutte le domande), `AbstractChoiceQuestion` |
 | Interfacce, polimorfismo | Question, ExamStrategy, BattleEffect, GradeCalculator, BattleRules; Visitor (`QuestionVisitor`) al posto di `instanceof` sul tipo di domanda |
-| SRP | Transcript registra gli esami superati (senza doppioni) e calcola media ponderata sui CFU e CFU totali, e nient'altro: **non** contiene la regola di laurea né il voto di laurea (è la violazione di SRP vista a lezione con `puoLaurearsi()` in `Libretto`), che stanno in `Graduation` (#8), usata da `Game`; la formattazione dei voti sta in Grade; la stampa sta nella UI; dati e comportamento degli oggetti sono separati (Item nel model, BattleEffect nell'engine) |
+| SRP | Transcript registra gli esami superati (senza doppioni) e calcola media ponderata sui CFU e CFU totali, e nient'altro: **non** contiene la regola di laurea né il voto di laurea (è la violazione di SRP vista a lezione con `puoLaurearsi()` in `Libretto`), che stanno in `Graduation` (#8), usata da `Game`, che la riceve nel costruttore come le altre regole; la formattazione dei voti sta in Grade; la stampa sta nella UI; dati e comportamento degli oggetti sono separati (Item nel model, BattleEffect nell'engine) |
 | OCP | nuovo tipo di esame, domanda, oggetto, abilità = nuova classe, nessuna modifica all'engine; nell'engine nessuno `switch`/`if` su `ExamType`: l'associazione tipo → strategia è una `EnumMap<ExamType, ExamStrategy>` costruita in `app` e passata all'engine; allo stesso modo un nuovo oggetto = un `BattleEffect` (nuovo o esistente) + una voce nella mappa id → effetto costruita in `app`; una nuova abilità = un record `Ability` con un effetto |
 | LSP | contratti espliciti in Javadoc; metodi di validazione condivisi (es. `Grade.of(int)` unico punto di creazione) |
-| ISP | ChoiceQuestion separata da Question; listener piccoli e separati |
+| ISP | ChoiceQuestion separata da Question; `BattleControls` al posto di tutto lo scontro; `TimerListener` e `GameListener` separati da `BattleListener`. Compromesso dichiarato: `BattleListener` ha cinque notifiche con implementazione `default` vuota invece di cinque listener, perché i client sono due (la schermata d'esame e `Game`) |
 | DIP | ExamBattle dipende da ExamStrategy, GradeCalculator, QuestionTimer, BattleEffect; `Game` non conosce la persistenza: il salvataggio automatico è un `GameListener` (`AutoSave`) registrato in `app`, che dipende da `SaveGameRepository`; le interfacce di repository e cataloghi stanno in `engine.repository` (dalla parte di chi le usa) e `persistence` le implementa: la dipendenza va da `persistence` verso `engine`; tutto collegato in `app` |
 | Clean Code | nomi significativi, metodi piccoli, niente codice commentato, DRY, niente liste parallele (data clumping); niente accoppiamento temporale: un ordine di chiamate che il codice non impone (es. creare lo scontro e poi chiamare `begin()`) è uno stato non valido possibile, quindi `Game.startExam` crea e avvia lo scontro in un'unica chiamata |
 | Package | struttura per responsabilità (3.2) |
 | List | domande della sessione, ordine degli esami |
-| HashSet + equals/hashCode | esami superati; domande già poste nello scontro (`QuestionPool`, per non ripeterle); identità per `id` |
+| HashSet + equals/hashCode | domande già poste nello scontro (`QuestionPool`, per non ripeterle); controllo dei doppioni in `ExamSession`, nelle opzioni delle domande e negli id letti dai contenuti; identità per `id`. Gli esami superati sono le chiavi della mappa del libretto |
 | HashMap | libretto `Map<Exam, Grade>` (una `LinkedHashMap`, che conserva l'ordine di registrazione); inventario `Map<Item, Integer>` (quantità); effetti `Map<Item, BattleEffect>` costruita in `app` |
 | Stream API | media ponderata, CFU totali, filtri domande per difficoltà, statistiche; catene lunghe spezzate in metodi con nome |
 | Modelli di esecuzione | GUI event-driven; timer della domanda su thread separato (ScheduledExecutorService) con passaggio al thread JavaFX via `Platform.runLater`; stato condiviso protetto |
@@ -313,6 +318,7 @@ public interface BattleListener {
 - `ScheduledQuestionTimer(ScheduledExecutorService scheduler, Executor notifier)`: `scheduleAtFixedRate` ogni secondo su uno scheduler a thread singolo (daemon) creato in `app`. Il timer non possiede lo scheduler: lo chiude chi lo crea, con `shutdownNow()` in `Application.stop()` (#11).
 - **Notifiche tramite l'`Executor`**: in `app` `Platform::runLater`, nei test un esecutore diretto o in coda. Così `ExamBattle` viene modificato sempre dal solo thread della UI e resta non thread-safe per scelta (thread confinement). Le notifiche si consegnano **fuori dal lock**: chiamare codice esterno tenendo un lock rischia il deadlock.
 - **Stato condiviso protetto con `synchronized`**: tempo residuo, `ScheduledFuture`, listener e numero di generazione cambiano insieme (tick sul thread del timer, `addSeconds` del Caffè e `start`/`stop` sul thread della UI). `AtomicInteger` renderebbe atomico solo il contatore, non l'invariante su più campi. Nella Wiki si spiega il perché con la race condition del contatore della lezione 16.
+- **Scadenza decisa alla consegna**: a zero il tick non annulla il conto alla rovescia, accoda un controllo sull'`Executor`; il tempo scade solo se, alla consegna e sotto lock, i secondi sono ancora zero. Così un `addSeconds` arrivato nel frattempo (il Caffè all'ultimo istante) non viene perso e l'oggetto non è pagato a vuoto.
 - **Scadenze vecchie ignorate**: ogni `start()` e `stop()` incrementa un numero di generazione; ogni tick e ogni notifica ricorda la generazione in cui è nato e, alla consegna, viene scartato se non è più quella corrente. Così una scadenza già in coda che arriva dopo la risposta non conta sulla domanda successiva.
 - Nei test niente tempo reale: `ManualQuestionTimer` per lo scontro; per `ScheduledQuestionTimer` uno scheduler manuale (registra il compito senza pianificarlo, il test fa scattare i secondi) e un esecutore in coda che simula la coda di `Platform.runLater`.
 
@@ -323,7 +329,7 @@ public interface BattleListener {
 - Nomi degli slot: solo lettere, numeri, `-` e `_` (altrimenti `IllegalArgumentException`), così un nome non può uscire dalla cartella dei salvataggi.
 - Scrittura su un file temporaneo nella stessa cartella e poi spostamento atomico al posto del file vecchio: un'interruzione a metà non lascia mai un salvataggio troncato. Se il file system non supporta lo spostamento atomico (`AtomicMoveNotSupportedException`) si ripiega su `Files.move` con `REPLACE_EXISTING`. Lettura e scrittura con stream bufferizzati in UTF-8.
 - File mancante → `Optional.empty()`; file corrotto, versione sconosciuta o dati che non corrispondono ai contenuti (profilo, oggetto o esame inesistente) → `SaveGameException`.
-- Salvataggio automatico dopo ogni esame concluso: `AutoSave` è un `GameListener` registrato in `app`; caricamento dal menu. Un salvataggio automatico fallito non interrompe la partita: `AutoSave` cattura la `SaveGameException` e la passa a un callback (`Consumer<SaveGameException>`) che la UI usa per mostrare un avviso.
+- Salvataggio automatico alla creazione della partita (il nome è subito occupato e la partita esiste prima del primo esame) e dopo ogni esame concluso: `AutoSave` è un `GameListener` registrato in `app`; caricamento dal menu. Se l'elenco delle partite salvate non si può leggere, la UI mostra un avviso in italiano e prosegue senza partite salvate. Un salvataggio automatico fallito non interrompe la partita: `AutoSave` cattura la `SaveGameException` e la passa a un callback (`Consumer<SaveGameException>`) che la UI usa per mostrare un avviso.
 - Estensione possibile (documentata nella Wiki): `JpaSaveGameRepository` con H2, senza toccare engine e UI.
 
 ### 3.8 Interfaccia grafica
@@ -381,8 +387,9 @@ Struttura (#10, #11):
 | 10 | UI: menu, nuova partita, sessione | `feature/ui-session` |
 | 11 | UI: schermata esame, timer reale, esito, laurea | `feature/ui-battle` |
 | 12 | Contenuti: le cinque materie complete, bilanciamento | `feature/content` |
-| 13 | Revisione SOLID e Clean Code, refactoring | `refactor/review` |
-| 14 | README, Wiki, dichiarazione AI | `docs/wiki` |
+| 13 | Revisione SOLID e Clean Code, refactoring | `refactor/revisione-finale` |
+| 14 | README, Wiki, dichiarazione AI | `docs/readme-e-wiki`, `docs/uso-dell-ai` |
+| – | Correzioni dalla revisione indipendente del 16/11 | `fix/revisione-indipendente` |
 
 ## 6. Wiki prevista
 Home (descrizione, indice, avvio rapido) · Funzionalità · Architettura e responsabilità · Classi e interfacce · Principi SOLID (tutti e cinque, con esempi dal codice) · Clean Code · Strutture dati, equals e Stream · Modelli di esecuzione (timer, race condition evitata) · Persistenza (XML + JSON) · Interfaccia grafica · Testing · Estendibilità (guide passo passo: nuova materia senza codice, nuovo tipo di domanda, nuovo tipo di esame, nuovo oggetto, nuovo tipo di salvataggio) · Strumenti e metodologie (Gradle, Git, Issues, workflow Scrum leggero) · Uso dell'AI (per strumento, con esempi e intervento personale).

@@ -92,6 +92,9 @@ JUnit:
 - **`AnswerFeedback`**: il messaggio dopo una risposta (giusta, sbagliata, tempo scaduto). La
   domanda successiva compare subito, quindi il messaggio dice "Domanda precedente: ..." e sta in
   alto nella scheda, accanto alla difficoltà, non sotto le opzioni della nuova domanda.
+- **`StatTexts`**: i testi mostrati in più schermate (Energia e Concentrazione come
+  "valore / massimo", resistenza, media ponderata, CFU, voto di laurea su
+  `Graduation.GRADUATION_SCALE`) e la frazione per le barre, scritti una volta sola.
 - **`Labels`**: i nomi italiani degli enum mostrati (tipo d'esame, difficoltà della domanda),
   in `EnumMap`; un valore senza etichetta lancia un'eccezione invece di restituire `null`.
 - **`ErrorMessages`**: i testi italiani dei dialoghi d'errore (caricamento, salvataggio,
@@ -136,6 +139,11 @@ perché la prima domanda arriva subito, dentro `startExam`.
 - **Tempo scaduto.** Per lo scontro il tempo scaduto è una risposta sbagliata, ed è giusto
   così per il voto. Al giocatore però va detto: il controller alza un flag mentre passa la
   risposta allo scontro, quindi una risposta sbagliata arrivata senza il flag è una scadenza.
+  La differenza resta nella UI perché serve solo al messaggio: portarla nell'engine vorrebbe
+  dire un terzo esito della risposta che nessuna regola userebbe.
+- **Partite salvate illeggibili.** Se la cartella dei salvataggi non si può leggere, menu e
+  nuova partita chiedono l'elenco a `ViewNavigator.savedGames()`, che mostra un avviso in
+  italiano e prosegue senza partite salvate, invece di fermarsi con un'eccezione.
 - **Il timer è reale.** Le notifiche arrivano dal thread del timer attraverso
   `Platform::runLater`, quindi il controller e lo scontro vengono toccati solo dal thread di
   JavaFX (vedi [Modelli di esecuzione](Modelli-di-esecuzione)).
@@ -180,7 +188,7 @@ il gioco riproverà alla fine del prossimo esame; il dettaglio tecnico va nel lo
 I controller non hanno test automatici: un test dell'interfaccia grafica richiederebbe una
 libreria apposita e un display. Sono verificati in due modi:
 - le classi con logica (`ExamRow`, `SlotNames`, `BattleAction`, `AnswerFeedback`, `Labels`,
-  `ErrorMessages`, `InventoryRow`, `EmptyStates`, `GameGuide`, `HowToPlay`, `OutcomeSummary`,
+  `ErrorMessages`, `InventoryRow`, `EmptyStates`, `StatTexts`, `GameGuide`, `HowToPlay`, `OutcomeSummary`,
   `GraduationSummary`, `GameAssembly` come `GameService`) hanno test JUnit;
   i test della UI condividono una partita di prova (`TestGames`) con timer manuale;
 - un programma eseguito a mano, fuori dal repository, ha giocato con i contenuti veri e il

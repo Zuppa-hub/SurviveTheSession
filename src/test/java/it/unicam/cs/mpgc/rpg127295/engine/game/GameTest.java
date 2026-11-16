@@ -77,7 +77,7 @@ class GameTest {
         ExamBattleFactory battles = new ExamBattleFactory(strategies,
                 subject -> questions, services);
         Game game = new Game(student, new ExamSession(List.of(exams)), battles,
-                new StandardProgressionRules(), (exam, passedWith) -> reward);
+                new StandardProgressionRules(), (exam, passedWith) -> reward, new Graduation());
         game.addListener(reports::add);
         return game;
     }
@@ -242,7 +242,7 @@ class GameTest {
         assertAll(
                 () -> assertFalse(graduatedHalfway),
                 () -> assertEquals(Optional.empty(), gradeHalfway),
-                () -> assertTrue(game.isSessionComplete()),
+                () -> assertEquals(List.of(), game.remainingExams()),
                 () -> assertTrue(game.canGraduate()),
                 () -> assertEquals(Optional.of(99), game.graduationGrade()));
     }

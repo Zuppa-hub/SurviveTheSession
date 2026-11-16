@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
- * Saves the game after every exam. It is a {@link GameListener} registered by the application:
+ * Saves the game when it is created and after every exam. It is a {@link GameListener} registered by the application:
  * the game does not know that it is saved, nor where.
  * <p>
  * A failed save does not stop the game: the {@link SaveGameException} goes to a callback, which
@@ -35,6 +35,11 @@ final class AutoSave implements GameListener {
 
     @Override
     public void onExamConcluded(ExamReport report) {
+        save();
+    }
+
+    /** Saves the game as it is now; a failure goes to the callback. */
+    void save() {
         try {
             saves.save(slot, mapper.toData(student));
         } catch (SaveGameException failure) {

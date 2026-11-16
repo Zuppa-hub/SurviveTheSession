@@ -17,9 +17,16 @@ public interface BattleListener {
     default void onQuestionPresented(PresentedQuestion question, OptionalInt secondsToAnswer) {
     }
 
+    /**
+     * Called after every answer, an expired time included (as a wrong answer), before the next
+     * question is presented or the battle ends.
+     *
+     * @param state the state after the answer
+     */
     default void onAnswerEvaluated(boolean correct, BattleState state) {
     }
 
+    /** Called every second while a timed question waits for an answer. */
     default void onTimeTick(int secondsLeft) {
     }
 
@@ -27,6 +34,7 @@ public interface BattleListener {
     default void onEffectApplied(BattleState state) {
     }
 
+    /** Called once, when the battle ends for any reason; no notification follows. */
     default void onBattleEnded(BattleOutcome outcome) {
     }
 }

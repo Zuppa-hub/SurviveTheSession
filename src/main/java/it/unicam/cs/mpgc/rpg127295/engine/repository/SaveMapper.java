@@ -52,10 +52,12 @@ public final class SaveMapper {
             student.updateStats(current -> new Stats(stats.knowledge(), stats.energy(), stats.maxEnergy(),
                     stats.concentration(), stats.maxConcentration()));
             student.updateLevel(current -> new Level(data.level(), data.experience()));
-            data.inventory().forEach((id, quantity) -> student.inventory().add(itemOf(id), quantity));
-            data.transcript().forEach((code, grade) -> student.transcript().record(examOf(code), Grade.of(grade)));
+            data.inventory().forEach((id, quantity) -> student.inventory()
+                    .add(itemOf(id), required(quantity, "quantity for item " + id)));
+            data.transcript().forEach((code, grade) -> student.transcript()
+                    .record(examOf(code), Grade.of(required(grade, "grade for exam " + code))));
             return student;
-        } catch (IllegalArgumentException | IllegalStateException | NullPointerException invalid) {
+        } catch (IllegalArgumentException | IllegalStateException invalid) {
             throw new SaveGameException("Invalid saved game: " + invalid.getMessage(), invalid);
         }
     }
@@ -73,6 +75,13 @@ public final class SaveMapper {
             transcript.put(entry.exam().code(), entry.grade().value());
         }
         return transcript;
+    }
+
+    private static int required(Integer value, String what) {
+        if (value == null) {
+            throw new SaveGameException("Invalid saved game: no " + what);
+        }
+        return value;
     }
 
     private StudentProfile profileOf(SaveData data) {

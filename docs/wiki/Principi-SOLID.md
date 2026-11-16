@@ -144,8 +144,9 @@ privata di `ExamBattle`, passata all'effetto solo dopo le verifiche. È anche in
 chiunque, anche la UI, potrebbe dare tempo extra senza consumare un Caffè.
 
 ### Interfacce piccole per la UI e per il timer
-- `GameService` ha i quattro metodi che servono alla UI per iniziare o riprendere una partita
-  (`profiles`, `savedGames`, `newGame`, `loadGame`), non tutto `GameAssembly`.
+- `GameService` ha i cinque metodi che servono alla UI per iniziare o riprendere una partita e
+  per spiegare le regole (`profiles`, `savedGames`, `guide`, `newGame`, `loadGame`), non tutto
+  `GameAssembly`.
 - `TimerListener` (`onTick`, `onExpired`) è separato da `BattleListener`: il timer non sa niente
   di domande e risposte.
 - `GameListener` ha un solo metodo ed è `@FunctionalInterface`: la UI lo registra con una lambda,

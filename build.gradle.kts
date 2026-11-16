@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "it.unicam.cs.mpgc"
-version = "0.1.0"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -31,10 +31,6 @@ dependencies {
 
 application {
     mainClass = "it.unicam.cs.mpgc.rpg127295.app.Main"
-}
-
-tasks.named<JavaExec>("run") {
-    standardInput = System.`in`
 }
 
 tasks.test {

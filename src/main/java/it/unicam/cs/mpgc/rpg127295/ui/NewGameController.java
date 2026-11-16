@@ -43,7 +43,7 @@ public final class NewGameController {
             return;
         }
         String slot = SlotNames.fromPlayerName(name);
-        if (games.savedGames().contains(slot)) {
+        if (navigator.savedGames().contains(slot)) {
             errorLabel.setText("Esiste già una partita salvata come \"" + slot + "\": scegli un altro nome.");
             return;
         }

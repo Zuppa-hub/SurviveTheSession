@@ -27,6 +27,12 @@ public final class Alerts {
         dialog(Alert.AlertType.WARNING, "Salvataggio non riuscito", ErrorMessages.saveFailed()).show();
     }
 
+    /** Does not wait for the player: the menu is shown anyway, without saved games. */
+    public static void savesUnreadable(SaveGameException failure) {
+        LOG.log(Level.WARNING, "Cannot list the saved games", failure);
+        dialog(Alert.AlertType.WARNING, "Partite salvate", ErrorMessages.savesUnreadable()).show();
+    }
+
     public static void loadFailed(String slot, SaveGameException failure) {
         LOG.log(Level.WARNING, "Cannot load slot " + slot, failure);
         error(ErrorMessages.loadFailed(slot));

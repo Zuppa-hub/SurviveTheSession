@@ -38,7 +38,9 @@ creare voti che bisognerebbe validare di nuovo.
 
 `Grade` è un value object: due voti sono uguali se hanno lo stesso valore. Offre
 `label()` per il testo mostrato al giocatore ("28", "30 e lode"), `valueForAverage()` (la
-lode vale 30 nella media) ed è `Comparable`.
+lode vale 30 nella media) ed è `Comparable`. "30 e lode" è un testo italiano nel model, come
+"Vero" e "Falso" di `TrueFalseQuestion`: sono il nome del voto e il testo della risposta, cioè
+dati del dominio, non etichette di una schermata (quelle stanno in `ui.Labels`).
 
 ### `Exam` ed `ExamType`
 `Exam` ha codice, materia, tipo, CFU e difficoltà. La sua identità è il **codice**: due
@@ -181,7 +183,10 @@ student.updateStats(stats -> stats.loseEnergy(3));
 ```
 
 `Student` espone direttamente `Inventory` e `Transcript`, che proteggono da soli le
-proprie regole. Non ha `equals`: non ha un'identità stabile (il nome non è unico).
+proprie regole. È una scelta lasciata così dopo la revisione finale: li modificano solo `Game`,
+lo scontro e il caricamento, mentre la UI li legge soltanto; delle viste di sola lettura per la
+UI chiuderebbero anche questa porta, ma sono due interfacce in più per un rischio che oggi non
+esiste, e sono rimandate. Non ha `equals`: non ha un'identità stabile (il nome non è unico).
 
 ## Oggetti
 
@@ -191,7 +196,10 @@ durante un esame (ad esempio il Caffè che aggiunge 15 secondi) dipende dallo st
 scontro, che è nell'engine. Se `Item` contenesse quel comportamento, il model dipenderebbe
 dall'engine. Per questo il comportamento sta in un'interfaccia dell'engine,
 `BattleEffect`, e l'associazione `Item → BattleEffect` è una mappa costruita all'avvio, in `app`
-(`GameEffects`).
+(`GameEffects`). Gli id sono stringhe (`"coffee"`) scritte in `app`, accanto all'effetto:
+un enum degli oggetti obbligherebbe a modificare il codice per ogni oggetto aggiunto in
+`items.xml`, e un id sbagliato ferma comunque l'avvio. Anche i nomi delle abilità ("Ripasso
+lampo") sono lì: le abilità non hanno un file di contenuti, sono due record.
 
 ### `Inventory`
 Associa a ogni oggetto la sua quantità (`Map<Item, Integer>`). Invariante: le quantità
@@ -353,7 +361,9 @@ studente non viene penalizzato perché il contenuto è finito.
 Il pool contiene le domande della materia per un solo scontro. Le domande già poste stanno
 in un `HashSet<Question>`, che usa l'`equals` di `Question`: due domande con lo stesso id
 sono la stessa domanda anche se arrivassero da oggetti diversi. La scelta tra le candidate
-la fa il `RandomGenerator` iniettato.
+la fa il `RandomGenerator` iniettato. Per l'orale che incalza serve la difficoltà più vicina a
+quella chiesta: la distanza la calcola `Difficulty.distanceFrom`, così l'ordine delle
+difficoltà resta un dettaglio dell'enum e il pool non usa `ordinal()`.
 
 ### Opzioni mescolate senza toccare le domande
 `PresentedQuestion` è la domanda come la vede il giocatore: la domanda stessa più le opzioni
@@ -592,15 +602,16 @@ se contenesse anche le regole di laurea. Il voto di laurea è la media ponderata
 110 (media × 110 / 30, arrotondata): la proporzione lineare tra le due scale, per cui una
 media di 30 vale 110 e una di 18 vale 66. Punti bonus e lode di laurea dipendono dai
 regolamenti dei corsi e sono esclusi. `Graduation` è una classe semplice, senza interfaccia:
-c'è una sola regola, e un'interfaccia non risolverebbe nessun problema reale.
+c'è una sola regola, e un'interfaccia non risolverebbe nessun problema reale. `Game` la riceve
+nel costruttore da `GameAssembly`, come le regole di progressione e di ricompensa.
 
 ### `GameAssembly`: la composition root
 `GameAssembly` (in `app`) è l'unico punto in cui si scelgono e si collegano le
 implementazioni concrete: regole, calcolatore del voto, timer reale, strategie nella
 `EnumMap`, effetti di `GameEffects`, ricompense e sessione presa da `exams.xml`. Costruisce
 tutto nel costruttore, quindi una strategia mancante o un oggetto senza effetto fermano
-l'avvio. `newGame(nome, profilo)` crea lo studente e la partita. `Main` costruisce
-l'assembly e chiude lo scheduler del timer, nient'altro; un test collega i contenuti veri con
+l'avvio. `newGame(nome, profilo, slot)` crea lo studente e la partita e la salva subito.
+`GameApplication` costruisce l'assembly e chiude lo scheduler del timer, nient'altro; un test collega i contenuti veri con
 l'engine e avvia uno scritto, verificando timer e abilità.
 
 ### Verifica dei test
@@ -619,7 +630,9 @@ persistenza. I dettagli (versione del formato, scrittura atomica, errori) sono n
 
 `GameService` (interfaccia definita nella UI, implementata da `GameAssembly`), `ViewNavigator`
 (carica gli FXML e crea i controller con le loro dipendenze), i controller `MenuController`,
-`NewGameController`, `SessionController`, `ExamController`, `OutcomeController`,
-`GraduationController`, le classi di supporto testate `ExamRow`, `SlotNames`, `BattleAction`,
-`AnswerFeedback`, `OutcomeSummary`, `GraduationSummary`, e `Alerts`. In `app`, `GameApplication` avvia e chiude JavaFX. I dettagli sono nella pagina
+`NewGameController`, `HowToPlayController`, `SessionController`, `ExamController`,
+`OutcomeController`, `GraduationController`, le classi di supporto testate `ExamRow`,
+`SlotNames`, `BattleAction`, `AnswerFeedback`, `Labels`, `ErrorMessages`, `InventoryRow`,
+`EmptyStates`, `StatTexts`, `GameGuide`, `HowToPlay`, `OutcomeSummary`, `GraduationSummary`, e
+`Alerts` e `Placeholders`. In `app`, `GameApplication` avvia e chiude JavaFX. I dettagli sono nella pagina
 [Interfaccia grafica](Interfaccia-grafica).

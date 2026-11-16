@@ -162,6 +162,52 @@ class ScheduledQuestionTimerTest {
     }
 
     @Test
+    void secondsAddedBeforeTheExpiryIsDeliveredAvoidIt() {
+        QueuedExecutor notifier = new QueuedExecutor();
+        ScheduledQuestionTimer timer = timer(notifier);
+        timer.start(1, listener);
+        scheduler.tick();
+
+        timer.addSeconds(15);
+        notifier.runAll();
+        scheduler.tick();
+        notifier.runAll();
+
+        assertAll(
+                () -> assertEquals(0, listener.expiries),
+                () -> assertEquals(List.of(0, 14), listener.ticks),
+                () -> assertEquals(1, scheduler.activeTasks()));
+    }
+
+    @Test
+    void aTickWhileTheExpiryWaitsInTheQueueDoesNotCountBelowZero() {
+        QueuedExecutor notifier = new QueuedExecutor();
+        timer(notifier).start(1, listener);
+
+        scheduler.tick(2);
+        notifier.runAll();
+
+        assertAll(
+                () -> assertEquals(List.of(0), listener.ticks),
+                () -> assertEquals(1, listener.expiries),
+                () -> assertEquals(0, scheduler.activeTasks()));
+    }
+
+    @Test
+    void twoExpiriesWaitingInTheQueueCountOnce() {
+        QueuedExecutor notifier = new QueuedExecutor();
+        ScheduledQuestionTimer timer = timer(notifier);
+        timer.start(1, listener);
+        scheduler.tick();
+        timer.addSeconds(1);
+        scheduler.tick();
+
+        notifier.runAll();
+
+        assertEquals(1, listener.expiries);
+    }
+
+    @Test
     void rejectsInvalidArguments() {
         ScheduledQuestionTimer timer = timer(DIRECT);
 

@@ -37,8 +37,4 @@ public record BattleState(int resistance, int maxResistance, Stats stats, Perfor
             throw new IllegalArgumentException("Only a question waiting for an answer can be timed");
         }
     }
-
-    public boolean isExamDefeated() {
-        return resistance == 0;
-    }
 }

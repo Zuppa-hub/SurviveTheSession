@@ -39,17 +39,18 @@ public final class Game {
     private final ExamBattleFactory battles;
     private final ProgressionRules progression;
     private final RewardPolicy rewards;
-    private final Graduation graduation = new Graduation();
+    private final Graduation graduation;
     private final List<GameListener> listeners = new ArrayList<>();
     private Optional<ExamBattle> currentBattle = Optional.empty();
 
     public Game(Student student, ExamSession session, ExamBattleFactory battles,
-                ProgressionRules progression, RewardPolicy rewards) {
+                ProgressionRules progression, RewardPolicy rewards, Graduation graduation) {
         this.student = Objects.requireNonNull(student, "Student must not be null");
         this.session = Objects.requireNonNull(session, "Session must not be null");
         this.battles = Objects.requireNonNull(battles, "Battle factory must not be null");
         this.progression = Objects.requireNonNull(progression, "Progression rules must not be null");
         this.rewards = Objects.requireNonNull(rewards, "Reward policy must not be null");
+        this.graduation = Objects.requireNonNull(graduation, "Graduation rules must not be null");
     }
 
     public void addListener(GameListener listener) {
@@ -114,10 +115,6 @@ public final class Game {
         return remaining.stream()
                 .filter(exam -> !exam.equals(session.boss()))
                 .toList();
-    }
-
-    public boolean isSessionComplete() {
-        return remainingExams().isEmpty();
     }
 
     public boolean canGraduate() {

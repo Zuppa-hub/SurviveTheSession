@@ -23,10 +23,10 @@ applicate, con esempi dal codice.
 
 - **Niente numeri magici.** I valori hanno un nome: `SECONDS_PER_QUESTION = 30` in
   `WrittenExamStrategy`, `MISTAKE_MULTIPLIER = 2` in `ProjectExamStrategy`,
-  `EXPERIENCE_PER_LEVEL = 100` in `StandardProgressionRules`, `GRADUATION_SCALE = 110` in
+  `EXPERIENCE_PER_LEVEL = 50` in `StandardProgressionRules`, `GRADUATION_SCALE = 110` in
   `Graduation`, `WRONG_OPTIONS_REMOVED = 2` negli Appunti.
 - **Nomi in inglese nel codice, testi in italiano solo per il giocatore** (regola 2): le
-  etichette come "Scritto" o "30 e lode" stanno in `ExamRow` e in `Grade.label()`.
+  etichette come "Scritto" o "30 e lode" stanno in `Labels` e in `Grade.label()`.
 
 ## Metodi piccoli
 
@@ -63,6 +63,8 @@ Le catene di Stream lunghe sono spezzate in metodi privati con nome (regola 6): 
 | ricerca per chiave nei tre cataloghi XML | `CatalogIndex<T>`, usato per composizione |
 | tipi XML ripetuti negli schemi | `common.xsd`, incluso con `xs:include` |
 | validazione dei nomi degli slot | `SaveGameRepository.requireValidSlot`, statico nell'interfaccia: vale per ogni implementazione |
+| testi di statistiche, media, CFU e voto di laurea mostrati in più schermate | `StatTexts` (il 110 viene da `Graduation.GRADUATION_SCALE`) |
+| numeri delle regole nelle pagine di Come si gioca | `GameGuide`, che li legge dalle regole delle partite |
 
 `refusalOf` è l'esempio più chiaro. Senza di lui `canUse(item)`, `canUse(ability)`,
 `useItem` e `useAbility` ripeterebbero le stesse quattro verifiche. Con il record privato `Attempt`
@@ -186,3 +188,24 @@ Niente codice commentato e niente commenti ovvi (regola 7). La Javadoc spiega il
 **perché** delle scelte, non il come. Ad esempio in `ExamSession`: "The session does not know which
 exams are passed: that is recorded once, in the transcript, and the game combines the two. Keeping a
 second list here would duplicate that state."
+
+## Revisione finale (#13)
+Alla fine del progetto tutto il codice è stato riletto rispetto al §4 del design, a SOLID e
+a Clean Code, cercando metodi lunghi, classi con più responsabilità, numeri magici, stringhe
+ripetute, codice morto, contratti senza Javadoc, classi senza test e cicli tra package. Si è
+corretto solo ciò che migliorava davvero il codice:
+- **codice morto**: `Game.isSessionComplete` e `BattleState.isExamDefeated` erano usati solo dai
+  test, e un import inutile in `ExamBattle`;
+- **stringhe ripetute nella UI**: "Energia x / y", la media, i CFU e "/110" erano scritti in
+  tre controller, ora stanno in `StatTexts`;
+- **dipendenza strana tra controller**: la sessione usava un metodo statico di
+  `MenuController` per il testo delle liste vuote, ora è `Placeholders`;
+- **contratti**: Javadoc aggiunta a `RewardPolicy`, `GameListener`, `BattleListener`,
+  `QuestionVisitor` e `ProgressionRules`;
+- **test**: `BattleServices` e `SaveGameException` non avevano test.
+
+Cose lasciate così, con il motivo, sono elencate nella PR della #13: ad esempio
+`ExamController` resta un solo controller (223 righe, ma metodi brevi e un'unica schermata da
+aggiornare). Le dipendenze tra package vanno in una sola direzione, senza cicli: `app` →
+`ui`/`persistence` → `engine` → `model`.
+

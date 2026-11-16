@@ -26,9 +26,4 @@ final class InMemorySaveGameRepository implements SaveGameRepository {
     public List<String> listSlots() {
         return List.copyOf(slots.keySet());
     }
-
-    @Override
-    public void delete(String slot) {
-        slots.remove(SaveGameRepository.requireValidSlot(slot));
-    }
 }
