@@ -26,6 +26,10 @@ import java.util.concurrent.TimeUnit;
  *       generation. Each tick and each notification remembers its generation and is dropped
  *       if it is no longer the current one, so an expiry already queued when the player
  *       answers never counts against the next question.</li>
+ *   <li><b>Expiry decided at delivery</b>: at zero the tick only asks the notifier to check.
+ *       The countdown expires when that check runs, on the thread of the listener, and only if
+ *       the seconds are still zero: seconds added in between (a Coffee used at the last
+ *       instant) keep the countdown going instead of being lost.</li>
  * </ul>
  * The scheduler is not owned: whoever creates it shuts it down.
  */
@@ -101,21 +105,32 @@ public final class ScheduledQuestionTimer implements QuestionTimer {
         TimerListener target;
         int left;
         synchronized (lock) {
-            if (tickGeneration != generation) {
+            if (tickGeneration != generation || secondsLeft == 0) {
                 return;
             }
             secondsLeft--;
             left = secondsLeft;
             target = listener;
-            if (left == 0) {
-                countdown.cancel(false);
-                countdown = null;
-            }
         }
         deliver(tickGeneration, () -> target.onTick(left));
         if (left == 0) {
-            deliver(tickGeneration, target::onExpired);
+            notifier.execute(() -> expireIfStillAtZero(tickGeneration, target));
         }
+    }
+
+    /**
+     * Runs where the notifications are delivered. The countdown ends here and not in the tick,
+     * so seconds added while this check was waiting are not lost.
+     */
+    private void expireIfStillAtZero(int tickGeneration, TimerListener target) {
+        synchronized (lock) {
+            if (tickGeneration != generation || countdown == null || secondsLeft > 0) {
+                return;
+            }
+            countdown.cancel(false);
+            countdown = null;
+        }
+        target.onExpired();
     }
 
     private void deliver(int notificationGeneration, Runnable notification) {
