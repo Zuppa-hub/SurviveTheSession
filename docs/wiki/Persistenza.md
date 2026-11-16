@@ -174,14 +174,31 @@ negativa), diventano una `SaveGameException`.
   "game": {
     "studentName": "Andrea",
     "profileId": "nerd",
-    "stats": { "knowledge": 6, "energy": 4, "maxEnergy": 8, "concentration": 3, "maxConcentration": 5 },
-    "level": 2,
-    "experience": 50,
-    "inventory": { "coffee": 2 },
-    "transcript": { "RETI1": 31, "PROG1": 27 }
+    "stats": {
+      "knowledge": 10,
+      "energy": 13,
+      "maxEnergy": 13,
+      "concentration": 6,
+      "maxConcentration": 6
+    },
+    "level": 3,
+    "experience": 84,
+    "inventory": {
+      "coffee": 2,
+      "notes": 1,
+      "summary": 1
+    },
+    "transcript": {
+      "RETI1": 31,
+      "PROG1": 27
+    }
   }
 }
 ```
+
+È un file scritto davvero da `JsonSaveGameRepository`: un Secchione che ha superato Reti con
+30 e lode e Programmazione con 27 ed è salito due volte di livello. L'Energia è al massimo
+perché si ricarica prima di ogni salvataggio.
 
 - **Versione del formato.** `formatVersion` permette di riconoscere un file scritto da una
   versione diversa del gioco: oggi vale 1, e un file con un'altra versione viene rifiutato con
@@ -217,7 +234,8 @@ vale per qualunque implementazione.
 | lo slot non è mai stato salvato | `Optional.empty()` |
 | il file non è JSON, manca la versione o manca un campo | `SaveGameException` |
 | versione del formato sconosciuta | `SaveGameException` con la versione trovata |
-| profilo, oggetto o esame inesistente; valore non valido | `SaveGameException` |
+| profilo, oggetto o esame inesistente; valore non valido o mancante (una quantità o un voto `null`) | `SaveGameException` |
+| la cartella dei salvataggi non si può leggere | `SaveGameException` da `listSlots()`: la UI mostra un avviso in italiano e prosegue senza partite salvate |
 | nome dello slot non valido | `IllegalArgumentException` |
 
 `SaveGameException` è un'eccezione dedicata, definita nell'engine accanto all'interfaccia:
@@ -225,7 +243,9 @@ chi usa il repository (la UI) può distinguere "salvataggio illeggibile" da un e
 programmazione.
 
 ### Salvataggio automatico
-La partita viene salvata dopo ogni esame concluso. `Game` però **non sa** di essere salvata:
+La partita viene salvata appena creata e dopo ogni esame concluso. Salvarla subito occupa il
+nome (due partite non possono finire nello stesso file) e chi chiude il gioco prima del primo
+esame la ritrova. `Game` però **non sa** di essere salvata:
 il salvataggio è `AutoSave`, un `GameListener` che `GameAssembly` registra
 sulla partita. Quando arriva `onExamConcluded`, `AutoSave` converte lo studente con il
 `SaveMapper` e lo salva nello slot. È lo stesso meccanismo (Observer) con cui la UI riceve

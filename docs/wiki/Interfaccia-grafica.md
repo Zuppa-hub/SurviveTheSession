@@ -139,6 +139,11 @@ perché la prima domanda arriva subito, dentro `startExam`.
 - **Tempo scaduto.** Per lo scontro il tempo scaduto è una risposta sbagliata, ed è giusto
   così per il voto. Al giocatore però va detto: il controller alza un flag mentre passa la
   risposta allo scontro, quindi una risposta sbagliata arrivata senza il flag è una scadenza.
+  La differenza resta nella UI perché serve solo al messaggio: portarla nell'engine vorrebbe
+  dire un terzo esito della risposta che nessuna regola userebbe.
+- **Partite salvate illeggibili.** Se la cartella dei salvataggi non si può leggere, menu e
+  nuova partita chiedono l'elenco a `ViewNavigator.savedGames()`, che mostra un avviso in
+  italiano e prosegue senza partite salvate, invece di fermarsi con un'eccezione.
 - **Il timer è reale.** Le notifiche arrivano dal thread del timer attraverso
   `Platform::runLater`, quindi il controller e lo scontro vengono toccati solo dal thread di
   JavaFX (vedi [Modelli di esecuzione](Modelli-di-esecuzione)).

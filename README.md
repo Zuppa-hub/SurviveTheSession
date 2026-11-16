@@ -34,7 +34,7 @@ cd SurviveTheSession
 ./gradlew test    # solo i test
 ```
 
-Le partite si salvano da sole alla fine di ogni esame in
+Le partite si salvano da sole alla creazione e alla fine di ogni esame in
 `~/.sopravvivi-alla-sessione/saves/`, un file JSON per partita.
 
 ---

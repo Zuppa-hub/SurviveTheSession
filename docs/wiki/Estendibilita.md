@@ -9,7 +9,7 @@ un'estensione non è "solo una classe nuova" lo si dice chiaramente.
 | nuova materia | nessuno (solo XML) | nessuna |
 | nuovo tipo di domanda a scelta | una riga in `GameContent` | domanda, parser |
 | nuova categoria di domanda | `QuestionVisitor` e i suoi visitor, probabilmente la schermata d'esame | domanda, parser |
-| nuovo tipo d'esame | `ExamType`, `GameAssembly.strategies()`, `ExamRow` | strategia |
+| nuovo tipo d'esame | `ExamType`, `GameAssembly.strategies()`, `Labels` | strategia |
 | nuovo oggetto | una voce in `GameEffects` | un effetto, se nessuno di quelli esistenti va bene |
 | nuovo formato di salvataggio | una riga in `GameApplication` | il repository |
 
@@ -118,9 +118,9 @@ Un tipo d'esame è un comportamento (Strategy): prossima domanda, timer, peso de
 5. **Lo schema**: aggiungere `LAB` all'enumerazione `examType` di `exams.xsd`, altrimenti un esame
    con `type="LAB"` non supera la validazione. `XmlExamCatalog` usa `ExamType.valueOf`, quindi non
    cambia.
-6. **L'etichetta nella UI**: aggiungere il nome in italiano alla mappa `TYPE_LABELS` di `ExamRow`.
-   Qui **non c'è un controllo all'avvio**: senza la voce, `ExamRow.typeLabelOf` restituisce `null` e
-   la schermata non mostrerebbe il tipo dell'esame.
+6. **L'etichetta nella UI**: aggiungere il nome in italiano alla mappa `EXAM_TYPES` di `Labels`.
+   Qui **non c'è un controllo all'avvio**: senza la voce, `Labels.of(ExamType)` lancia
+   `IllegalStateException` ("No label for LAB") quando la sessione o l'esame mostrano il tipo.
 
 Lo scontro (`ExamBattle`) non cambia: non sa di che tipo è l'esame.
 
@@ -167,7 +167,6 @@ Esempio: salvare su un database (`JpaSaveGameRepository` con H2) invece che in f
    - `save(slot, data)` sostituisce quello che c'era;
    - `load(slot)` restituisce `Optional.empty()` se lo slot non esiste;
    - `listSlots()` restituisce gli slot in ordine alfabetico;
-   - `delete(slot)` non fa niente se lo slot non esiste;
    - ogni nome di slot passa da `SaveGameRepository.requireValidSlot`;
    - ogni errore di lettura o scrittura diventa una `SaveGameException`.
 

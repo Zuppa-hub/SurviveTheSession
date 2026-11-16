@@ -1,6 +1,6 @@
 # Testing
 
-Il progetto ha **720 test JUnit** (JUnit 6, al momento di questa pagina), tutti verdi con
+Il progetto ha **727 test JUnit** (JUnit 6, al momento di questa pagina), tutti verdi con
 `./gradlew clean build`. Ogni classe di `model` ed `engine` ha i suoi test (regola 8 del design);
 hanno test anche `persistence`, la composition root e le classi di supporto della UI.
 

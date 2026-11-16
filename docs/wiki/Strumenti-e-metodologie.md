@@ -58,7 +58,7 @@ JavaFX (`JavaFXPlugin.java:95`) e lasciato com'è, perché non dipende dal proge
 ### Branch
 | Branch | Uso |
 |---|---|
-| `main` | solo le release, con il tag (`v0.1`) |
+| `main` | solo le release, con il tag (`v0.1`, `v0.2`, `v1.0`) |
 | `develop` | integrazione: ogni PR entra qui |
 | `feature/<nome>` | una issue di codice, ad esempio `feature/battle` (#7), `feature/save-json` (#9) |
 | `fix/`, `refactor/`, `docs/`, `content/` | correzioni, refactoring, documentazione e contenuti: `fix/prog-questions`, `refactor/catalog-lookup`, `docs/readme`, `content/exams` |
@@ -108,8 +108,9 @@ annotato**, `v0.1`, con il messaggio "Release v0.1: model, contenuti XML, engine
 timer, partita), salvataggi JSON, GUI JavaFX".
 
 La PR di release chiude anche le issue (`Closes #2`, ...): GitHub chiude una issue solo quando la
-modifica arriva sul branch principale, non quando entra in `develop`. Le release successive (v0.2)
-seguiranno lo stesso percorso.
+modifica arriva sul branch principale, non quando entra in `develop`. La `v0.2` (PR #48: gioco
+completo con GUI, bilanciamento, correzioni dai test manuali, Come si gioca) ha seguito lo stesso
+percorso; la `v1.0` è la release di consegna.
 
 ## GitHub Issues come backlog
 
@@ -145,7 +146,7 @@ cerimonie pensate per un gruppo:
 | incremento | ogni PR lascia `develop` funzionante: `./gradlew clean build` verde |
 | definition of done | test verdi, design aggiornato se la scelta cambia, pagina della Wiki aggiornata nella PR, una voce nel registro AI |
 | revisione | Andrea legge ogni PR, con la "Guida alla revisione", prima del merge |
-| release | `develop` → `main` con un tag (`v0.1`) |
+| release | `develop` → `main` con un tag (`v0.1`, `v0.2`, `v1.0`) |
 
 La Wiki si aggiorna **nella PR della issue**, con un commit `docs:` prima di quello del registro:
 così documentazione e codice entrano in `develop` insieme e non restano indietro.

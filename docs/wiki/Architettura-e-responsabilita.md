@@ -91,15 +91,19 @@ mutabile (regola 5 del design).
 | `GameContent` | sceglie le implementazioni XML dei cataloghi e i parser delle domande (letti da `@QuestionElement`) |
 | `GameEffects` | associa ogni oggetto di `items.xml` al suo `BattleEffect` per id, e definisce le abilità |
 | `GameAssembly` | collega regole, calcolatore del voto, timer, strategie, effetti, ricompense e salvataggi; implementa `ui.GameService` |
-| `AutoSave` | il `GameListener` che salva dopo ogni esame |
+| `AutoSave` | il `GameListener` che salva la partita alla creazione e dopo ogni esame |
 
 Il cuore di `GameAssembly` è il costruttore: è qui, e solo qui, che compaiono le classi concrete
 dell'engine.
 
 ```java
-BattleServices services = new BattleServices(new StandardBattleRules(), new PerformanceGradeCalculator(),
-        new ScheduledQuestionTimer(scheduler, uiExecutor), random, GameEffects.of(content.items()));
-this.battles = new ExamBattleFactory(strategies(), content.questions(), services);
+BattleRules rules = new StandardBattleRules();
+GradeCalculator grades = new PerformanceGradeCalculator();
+BattleEffects effects = GameEffects.of(content.items());
+Map<ExamType, ExamStrategy> strategies = strategies();
+BattleServices services = new BattleServices(rules, grades,
+        new ScheduledQuestionTimer(scheduler, uiExecutor), random, effects);
+this.battles = new ExamBattleFactory(strategies, content.questions(), services);
 ```
 
 Le strategie arrivano in una `EnumMap` costruita in `app`:
