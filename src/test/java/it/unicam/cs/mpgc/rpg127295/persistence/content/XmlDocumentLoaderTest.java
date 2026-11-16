@@ -54,6 +54,13 @@ class XmlDocumentLoaderTest {
     }
 
     @Test
+    void rejectsNullRoots() {
+        assertAll(
+                () -> assertThrows(NullPointerException.class, () -> new XmlDocumentLoader(null, "/schema/")),
+                () -> assertThrows(NullPointerException.class, () -> new XmlDocumentLoader("/content/", null)));
+    }
+
+    @Test
     void reportsAnInvalidSchema() {
         assertTrue(failureLoading("valid.xml", "broken.xsd").getMessage().contains("broken.xsd"));
     }

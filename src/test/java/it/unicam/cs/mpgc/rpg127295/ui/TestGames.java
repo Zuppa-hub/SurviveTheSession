@@ -16,6 +16,7 @@ import it.unicam.cs.mpgc.rpg127295.engine.effect.ExtraTimeEffect;
 import it.unicam.cs.mpgc.rpg127295.engine.effect.FiftyFiftyEffect;
 import it.unicam.cs.mpgc.rpg127295.engine.effect.HintEffect;
 import it.unicam.cs.mpgc.rpg127295.engine.game.Game;
+import it.unicam.cs.mpgc.rpg127295.engine.game.Graduation;
 import it.unicam.cs.mpgc.rpg127295.engine.game.Reward;
 import it.unicam.cs.mpgc.rpg127295.engine.game.RewardPolicy;
 import it.unicam.cs.mpgc.rpg127295.engine.game.StandardProgressionRules;
@@ -93,6 +94,6 @@ final class TestGames {
         Student student = new Student("Andrea",
                 new StudentProfile("nerd", "Secchione", "Studia sempre", Stats.initial(5, 6, 4)));
         return new Game(student, new ExamSession(List.of(exams)), battles, new StandardProgressionRules(),
-                (exam, grade) -> Reward.none());
+                (exam, grade) -> Reward.none(), new Graduation());
     }
 }
