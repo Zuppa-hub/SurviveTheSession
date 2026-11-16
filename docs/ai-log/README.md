@@ -54,3 +54,4 @@ rivista da me, con il supporto di Claude in chat.
 | 2026-11-16 | [Pagina "Uso dell'AI" della Wiki](2026-11-16-01-pagina-uso-dell-ai.md) |
 | 2026-11-16 | [Revisione indipendente del progetto](2026-11-16-02-revisione-indipendente.md) |
 | 2026-11-17 | [Correzioni dalla revisione indipendente](2026-11-17-01-correzioni-dalla-revisione-indipendente.md) |
+| 2026-11-17 | [Release v1.0](2026-11-17-02-release-v1.0.md) |
