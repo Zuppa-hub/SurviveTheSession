@@ -51,3 +51,4 @@ rivista da me, con il supporto di Claude in chat.
 | 2026-11-14 | [Screenshot della v0.2 e release](2026-11-14-07-screenshot-della-v0.2.md) |
 | 2026-11-15 | [Revisione finale del codice (issue #13)](2026-11-15-01-revisione-finale.md) |
 | 2026-11-15 | [README finale e Wiki (issue #14)](2026-11-15-02-readme-e-wiki.md) |
+| 2026-11-16 | [Pagina "Uso dell'AI" della Wiki](2026-11-16-01-pagina-uso-dell-ai.md) |
