@@ -3,6 +3,7 @@ package it.unicam.cs.mpgc.rpg127295.persistence.content;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Objects;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -34,8 +35,8 @@ public final class XmlDocumentLoader {
      * @param schemaRoot  classpath folder of the schemas, such as "/content/schema/"
      */
     public XmlDocumentLoader(String contentRoot, String schemaRoot) {
-        this.contentRoot = contentRoot;
-        this.schemaRoot = schemaRoot;
+        this.contentRoot = Objects.requireNonNull(contentRoot, "Content root must not be null");
+        this.schemaRoot = Objects.requireNonNull(schemaRoot, "Schema root must not be null");
     }
 
     /**
