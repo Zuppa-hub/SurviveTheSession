@@ -33,10 +33,6 @@ application {
     mainClass = "it.unicam.cs.mpgc.rpg127295.app.Main"
 }
 
-tasks.named<JavaExec>("run") {
-    standardInput = System.`in`
-}
-
 tasks.test {
     useJUnitPlatform()
     testLogging {
