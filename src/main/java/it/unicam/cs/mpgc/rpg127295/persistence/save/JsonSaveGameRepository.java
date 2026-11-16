@@ -105,15 +105,6 @@ public final class JsonSaveGameRepository implements SaveGameRepository {
         }
     }
 
-    @Override
-    public void delete(String slot) {
-        try {
-            Files.deleteIfExists(fileOf(slot));
-        } catch (IOException error) {
-            throw new SaveGameException("Cannot delete slot " + slot, error);
-        }
-    }
-
     private Path fileOf(String slot) {
         return directory.resolve(SaveGameRepository.requireValidSlot(slot) + EXTENSION);
     }

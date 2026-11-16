@@ -25,7 +25,7 @@ public final class MenuController {
 
     @FXML
     private void initialize() {
-        savedGames.getItems().setAll(games.savedGames());
+        savedGames.getItems().setAll(navigator.savedGames());
         savedGames.setPlaceholder(Placeholders.of(EmptyStates.savedGames()));
         loadButton.disableProperty().bind(savedGames.getSelectionModel().selectedItemProperty().isNull());
     }

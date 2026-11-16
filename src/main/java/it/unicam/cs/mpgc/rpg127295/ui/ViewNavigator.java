@@ -2,9 +2,11 @@ package it.unicam.cs.mpgc.rpg127295.ui;
 
 import it.unicam.cs.mpgc.rpg127295.engine.game.ExamReport;
 import it.unicam.cs.mpgc.rpg127295.engine.game.Game;
+import it.unicam.cs.mpgc.rpg127295.engine.repository.SaveGameException;
 import it.unicam.cs.mpgc.rpg127295.model.exam.Exam;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.List;
 import java.util.Objects;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -42,10 +44,25 @@ public final class ViewNavigator {
      * once per run of the application.
      */
     public void showNewGame() {
-        if (games.savedGames().isEmpty() && !howToPlayShown) {
+        if (savedGames().isEmpty() && !howToPlayShown) {
             showHowToPlay(this::showNewGameForm, "Scegli il profilo");
         } else {
             showNewGameForm();
+        }
+    }
+
+    /**
+     * The saved games for the screens. If they cannot be read the player sees a warning in
+     * Italian and the screens go on without saved games, instead of failing with the exception.
+     *
+     * @return the slots with a saved game, or none if they cannot be read
+     */
+    List<String> savedGames() {
+        try {
+            return games.savedGames();
+        } catch (SaveGameException unreadable) {
+            Alerts.savesUnreadable(unreadable);
+            return List.of();
         }
     }
 

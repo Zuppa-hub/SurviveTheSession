@@ -22,7 +22,9 @@ cd SurviveTheSession
 ./gradlew test     # esegue i test
 ```
 
-Serve Java 25; Gradle non va installato perché il progetto include il wrapper.
+Il gioco usa Java 25: se non è installato lo scarica Gradle (toolchain), e per avviare il wrapper
+basta un JDK 17 o superiore. Gradle e JavaFX non vanno installati: il progetto include il wrapper
+e JavaFX è una dipendenza della build.
 
 ## Indice
 

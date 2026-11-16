@@ -14,6 +14,7 @@ import it.unicam.cs.mpgc.rpg127295.model.student.Level;
 import it.unicam.cs.mpgc.rpg127295.model.student.Stats;
 import it.unicam.cs.mpgc.rpg127295.model.student.Student;
 import it.unicam.cs.mpgc.rpg127295.model.student.StudentProfile;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -129,6 +130,24 @@ class SaveMapperTest {
                         () -> mapper.toStudent(dataWith("nerd", Map.of("coffee", 0), none))),
                 () -> assertThrows(SaveGameException.class, () -> mapper.toStudent(
                         new SaveData(" ", "nerd", SaveDataTest.STATS, 2, 50, none, none))));
+    }
+
+    @Test
+    void rejectsMissingQuantitiesAndGrades() {
+        Map<String, Integer> none = Map.of();
+        Map<String, Integer> missingQuantity = new HashMap<>();
+        missingQuantity.put("coffee", null);
+        Map<String, Integer> missingGrade = new HashMap<>();
+        missingGrade.put("PROG1", null);
+
+        SaveGameException noQuantity = assertThrows(SaveGameException.class,
+                () -> mapper.toStudent(dataWith("nerd", missingQuantity, none)));
+        SaveGameException noGrade = assertThrows(SaveGameException.class,
+                () -> mapper.toStudent(dataWith("nerd", none, missingGrade)));
+
+        assertAll(
+                () -> assertEquals("Invalid saved game: no quantity for item coffee", noQuantity.getMessage()),
+                () -> assertEquals("Invalid saved game: no grade for exam PROG1", noGrade.getMessage()));
     }
 
     @Test

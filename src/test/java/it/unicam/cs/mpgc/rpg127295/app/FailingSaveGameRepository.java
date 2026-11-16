@@ -29,8 +29,4 @@ final class FailingSaveGameRepository implements SaveGameRepository {
     public List<String> listSlots() {
         return List.of();
     }
-
-    @Override
-    public void delete(String slot) {
-    }
 }

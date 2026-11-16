@@ -71,8 +71,7 @@ public final class QuestionPool {
     }
 
     private static Comparator<Difficulty> byDistanceFrom(Difficulty target) {
-        Comparator<Difficulty> byDistance =
-                Comparator.comparingInt(difficulty -> Math.abs(difficulty.ordinal() - target.ordinal()));
+        Comparator<Difficulty> byDistance = Comparator.comparingInt(target::distanceFrom);
         return byDistance.thenComparing(Comparator.reverseOrder());
     }
 

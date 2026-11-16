@@ -147,7 +147,7 @@ regolamenti dei singoli corsi e non sono previsti.
 
 ## Salvataggio e caricamento
 
-- La partita si **salva da sola** dopo ogni esame concluso (superato, bocciato o abbandonato), in
+- La partita si **salva da sola** appena creata e dopo ogni esame concluso (superato, bocciato o abbandonato), in
   `~/.sopravvivi-alla-sessione/saves/<nome>.json`.
 - Dal menu si vede l'elenco delle partite salvate e se ne carica una; la partita caricata
   continua a salvarsi nello stesso file.

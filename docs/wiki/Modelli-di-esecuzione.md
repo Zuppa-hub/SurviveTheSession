@@ -77,7 +77,7 @@ si possono più mescolare con quelli dell'altro.
 **Perché non `AtomicInteger`.** Basterebbe se il dato condiviso fosse solo il contatore:
 `addAndGet` è atomico. Ma lo stato del timer è fatto di quattro campi che devono cambiare
 insieme: secondi rimasti, compito pianificato, listener e numero di generazione. Ad esempio
-`start` li sostituisce tutti, e il tick a zero decrementa e annulla il compito. Un
+`start` li sostituisce tutti, e la scadenza controlla i secondi e annulla il compito. Un
 `AtomicInteger` renderebbe atomico il singolo numero, non l'invariante su tutti i campi.
 
 ## Notifiche fuori dal lock
@@ -109,6 +109,34 @@ quando è partito un nuovo conto alla rovescia: non può toccare i secondi di qu
 Il controllo sta nel timer e non nello scontro. Così vale il contratto di `QuestionTimer`
 ("dopo `stop()` o un nuovo `start()` nessuna notifica del conto precedente raggiunge il
 listener") per qualunque listener, e lo scontro non ha bisogno di un secondo contatore.
+
+## Il Caffè all'ultimo istante
+
+Il lock protegge il contatore, ma non basta a decidere **quando** il tempo è scaduto. Nella
+prima versione il tick che arrivava a zero annullava subito il conto alla rovescia e accodava
+`onExpired`. Tra quel momento e la consegna della notifica passa poco, ma non niente:
+
+| Passo | Thread del timer | Thread della UI |
+|---|---|---|
+| 1 | tick: secondi a 0, compito annullato, `onExpired` in coda | |
+| 2 | | clic sul Caffè: l'oggetto viene consumato, `addSeconds(15)` trova il conto già chiuso e non fa niente |
+| 3 | | la coda consegna `onExpired`: risposta sbagliata |
+
+Il giocatore paga il Caffè e perde lo stesso la domanda. L'ha trovato la revisione
+indipendente del codice (16/11), non un test: nessun campo è corrotto, quindi non è una race
+condition sui dati ma una decisione presa sul thread sbagliato.
+
+La correzione: **la scadenza si decide alla consegna**. A zero il tick non annulla niente e
+accoda solo un controllo (`expireIfStillAtZero`). Il controllo gira sul thread
+dell'interfaccia, lo stesso su cui si usa il Caffè, ed entra nel lock: se la generazione è
+ancora quella e i secondi sono ancora zero, annulla il compito e notifica `onExpired`;
+se nel frattempo sono arrivati dei secondi, non fa niente e il conto prosegue. Finché il
+controllo è in coda il tick non scende sotto zero, e due controlli in coda fanno scadere il
+tempo una volta sola.
+
+Tre test deterministici riproducono gli interleaving con `ManualScheduler` e
+`QueuedExecutor`: secondi aggiunti con la scadenza già in coda, un tick in più mentre la
+scadenza aspetta, due scadenze in coda.
 
 ## Come si testa senza tempo reale
 

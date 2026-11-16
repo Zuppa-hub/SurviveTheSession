@@ -22,9 +22,6 @@ public interface SaveGameRepository {
     /** @return the saved slots, in alphabetical order */
     List<String> listSlots();
 
-    /** Deletes the slot; nothing happens if it does not exist. */
-    void delete(String slot);
-
     /**
      * @return the same slot name, if valid
      * @throws IllegalArgumentException if it contains anything but letters, digits, - and _
