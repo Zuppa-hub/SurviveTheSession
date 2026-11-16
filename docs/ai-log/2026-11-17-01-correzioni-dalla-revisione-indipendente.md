@@ -31,8 +31,8 @@ controllare la PR #52 (pagina "Uso dell'AI") e farne il merge se era fatta bene.
 
 **Modificato / verificato da me:**
 - Il prompt l'ho preparato con Claude in chat a partire dal rapporto della revisione; prima di
-  passarlo a Claude Code ho tolto la modifica alla riga sul merge delle PR, perché quella riga
-  è vera.
+  passarlo a Claude Code ho tolto la modifica alla riga sul merge delle PR: descrive come ho
+  lavorato e non andava cambiata.
 - Ho deciso io cosa correggere e cosa lasciare: delle osservazioni minori ho scelto di
   motivare nella Wiki `Student` che espone inventario e libretto, i testi italiani nel dominio,
   gli id degli oggetti come stringhe e il tempo scaduto dedotto nella UI, invece di cambiare il

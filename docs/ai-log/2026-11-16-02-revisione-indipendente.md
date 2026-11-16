@@ -28,7 +28,7 @@ importante, minore) e le dieci domande più probabili a un colloquio.
 - Ho letto il rapporto e l'ho discusso con Claude in chat per decidere cosa
   correggere nel codice, cosa correggere nella documentazione e quali scelte lasciare
   motivandole nella Wiki.
-- Ho corretto un punto del rapporto: la riga della Wiki "merge solo dopo la lettura di Andrea"
-  era indicata come da riscrivere, ma è vera e resta com'è.
+- Ho corretto un punto del rapporto: proponeva di riscrivere la riga della Wiki sul merge delle
+  PR dopo la mia lettura, che invece descrive come ho lavorato e resta com'è.
 - Da questa discussione è nato il prompt della sessione di correzione
   ([2026-11-17](2026-11-17-01-correzioni-dalla-revisione-indipendente.md)).
